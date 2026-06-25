@@ -14,13 +14,11 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,sans-serif;background:transparent;color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
 .wrap{max-width:680px;margin:0 auto;padding:0 16px 60px}
-body.embed #brandhead{display:none}
 body.embed .wrap{padding-top:6px;padding-bottom:18px}
 body.embed footer{margin-top:18px}
 body.fullresults{background:linear-gradient(180deg,#F4F6F9,#EEF1F6)!important}
 body.fullresults .wrap{max-width:920px;padding-top:0}
 body.fullresults #tabs{display:none}
-body.fullresults #brandhead{display:flex!important;position:sticky;top:0;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);z-index:50;padding:14px 16px;margin:0 -16px 8px;border-bottom:1px solid var(--line)}
 .resultsbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
 .backform{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);color:var(--charcoal);font-weight:700;font-size:14px;padding:9px 16px;border-radius:99px;cursor:pointer;font-family:inherit}
 .backform:hover{background:var(--panel)}
@@ -35,6 +33,15 @@ body.fullresults #brandhead{display:flex!important;position:sticky;top:0;backgro
 .enqsend{width:100%;background:linear-gradient(135deg,#7059EC,#4B2EDB);color:#fff;font-weight:800;font-size:16px;padding:15px;border:none;border-radius:12px;cursor:pointer;font-family:inherit;margin-top:4px}
 .enqsend:disabled{opacity:.6}
 .enqfine{font-size:10.5px;color:var(--muteSoft);text-align:center;margin-top:12px;font-weight:500}
+.dghead{text-align:center;margin-bottom:18px}
+.dgicon{width:54px;height:54px;border-radius:15px;background:var(--blueWash);color:var(--blue);display:flex;align-items:center;justify-content:center;margin:0 auto 12px}.dgicon svg{width:28px;height:28px}
+.dgtitle{font-size:23px;font-weight:800;color:var(--charcoal);margin:0 0 6px}
+.dgsub{font-size:13.5px;color:var(--mute);line-height:1.5;margin:0;font-weight:500}
+.dgtrust{font-size:12px;color:var(--muteSoft);text-align:center;margin-top:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px}.dgtrust svg{width:14px;height:14px}
+.dgback{display:block;margin:14px auto 0;background:none;border:none;color:var(--mute);font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit}
+.enqcall{display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#27CB94,#13A36F);color:#fff;font-weight:800;font-size:15.5px;padding:14px;border-radius:12px;text-decoration:none;margin:18px 0 10px}.enqcall svg{width:18px;height:18px}
+.enqkeep{width:100%;background:var(--panel);color:var(--charcoal);font-weight:700;font-size:14px;padding:12px;border:none;border-radius:12px;cursor:pointer;font-family:inherit}
+
 
 
 header{display:flex;align-items:center;gap:12px;padding:22px 4px 16px;flex-wrap:wrap}
@@ -199,22 +206,9 @@ footer{margin-top:28px;padding:4px}footer p{font-size:12px;color:var(--mute);lin
 </style></head>
 <body>
 <div class="wrap">
-  <header id="brandhead"><div class="mark"><b>AFH</b><span>FINANCE</span></div><span class="brandtag">Finance Made Easy.</span></header>
   <div class="tabs" id="tabs"></div>
   <div id="screen"></div>
-  <div id="enqModal" class="enqmodal"><div class="enqcard" id="enqBody">
-    <button class="enqclose" onclick="closeEnq()">&times;</button>
-    <div class="enqhead">Enquire about <span id="enqLender">this lender</span></div>
-    <div class="enqsub">No credit impact · No obligation · A broker will call you back</div>
-    <form onsubmit="submitEnq(event)">
-      <input type="hidden" name="enquiry" id="enqContext" value="">
-      <input class="enqfield" name="name" placeholder="Your full name" required>
-      <input class="enqfield" name="mobile" type="tel" placeholder="Mobile number" required>
-      <input class="enqfield" name="email" type="email" placeholder="Email address" required>
-      <button class="enqsend" type="submit">Send my enquiry →</button>
-    </form>
-    <div class="enqfine">By submitting you agree a broker may contact you. AFH Finance · ACR 548852</div>
-  </div></div>
+  <div id="enqModal" class="enqmodal"><div class="enqcard" id="enqBody"></div></div>
 
   <footer>
     <p><b style="color:var(--charcoal)">Indicative only.</b> Rates are estimates from lender-published guides and are not an offer of finance. Your actual rate, comparison rate and repayments are subject to credit assessment. Comparison rates marked * include estimated fees. Verify before quoting.</p>
@@ -230,6 +224,7 @@ const LOCKTAB=URLP.get("tab");                 // "car"|"personal"|"business" ->
 const EMBED=URLP.get("embed")==="1"||LOCKTAB;  // embed mode hides header
 const TABMAP={car:"car",personal:"personal",business:"business"};
 let funnel=(LOCKTAB&&TABMAP[LOCKTAB])?TABMAP[LOCKTAB]:"car",view="form",qi=0,lastQi=-1,lastFunnel="";
+let contact={name:"",mobile:"",email:""},leadSent=false;
 let st={
  car:{found:null,cond:null,ev:null,use:"personal",amount:35000,term:5,balloon:0,credit:3,res:"owner",resLen:"",visa:"citizen",visaSub:"",visaExpiry:"",emp:"fulltime",wage:0,wageFreq:"annually",income:65000,payday:"no"},
  personal:{purpose:null,amount:20000,term:5,secured:"any",credit:3,res:"owner",resLen:"",emp:"fulltime",wage:0,wageFreq:"annually",income:65000,visa:"citizen",visaSub:"",visaExpiry:"",payday:"no"},
@@ -466,7 +461,7 @@ function form(){const S=steps();const step=S[qi];const pct=Math.round(((qi+1)/S.
  h+=`<div class="trust">${ICON.shield} No credit score impact · No obligation</div>`;
  if(qi>0)h+=`<button class="back" onclick="prev()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg> Back</button>`;
  h+=`</div>`;return h;}
-function next(){const S=steps();if(qi<S.length-1){qi++;window.scrollTo({top:0,behavior:'smooth'});render();}else{view="results";window.scrollTo({top:0,behavior:'smooth'});render();}}
+function next(){const S=steps();if(qi<S.length-1){qi++;window.scrollTo({top:0,behavior:'smooth'});render();}else{view=contact.name?"results":"details";window.scrollTo({top:0,behavior:'smooth'});render();}}
 function prev(){if(qi>0){qi--;window.scrollTo({top:0,behavior:'smooth'});render();}}
 
 function results(){const s=st[funnel];const{list,fallback,capped,nearmiss}=match();
@@ -505,6 +500,26 @@ function results(){const s=st[funnel];const{list,fallback,capped,nearmiss}=match
 // ⬇️ PASTE YOUR FORMSPREE FORM ID HERE (e.g. "xeoqwabc") — from formspree.io
 const FORMSPREE_ID="xkoljnnb";
 let enquireLender="";
+
+
+function detailsGate(){const s=st[funnel];const{list}=match();const n=list.length;
+ return `<div class="card anim">
+   <div class="dghead"><div class="dgicon">${ICON.sparkle}</div>
+     <h2 class="dgtitle">We found ${n} lender${n!==1?"s":""} for you</h2>
+     <p class="dgsub">Enter your details to see your matches and personalised rates. No credit impact — this won't affect your score.</p></div>
+   <form onsubmit="submitGate(event)">
+     <input class="enqfield" name="name" placeholder="Your full name" value="${contact.name}" required>
+     <input class="enqfield" name="mobile" type="tel" placeholder="Mobile number" value="${contact.mobile}" required>
+     <input class="enqfield" name="email" type="email" placeholder="Email address" value="${contact.email}" required>
+     <button class="cta" type="submit" style="width:100%;margin-top:6px">See my ${n} match${n!==1?"es":""} →</button>
+   </form>
+   <div class="dgtrust">${ICON.lock} Your details are secure · No obligation · A Melbourne broker will help you</div>
+   <button class="dgback" onclick="goForm()">← Back to questions</button>
+ </div>`;}
+function submitGate(ev){ev.preventDefault();const f=ev.target;
+ contact.name=f.name.value;contact.mobile=f.mobile.value;contact.email=f.email.value;
+ sendLead("viewed matches");          // capture the lead the moment they submit
+ view="results";window.scrollTo({top:0,behavior:'smooth'});render();}
 
 function buildLeadDetails(){const s=st[funnel];const out={};
  const money=v=>"$"+(+v).toLocaleString();
@@ -548,31 +563,34 @@ function buildLeadDetails(){const s=st[funnel];const out={};
  }
  return out;}
 function enquire(n){enquireLender=n;
- const s=st[funnel];
- document.getElementById("enqLender").textContent=n;
- document.getElementById("enqContext").value=`${funnel} | ${fmt(s.amount)} over ${s.term}yr | lender: ${n}`;
- document.getElementById("enqModal").classList.add("on");}
+ // details already captured at the gate — just confirm + send this lender-specific enquiry
+ sendLead("enquired: "+n);
+ const m=document.getElementById("enqModal");
+ document.getElementById("enqBody").innerHTML=`
+   <button class="enqclose" onclick="closeEnq()">&times;</button>
+   <div style="text-align:center;padding:8px 0 4px">
+     <div style="font-size:46px">📞</div>
+     <div style="font-weight:800;font-size:21px;color:var(--charcoal);margin:8px 0 6px">A broker will call you shortly</div>
+     <div style="color:var(--mute);font-size:14px;line-height:1.55">Thanks ${contact.name?contact.name.split(" ")[0]:""} — one of our Melbourne brokers will be in touch to discuss <b>${n}</b> and find the right option for you. No obligation.</div>
+     <a href="tel:0370316881" class="enqcall">${ICON.phone} Urgent? Call us now — 03 7031 6881</a>
+     <button class="enqkeep" onclick="closeEnq()">Keep browsing lenders</button>
+   </div>`;
+ m.classList.add("on");}
 function closeEnq(){document.getElementById("enqModal").classList.remove("on");}
-async function submitEnq(ev){ev.preventDefault();
- const f=ev.target;const btn=f.querySelector(".enqsend");btn.textContent="Sending...";btn.disabled=true;
+async function sendLead(action){
  const lead=buildLeadDetails();
  const data={
-   name:f.name.value,mobile:f.mobile.value,email:f.email.value,
-   lender_enquired:enquireLender,
+   name:contact.name,mobile:contact.mobile,email:contact.email,
+   action:action,
    ...lead,
-   _subject:`New AFH enquiry: ${f.name.value} — ${enquireLender} (${lead["Loan type"]})`};
+   _subject:`New AFH lead: ${contact.name} — ${lead["Loan type"]} ${lead["Amount requested"]} (${action})`};
  try{
-  if(FORMSPREE_ID==="YOUR_FORM_ID"){ // not configured yet — show fallback
-   alert("✅ Thanks "+f.name.value+"! A Melbourne broker will be in touch about your "+enquireLender+" enquiry.\n\nCall now: 03 7031 6881");
-  }else{
-   const r=await fetch("https://formspree.io/f/"+FORMSPREE_ID,{method:"POST",headers:{"Accept":"application/json","Content-Type":"application/json"},body:JSON.stringify(data)});
-   if(!r.ok)throw new Error("send failed");
-  }
-  document.getElementById("enqBody").innerHTML=`<div style="text-align:center;padding:20px 0"><div style="font-size:42px">✅</div><div style="font-weight:800;font-size:19px;margin:10px 0 4px">Thanks, ${f.name.value}!</div><div style="color:var(--mute)">A Melbourne broker will be in touch shortly about your ${enquireLender} enquiry.</div><a href="tel:03 7031 6881" style="display:inline-block;margin-top:16px;color:var(--blue);font-weight:800">Or call 03 7031 6881 now →</a></div>`;
- }catch(e){btn.textContent="Try again";btn.disabled=false;alert("Sorry, something went wrong sending that. Please call 03 7031 6881 and we will sort it straight away.");}
+  if(FORMSPREE_ID==="YOUR_FORM_ID")return; // not configured — skip silently
+  await fetch("https://formspree.io/f/"+FORMSPREE_ID,{method:"POST",headers:{"Accept":"application/json","Content-Type":"application/json"},body:JSON.stringify(data)});
+ }catch(e){/* fail silently — broker still gets earlier gate lead */}
 }
 
-function render(){tabs();document.getElementById("screen").innerHTML=view==="form"?form():results();applyView();}
+function render(){tabs();document.getElementById("screen").innerHTML=view==="form"?form():view==="details"?detailsGate():results();applyView();}
 
 function signalParent(mode){try{if(window.parent&&window.parent!==window){window.parent.postMessage({afhCalc:true,mode:mode},"*");}}catch(e){}}
 function goForm(){view="form";signalParent("form");render();window.scrollTo(0,0);}
