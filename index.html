@@ -33,6 +33,34 @@ body.fullresults #tabs{display:none}
 .enqsend{width:100%;background:linear-gradient(135deg,#7059EC,#4B2EDB);color:#fff;font-weight:800;font-size:16px;padding:15px;border:none;border-radius:12px;cursor:pointer;font-family:inherit;margin-top:4px}
 .enqsend:disabled{opacity:.6}
 .enqfine{font-size:10.5px;color:var(--muteSoft);text-align:center;margin-top:12px;font-weight:500}
+/* ===== QUICK HERO CALCULATOR (premium) ===== */
+.qc{padding:4px 2px 8px}
+.qcrow{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+.qclabel{font-size:14px;font-weight:700;color:var(--charcoal)}
+.qcval{font-size:30px;font-weight:800;color:var(--blue);letter-spacing:-1px;cursor:pointer;line-height:1}
+.qcval2{font-size:24px;font-weight:800;color:var(--charcoal);letter-spacing:-.5px}
+.qcslider{width:100%;-webkit-appearance:none;appearance:none;height:6px;border-radius:99px;background:linear-gradient(90deg,var(--blue) 0%,var(--blue) 50%,#E6E9F0 50%,#E6E9F0 100%);outline:none;margin:2px 0 6px}
+.qcslider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:26px;height:26px;border-radius:50%;background:#fff;border:none;box-shadow:0 3px 10px rgba(75,46,219,.35),0 0 0 6px rgba(75,46,219,.12);cursor:pointer;transition:transform .12s}
+.qcslider::-webkit-slider-thumb:active{transform:scale(1.15)}
+.qcslider::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:#fff;border:none;box-shadow:0 3px 10px rgba(75,46,219,.35),0 0 0 6px rgba(75,46,219,.12);cursor:pointer}
+.qcfreq{display:flex;gap:8px;background:var(--panel);padding:5px;border-radius:14px}
+.qcfreqbtn{flex:1;padding:11px;border:none;background:transparent;border-radius:10px;font-weight:700;font-size:14px;color:var(--mute);cursor:pointer;font-family:inherit;transition:all .15s}
+.qcfreqbtn.on{background:#fff;color:var(--blue);box-shadow:0 2px 8px rgba(30,35,41,.1)}
+.qcpreview{margin-top:22px;background:linear-gradient(135deg,#2A2F37,#1C2127);border-radius:18px;padding:20px;text-align:center;color:#fff}
+.qcpl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muteSoft)}
+.qcpv{font-size:38px;font-weight:800;letter-spacing:-1.5px;margin:4px 0;line-height:1}.qcpv span{font-size:17px;font-weight:700;color:var(--muteSoft)}
+.qcps{font-size:12.5px;color:var(--muteSoft);font-weight:500}
+.qccta{width:100%;margin-top:18px;background:linear-gradient(135deg,#7059EC,#4B2EDB);color:#fff;font-weight:800;font-size:17px;padding:17px;border:none;border-radius:15px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:0 12px 30px rgba(75,46,219,.32);transition:transform .15s,box-shadow .15s}
+.qccta:hover{transform:translateY(-2px);box-shadow:0 16px 38px rgba(75,46,219,.42)}
+.qccta svg{width:20px;height:20px}
+.qctrust{display:flex;align-items:center;justify-content:center;gap:7px;font-size:12.5px;color:var(--muteSoft);font-weight:600;margin-top:14px}.qctrust svg{width:15px;height:15px}
+.qcready{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;font-size:13.5px;font-weight:700;color:#13A36F}
+.qcdot{width:8px;height:8px;border-radius:50%;background:#13A36F;box-shadow:0 0 0 0 rgba(19,163,111,.5);animation:dotpulse 1.8s infinite}
+@keyframes dotpulse{0%{box-shadow:0 0 0 0 rgba(19,163,111,.5)}70%{box-shadow:0 0 0 9px rgba(19,163,111,0)}100%{box-shadow:0 0 0 0 rgba(19,163,111,0)}}
+.pulse-cta{animation:ctapulse 2.4s ease-in-out infinite}
+@keyframes ctapulse{0%,100%{box-shadow:0 12px 30px rgba(75,46,219,.32)}50%{box-shadow:0 12px 38px rgba(75,46,219,.55)}}
+
+
 .dghead{text-align:center;margin-bottom:18px}
 .dgicon{width:54px;height:54px;border-radius:15px;background:var(--blueWash);color:var(--blue);display:flex;align-items:center;justify-content:center;margin:0 auto 12px}.dgicon svg{width:28px;height:28px}
 .dgtitle{font-size:23px;font-weight:800;color:var(--charcoal);margin:0 0 6px}
@@ -227,14 +255,17 @@ const DATA = {"car": [{"name": "MoneyPlace", "logo": "data:image/png;base64,iVBO
 const PHONE="0370316881";
 const URLP=new URLSearchParams(location.search);
 const LOCKTAB=URLP.get("tab");                 // "car"|"personal"|"business" -> lock to one funnel
-const EMBED=URLP.get("embed")==="1"||LOCKTAB;  // embed mode hides header
+const EMBED=URLP.get("embed")==="1"||LOCKTAB||URLP.get("mode")==="quick";  // embed mode hides header
+const QUICK=URLP.get("mode")==="quick";  // hero quick-calculator mode
+let repayFreq="weekly";  // hero repayment frequency
 const TABMAP={car:"car",personal:"personal",business:"business"};
-let funnel=(LOCKTAB&&TABMAP[LOCKTAB])?TABMAP[LOCKTAB]:"car",view="form",qi=0,lastQi=-1,lastFunnel="";
+let funnel=(LOCKTAB&&TABMAP[LOCKTAB])?TABMAP[LOCKTAB]:"car",view=(URLP.get("mode")==="quick"?"quick":"form"),qi=0,lastQi=-1,lastFunnel="";
 let contact={name:"",mobile:"",email:""},leadSent=false;
+let view0=QUICK?"quick":"form";
 let st={
- car:{found:null,cond:null,ev:null,use:"personal",amount:35000,term:5,balloon:0,credit:3,res:"owner",resLen:"",visa:"citizen",visaSub:"",visaExpiry:"",emp:"fulltime",wage:0,wageFreq:"annually",income:65000,payday:"no"},
- personal:{purpose:null,amount:20000,term:5,secured:"any",credit:3,res:"owner",resLen:"",emp:"fulltime",wage:0,wageFreq:"annually",income:65000,visa:"citizen",visaSub:"",visaExpiry:"",payday:"no"},
- business:{sub:null,amount:80000,term:5,structure:"company",abn:48,gst:30,turn:600000,property:"owner",doc:"yes"}
+ car:{found:null,cond:null,ev:null,use:"personal",knowType:null,carType:"",amount:35000,term:5,balloon:0,credit:3,res:"owner",resLen:"",visa:"citizen",visaSub:"",visaExpiry:"",emp:"fulltime",wage:0,wageFreq:"annually",income:65000,payday:"no"},
+ personal:{purpose:null,amount:20000,term:5,balloon:0,secured:"any",credit:3,res:"owner",resLen:"",emp:"fulltime",wage:0,wageFreq:"annually",income:65000,visa:"citizen",visaSub:"",visaExpiry:"",payday:"no"},
+ business:{sub:null,amount:80000,term:5,balloon:0,bizSecured:"secured",structure:"company",abn:48,gst:30,turn:600000,property:"owner",doc:"yes"}
 };
 const fmt=n=>"$"+Math.round(n).toLocaleString("en-AU");
 const fmtK=n=>n>=1000?"$"+(n/1000).toFixed(n%1000?1:0)+"k":"$"+n;
@@ -318,7 +349,7 @@ function setA(k,v){st[funnel][k]=v;render();}
 
 function carSteps(){const s=st[funnel];return[
  {t:"Have you found the car yet?",render:()=>`<div class="grid">${tile('found','yes','blue','car','Yes, found it!','')}${tile('found','no','sun','search','Still looking','')}</div>`},
- {t:"Tell us about the car",render:()=>`
+ {t:()=>st.car.found==="no"?"What are you after?":"Tell us about the car",render:()=>st.car.found==="no"?carLookingStep():`
    <div class="qlabel">${ICON.car} Is the car new or used?</div>
    ${rowtile('cond','new','green','sparkle','New','Brand new vehicle')}${rowtile('cond','demo','sun','cartag','Demo','Ex-demonstrator')}${rowtile('cond','used','blue','gauge2','Used','Pre-owned vehicle')}
    <div class="qlabel">${ICON.bolt} Is this an electric vehicle?</div>
@@ -346,7 +377,7 @@ function businessSteps(){const s=st[funnel];return[
    ${rowtile('sub','asset','blue','truck','Vehicle or equipment','Cars, trucks, machinery')}
    ${rowtile('sub','cashflow','green','cash','Working capital','Cash flow, stock, expenses')}
    ${rowtile('sub','any','slate','help','Not sure','Show me all options')}`},
- {t:"Your finance",render:()=>amountTerm()+(st.business.sub!=="cashflow"?balloonBox():"")+livePreview()},
+ {t:"Your finance",render:()=>amountTerm()+(st.business.sub!=="cashflow"?`<div class="qlabel">${ICON.lock} Secured or unsecured?</div>${rowtile("bizSecured","secured","green","lock","Secured","Against the asset — lower rate")}${rowtile("bizSecured","unsecured","blue","doc","Unsecured","No asset security")}`:"")+((st.business.sub!=="cashflow"&&st.business.bizSecured==="secured")?balloonBox():"")+livePreview()},
  {t:"About your business",render:()=>`
    <div class="qlabel">${ICON.building} Business structure</div>
    <select class="field" onchange="setA('structure',this.value)">${['Sole trader|sole','Company|company','Partnership|partnership','Trust|trust'].map(o=>{const[l,v]=o.split('|');return `<option value="${v}" ${s.structure===v?'selected':''}>${l}</option>`}).join('')}</select>
@@ -363,6 +394,17 @@ function businessSteps(){const s=st[funnel];return[
    <div class="grid">${tile('doc','yes','green','check','Yes, up to date','')}${tile('doc','no','sun','doc','Prefer low-doc','')}</div>`},
 ];}
 
+
+function carLookingStep(){const s=st.car;return `
+   <div class="qlabel">${ICON.help} Do you know what type of car you want?</div>
+   <div class="grid">${tile('knowType','yes','blue','check','Yes, I have an idea','')}${tile('knowType','no','slate','help','Not yet','')}</div>
+   ${s.knowType==="yes"?`<div class="qlabel">${ICON.car} Roughly what are you after?</div>
+     <select class="field" onchange="setA('carType',this.value)">${[['Select...',''],['Small / hatchback','small'],['Sedan','sedan'],['SUV / 4WD','suv'],['Ute / van','ute'],['Luxury / prestige','luxury'],['Electric / hybrid','ev'],['Not sure yet','unsure']].map(([l,v])=>`<option value="${v}" ${s.carType===v?'selected':''}>${l}</option>`).join('')}</select>
+     <div class="helper">No problem if this changes. It just helps your broker point you in the right direction.</div>`:''}
+   ${s.knowType==="no"?`<div class="helper">All good. We will show you indicative rates now, and your broker can help you work out the right car and budget.</div>`:''}
+   <div class="qlabel">${ICON.user} What's it mainly for?</div>
+   <div class="grid">${tile('use','personal','pink','user','Personal','')}${tile('use','business','blue','briefcase','Business','')}</div>`;}
+
 function amountTerm(){const s=st[funnel];const amax={car:250000,personal:100000,business:500000}[funnel];const amin={car:2000,personal:2000,business:5000}[funnel];
  return `<div class="qlabel">${ICON.dollar} Loan amount</div>
   <div class="slideval" id="amtval" onclick="editAmt()" title="Tap to type">${fmt(s.amount)}</div>
@@ -375,15 +417,38 @@ function amountTerm(){const s=st[funnel];const amax={car:250000,personal:100000,
 function editAmt(){const d=document.getElementById('amtval'),i=document.getElementById('amtedit');if(!d||!i)return;d.style.display='none';i.style.display='block';i.value=st[funnel].amount;i.focus();i.select();}
 function amtCommit(v){const amax={car:250000,personal:100000,business:500000}[funnel];const amin={car:2000,personal:2000,business:5000}[funnel];let n=+String(v).replace(/[^0-9]/g,'')||amin;n=Math.max(amin,Math.min(amax,n));st[funnel].amount=n;render();}
 
-function amtSlide(v){st[funnel].amount=+v;const el=document.getElementById('amtval');if(el){el.textContent=fmt(+v);el.classList.add('pulse');setTimeout(()=>el.classList.remove('pulse'),150);}refreshPreview();}
-function balloonBox(){const s=st[funnel];const maxBalloon=Math.round(s.amount*0.5/500)*500;const pct=s.amount?Math.round(s.balloon/s.amount*100):0;
- return `<div class="hl"><div class="ht">Add a balloon payment?</div><div class="hs">A larger final payment lowers your weekly repayments. Slide to set it.</div>
+function amtSlide(v){st[funnel].amount=+v;const el=document.getElementById('amtval');if(el){el.textContent=fmt(+v);el.classList.add('pulse');setTimeout(()=>el.classList.remove('pulse'),150);}refreshPreview();if(view==='quick')refreshQuick();}
+
+// Car-loan balloon cap by term (real lender policy, not novated-lease ATO table).
+// Shorter term = higher cap. 7yr = none. Used cars reduced by age.
+function balloonMaxPct(){const s=st[funnel];
+ // base cap by term
+ const byTerm={1:50,2:50,3:50,4:40,5:35,6:30,7:0};
+ let cap=byTerm[s.term]!==undefined?byTerm[s.term]:0;
+ // car funnel: reduce for older vehicles
+ if(funnel==="car"){
+   if(s.found==="yes"){
+     if(s.cond==="used")cap=Math.max(0,cap-15);       // used: lenders tighten ~15%
+     else if(s.cond==="demo")cap=Math.max(0,cap-5);   // demo: slight reduction
+   }
+ }
+ // business asset: only secured (handled by where balloonBox is shown); cap a touch lower
+ if(funnel==="business")cap=Math.min(cap,40);
+ return cap;}
+function balloonMaxDollar(){const s=st[funnel];const pct=balloonMaxPct();return Math.round(s.amount*pct/100/500)*500;}
+
+function balloonBox(){const s=st[funnel];const cap=balloonMaxPct();const maxBalloon=balloonMaxDollar();
+ if(cap<=0){if(s.balloon>0)st[funnel].balloon=0;
+   return `<div class="hl"><div class="ht">Balloon payment</div><div class="hs">${s.term>=7?"Balloon payments aren't available on 7-year terms. Choose a shorter term to add one.":"A balloon isn't available for this option."}</div></div>`;}
+ // clamp existing balloon to the new cap
+ if(s.balloon>maxBalloon)st[funnel].balloon=maxBalloon;
+ return `<div class="hl"><div class="ht">Add a balloon payment?</div><div class="hs">A larger final payment lowers your weekly repayments. Slide to set it. Max ${cap}% on this option.</div>
   <div class="grid">${tile('balloon',0,'slate','x','No balloon','')}<div class="tile ${s.balloon>0?'on g-blue':''}" data-c="blue" onclick="setBalloon(${maxBalloon||5000})"><div class="chk">${ICON.check}</div><div class="ti">${ICON.trending}</div><div class="tt">With balloon</div><div class="ts">Lower weekly</div></div></div>
   ${s.balloon>0?balloonSlider():''}</div>`;}
-function balloonSlider(){const s=st[funnel];const maxBalloon=Math.round(s.amount*0.5/500)*500;const pct=s.amount?Math.round(s.balloon/s.amount*100):0;
+function balloonSlider(){const s=st[funnel];const cap=balloonMaxPct();const maxBalloon=balloonMaxDollar();const pct=s.amount?Math.round(s.balloon/s.amount*100):0;
  return `<div class="balloonslide"><div class="slideval" id="balloonval" style="font-size:26px">${fmt(s.balloon)} <span style="font-size:14px;color:var(--mute);font-weight:700">(${pct}%)</span></div>
   <input type="range" min="0" max="${maxBalloon}" step="500" value="${s.balloon}" oninput="balloonSlide(this.value)">
-  <div class="ends"><span>$0</span><span>${fmtK(maxBalloon)} (50%)</span></div>
+  <div class="ends"><span>$0</span><span>${fmtK(maxBalloon)} (${cap}%)</span></div>
   <div class="bvnums" id="balloonNums">${balloonNums()}</div></div>`;}
 function balloonNums(){const s=st[funnel];const{list}=match();const rate=list.length?disp(list[0].lo,list[0].hi)[0]:9;
  const wNo=weekly(s.amount,rate,s.term,0);const wBal=weekly(s.amount,rate,s.term,s.balloon);
@@ -459,10 +524,10 @@ function tabs(){const tb=document.getElementById("tabs");if(LOCKTAB){tb.style.di
  `<button class="tab ${funnel===f?'on':''}" onclick="setFunnel('${f}')">${ICON[ic]}<span class="tx">${lbl}</span></button>`).join("");}
 function setFunnel(f){funnel=f;view="form";qi=0;render();}
 
-function form(){const S=steps();const step=S[qi];const pct=Math.round(((qi+1)/S.length)*100);
- let h=`<div class="prog"><span class="step">Step ${qi+1} of ${S.length}</span><span class="sub">${step.t}</span></div><div class="bar"><i style="width:${pct}%"></i></div>`;
+function form(){const S=steps();const step=S[qi];const pct=Math.round(((qi+1)/S.length)*100);const stepTitle=typeof step.t==="function"?step.t():step.t;
+ let h=`<div class="prog"><span class="step">Step ${qi+1} of ${S.length}</span><span class="sub">${stepTitle}</span></div><div class="bar"><i style="width:${pct}%"></i></div>`;
  const fresh=(qi!==lastQi||funnel!==lastFunnel);lastQi=qi;lastFunnel=funnel;
- h+=`<div class="card${fresh?' anim':''}"><div class="qtitle">${step.t}</div>${step.sub?`<div class="qsub">${step.sub}</div>`:''}${step.render()}`;
+ h+=`<div class="card${fresh?' anim':''}"><div class="qtitle">${stepTitle}</div>${step.sub?`<div class="qsub">${step.sub}</div>`:''}${step.render()}`;
  h+=`<button class="cta" onclick="next()">${qi===S.length-1?'Show my matches':'Continue'} ${ICON.trending&&''}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>`;
  h+=`<div class="trust">${ICON.shield} No credit score impact · No obligation</div>`;
  if(qi>0)h+=`<button class="back" onclick="prev()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg> Back</button>`;
@@ -602,7 +667,44 @@ async function sendLead(action){
  }catch(e){/* fail silently — broker still gets earlier gate lead */}
 }
 
-function render(){tabs();document.getElementById("screen").innerHTML=view==="form"?form():view==="details"?detailsGate():results();applyView();}
+
+function quickFreqMul(){return{weekly:52,fortnightly:26,monthly:12}[repayFreq]||52;}
+function quickRepay(){const s=st[funnel];const{list}=match();if(!list.length)return null;
+ const r=disp(list[0].lo,list[0].hi)[0];const wk=weekly(s.amount,r,s.term,s.balloon||0);
+ const per=Math.round(wk*52/quickFreqMul());return{per,rate:r,n:list.length};}
+function quickCalc(){const s=st[funnel];const amax={car:250000,personal:100000,business:500000}[funnel];const amin={car:2000,personal:2000,business:5000}[funnel];
+ const maxBalloon=Math.round(s.amount*0.5/500)*500;const bpct=s.amount?Math.round(s.balloon/s.amount*100):0;
+ const q=quickRepay();const freqWord={weekly:"week",fortnightly:"fortnight",monthly:"month"}[repayFreq];
+ return `<div class="qc">
+   <div class="qcrow"><div class="qclabel">Loan amount</div><div class="qcval" id="amtval" onclick="editAmt()">${fmt(s.amount)}</div></div>
+   <input type="text" id="amtedit" class="amtedit" inputmode="numeric" value="${s.amount}" onblur="amtCommit(this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="display:none">
+   <input class="qcslider" type="range" min="${amin}" max="${amax}" step="1000" value="${s.amount}" oninput="amtSlide(this.value)">
+   <div class="ends"><span>${fmtK(amin)}</span><span>${fmtK(amax)}</span></div>
+
+   <div class="qcrow" style="margin-top:20px"><div class="qclabel">Loan term</div><div class="qcval2">${s.term} yr${s.term>1?'s':''}</div></div>
+   <input class="qcslider" type="range" min="1" max="7" step="1" value="${s.term}" oninput="quickTerm(this.value)">
+   <div class="ends"><span>1 yr</span><span>7 yrs</span></div>
+
+   <div class="qcrow" style="margin-top:20px"><div class="qclabel">Balloon / residual <span style="color:var(--muteSoft);font-weight:600">(optional)</span></div><div class="qcval2">${fmt(s.balloon)}${s.balloon>0?` <span style="font-size:13px;color:var(--mute)">(${bpct}%)</span>`:''}</div></div>
+   <input class="qcslider" type="range" min="0" max="${maxBalloon}" step="500" value="${s.balloon}" oninput="quickBalloon(this.value)">
+   <div class="ends"><span>$0</span><span>${fmtK(maxBalloon)} (50%)</span></div>
+
+   <div class="qclabel" style="margin-top:20px">Repayment frequency</div>
+   <div class="qcfreq">${["weekly","fortnightly","monthly"].map(f=>`<button class="qcfreqbtn ${repayFreq===f?'on':''}" onclick="setFreq('${f}')">${f[0].toUpperCase()+f.slice(1)}</button>`).join('')}</div>
+
+   <div class="qcpreview" id="qcPreview">${q?`<div class="qcpl">Estimated repayment</div><div class="qcpv">${fmt(q.per)}<span>/${freqWord}</span></div><div class="qcps">from ${q.rate.toFixed(2)}% p.a.</div>`:`<div class="qcpl">Set your amount to see an estimate</div>`}</div>
+
+   ${q?`<div class="qcready"><span class="qcdot"></span><span id="qcReady">${q.n} lenders ready to compare your rate</span></div>`:''}
+   <button class="qccta pulse-cta" onclick="goFullFunnel()">See my ${q?q.n+' ':''}lender matches <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+   <div class="qctrust">${ICON.shield} No credit impact · 2 minutes · No upfront cost</div>
+ </div>`;}
+function refreshQuick(){const p=document.getElementById('qcPreview');if(!p)return;const q=quickRepay();const fw={weekly:"week",fortnightly:"fortnight",monthly:"month"}[repayFreq];p.innerHTML=q?`<div class="qcpl">Estimated repayment</div><div class="qcpv">${fmt(q.per)}<span>/${fw}</span></div><div class="qcps">from ${q.rate.toFixed(2)}% p.a.</div>`:`<div class="qcpl">Set your amount to see an estimate</div>`;const rd=document.getElementById('qcReady');if(rd&&q)rd.textContent=q.n+" lenders ready to compare your rate";const ct=document.querySelector('.qccta');if(ct&&q)ct.firstChild.textContent="See my "+q.n+" lender matches ";}
+function quickTerm(v){st[funnel].term=+v;render();}
+function quickBalloon(v){st[funnel].balloon=+v;render();}
+function setFreq(f){repayFreq=f;render();}
+function goFullFunnel(){view="form";qi=0;signalParent("form");render();window.scrollTo(0,0);}
+
+function render(){tabs();document.getElementById("screen").innerHTML=view==="quick"?quickCalc():view==="form"?form():view==="details"?detailsGate():results();applyView();}
 
 function signalParent(mode){try{if(window.parent&&window.parent!==window){window.parent.postMessage({afhCalc:true,mode:mode},"*");}}catch(e){/* ignore */}}
 function goForm(){view="form";signalParent("form");render();window.scrollTo(0,0);}
