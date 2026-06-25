@@ -173,7 +173,13 @@ select.field{cursor:pointer;-webkit-appearance:none;background-image:url("data:i
 .lender{background:#fff;border-radius:20px;border:1px solid var(--line);padding:20px;box-shadow:0 3px 14px rgba(30,35,41,.05);margin-bottom:14px;position:relative;animation:rise .45s cubic-bezier(.4,0,.2,1) both}
 @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 .lender.best{border:2px solid var(--blue);box-shadow:0 14px 36px rgba(75,46,219,.16);padding-top:30px}
-.ribbon{position:absolute;top:-12px;left:20px;color:#fff;font-size:11.5px;font-weight:800;padding:5px 13px;border-radius:99px;background:linear-gradient(135deg,var(--blueA),var(--blue));box-shadow:0 6px 14px rgba(75,46,219,.3);display:flex;align-items:center;gap:5px}.ribbon svg{width:13px;height:13px}
+.ribbon{display:inline-flex;align-items:center;gap:5px;color:#fff;font-size:11px;font-weight:800;padding:5px 12px;border-radius:99px;background:linear-gradient(135deg,var(--blueA),var(--blue));box-shadow:0 5px 12px rgba(75,46,219,.28);margin-bottom:13px;text-transform:uppercase;letter-spacing:.3px}.ribbon svg{width:12px;height:12px}
+.lhead{display:flex;gap:13px;align-items:center;margin-bottom:14px}
+.lname{flex:1;min-width:0}.lname h3{font-size:19px;font-weight:800;color:var(--charcoal);margin:0 0 6px;letter-spacing:-.2px}
+.lpay{background:var(--panel);border-radius:14px;padding:13px 16px;margin-bottom:14px;display:flex;flex-direction:column;gap:2px}
+.lpayl{font-size:10px;color:var(--mute);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.lpayv{font-size:26px;font-weight:800;color:var(--charcoal);letter-spacing:-.6px;line-height:1.1}.lpayv span{font-size:14px;font-weight:700;color:var(--mute)}
+.lpays{font-size:11.5px;color:var(--muteSoft);font-weight:500}
 .ltop{display:flex;gap:14px;align-items:flex-start}
 .logobox{width:88px;height:58px;border-radius:13px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;padding:8px;flex-shrink:0;overflow:hidden}
 .logobox img{width:100%;height:100%;object-fit:contain}.logobox .ph{font-weight:800;font-size:19px;color:var(--charcoal)}
@@ -461,7 +467,10 @@ function form(){const S=steps();const step=S[qi];const pct=Math.round(((qi+1)/S.
  h+=`<div class="trust">${ICON.shield} No credit score impact · No obligation</div>`;
  if(qi>0)h+=`<button class="back" onclick="prev()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg> Back</button>`;
  h+=`</div>`;return h;}
-function next(){const S=steps();if(qi<S.length-1){qi++;window.scrollTo({top:0,behavior:'smooth'});render();}else{view=contact.name?"results":"details";window.scrollTo({top:0,behavior:'smooth'});render();}}
+function next(){const S=steps();if(qi<S.length-1){qi++;window.scrollTo({top:0,behavior:'smooth'});render();}else{
+   const stillLooking=(funnel==="car"&&st.car.found!=="yes");  // not yet found the car -> not loan-ready
+   view=(contact.name||stillLooking)?"results":"details";
+   window.scrollTo({top:0,behavior:'smooth'});render();}}
 function prev(){if(qi>0){qi--;window.scrollTo({top:0,behavior:'smooth'});render();}}
 
 function results(){const s=st[funnel];const{list,fallback,capped,nearmiss}=match();
@@ -478,14 +487,14 @@ function results(){const s=st[funnel];const{list,fallback,capped,nearmiss}=match
  if(fallback)h+=`<div class="fallback">${ICON.phone} We've included the closest options — a broker can confirm your best fit.</div>`;
  list.forEach((l,i)=>{const[rlo,rhi]=disp(l.lo,l.hi);const wlo=weekly(s.amount,rlo,s.term,s.balloon||0),whi=weekly(s.amount,rhi,s.term,s.balloon||0);const clo=rlo+0.9;const best=i===0;
   const fits=fitBadges(l,funnel,s);const gen=l.tags.slice(0,Math.max(0,3-fits.length));
-  h+=`<div class="lender ${best?'best':''}" style="animation-delay:${i*45}ms">${best?`<div class="ribbon">${ICON.star} Best match — lowest rate</div>`:''}
-   <div class="ltop"><div class="logobox">${l.logo?`<img src="${l.logo}">`:`<span class="ph">${l.name[0]}</span>`}</div>
-   <div class="lmid"><h3>${l.name}</h3><span class="matched">${ICON.check} Matched</span><span class="appetite">${l.app}</span></div>
-   <div class="lright"><div class="rl">Est. repayment</div><div class="rv">${fmt(wlo)}<span>–${fmt(whi)}/wk</span></div><div class="rs">over ${s.term} yr on ${fmt(s.amount)}</div></div></div>
+  h+=`<div class="lender ${best?'best':''}" style="animation-delay:${i*45}ms">${best?`<div class="ribbon">${ICON.star} Best match</div>`:''}
+   <div class="lhead"><div class="logobox">${l.logo?`<img src="${l.logo}">`:`<span class="ph">${l.name[0]}</span>`}</div>
+     <div class="lname"><h3>${l.name}</h3><span class="matched">${ICON.check} Matched</span></div></div>
+   <div class="lpay"><div class="lpayl">Est. repayment</div><div class="lpayv">${fmt(wlo)}<span>–${fmt(whi)}/wk</span></div><div class="lpays">over ${s.term} yr on ${fmt(s.amount)}</div></div>
    <div class="tagrow">`+fits.map(t=>`<span class="ltag fit">✓ ${t}</span>`).join('')+gen.map(t=>`<span class="ltag">${t}</span>`).join('')+`</div>
    <div class="rates"><div class="ratecell"><div class="l">Interest rate p.a.</div><div class="v">from ${rlo.toFixed(2)}%</div></div><div class="rdiv"></div>
    <div class="ratecell"><div class="l">Comparison rate p.a.*</div><div class="v" style="color:var(--mute)">from ${clo.toFixed(2)}%</div></div></div>
-   <button class="apply" onclick="enquire('${l.name.replace(/'/g,'')}')">Enquire now ${ICON.trending&&''}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>`;});
+   <button class="apply" onclick="enquire('${l.name.replace(/'/g,'')}')">Enquire now <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>`;});
  if(capped&&capped.length){
    h+=`<div class="capwrap"><div class="caphead">${ICON.building} Also on our ${funnel==="business"?"commercial ":""}panel</div><div class="capsub">These lenders fit your profile but cap below ${fmt(s.amount)} — lower your amount to include them, or we can structure a larger facility.</div>`;
    capped.slice(0,8).forEach(l=>{h+=`<div class="caprow"><div class="caplogo">${l.logo?`<img src="${l.logo}">`:`<span>${l.name[0]}</span>`}</div><div class="capname">${l.name}</div><div class="capmax">up to ${fmt(l.max)}</div></div>`;});
