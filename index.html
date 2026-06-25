@@ -518,8 +518,11 @@ function detailsGate(){const s=st[funnel];const{list}=match();const n=list.lengt
  </div>`;}
 function submitGate(ev){ev.preventDefault();const f=ev.target;
  contact.name=f.name.value;contact.mobile=f.mobile.value;contact.email=f.email.value;
- sendLead("viewed matches");          // capture the lead the moment they submit
- view="results";window.scrollTo({top:0,behavior:'smooth'});render();}
+ view="results";                      // switch to results FIRST so nothing can block it
+ try{render();}catch(err){console.error("render error",err);}
+ window.scrollTo({top:0,behavior:'smooth'});
+ try{sendLead("viewed matches");}catch(err){console.error("lead send error",err);}  // send AFTER, never blocks
+ return false;}
 
 function buildLeadDetails(){const s=st[funnel];const out={};
  const money=v=>"$"+(+v).toLocaleString();
@@ -592,7 +595,7 @@ async function sendLead(action){
 
 function render(){tabs();document.getElementById("screen").innerHTML=view==="form"?form():view==="details"?detailsGate():results();applyView();}
 
-function signalParent(mode){try{if(window.parent&&window.parent!==window){window.parent.postMessage({afhCalc:true,mode:mode},"*");}}catch(e){}}
+function signalParent(mode){try{if(window.parent&&window.parent!==window){window.parent.postMessage({afhCalc:true,mode:mode},"*");}}catch(e){/* ignore */}}
 function goForm(){view="form";signalParent("form");render();window.scrollTo(0,0);}
 
 function applyView(){document.body.classList.toggle("embed",!!EMBED);document.body.classList.toggle("fullresults",view==="results");}
