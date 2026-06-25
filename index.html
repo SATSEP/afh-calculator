@@ -24,6 +24,18 @@ body.fullresults #brandhead{display:flex!important;position:sticky;top:0;backgro
 .resultsbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
 .backform{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);color:var(--charcoal);font-weight:700;font-size:14px;padding:9px 16px;border-radius:99px;cursor:pointer;font-family:inherit}
 .backform:hover{background:var(--panel)}
+.enqmodal{position:fixed;inset:0;background:rgba(20,24,30,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:16px;z-index:10000}
+.enqmodal.on{display:flex}
+.enqcard{background:#fff;border-radius:22px;max-width:420px;width:100%;padding:26px 24px;position:relative;box-shadow:0 30px 70px rgba(0,0,0,.35);animation:pop .25s cubic-bezier(.2,.9,.3,1.2)}
+.enqclose{position:absolute;top:14px;right:16px;background:none;border:none;font-size:26px;color:var(--mute);cursor:pointer;line-height:1}
+.enqhead{font-size:21px;font-weight:800;color:var(--charcoal);padding-right:20px}
+.enqsub{font-size:12.5px;color:var(--mute);margin:6px 0 18px;font-weight:600}
+.enqfield{width:100%;padding:14px 16px;border:1.5px solid var(--line);border-radius:12px;font-size:15px;font-family:inherit;margin-bottom:11px;box-sizing:border-box}
+.enqfield:focus{outline:none;border-color:var(--blue)}
+.enqsend{width:100%;background:linear-gradient(135deg,#7059EC,#4B2EDB);color:#fff;font-weight:800;font-size:16px;padding:15px;border:none;border-radius:12px;cursor:pointer;font-family:inherit;margin-top:4px}
+.enqsend:disabled{opacity:.6}
+.enqfine{font-size:10.5px;color:var(--muteSoft);text-align:center;margin-top:12px;font-weight:500}
+
 
 header{display:flex;align-items:center;gap:12px;padding:22px 4px 16px;flex-wrap:wrap}
 .mark{display:inline-flex;align-items:baseline;gap:5px;background:var(--charcoal);padding:8px 13px;border-radius:11px}
@@ -190,6 +202,20 @@ footer{margin-top:28px;padding:4px}footer p{font-size:12px;color:var(--mute);lin
   <header id="brandhead"><div class="mark"><b>AFH</b><span>FINANCE</span></div><span class="brandtag">Finance Made Easy.</span></header>
   <div class="tabs" id="tabs"></div>
   <div id="screen"></div>
+  <div id="enqModal" class="enqmodal"><div class="enqcard" id="enqBody">
+    <button class="enqclose" onclick="closeEnq()">&times;</button>
+    <div class="enqhead">Enquire about <span id="enqLender">this lender</span></div>
+    <div class="enqsub">No credit impact · No obligation · A broker will call you back</div>
+    <form onsubmit="submitEnq(event)">
+      <input type="hidden" name="enquiry" id="enqContext" value="">
+      <input class="enqfield" name="name" placeholder="Your full name" required>
+      <input class="enqfield" name="mobile" type="tel" placeholder="Mobile number" required>
+      <input class="enqfield" name="email" type="email" placeholder="Email address" required>
+      <button class="enqsend" type="submit">Send my enquiry →</button>
+    </form>
+    <div class="enqfine">By submitting you agree a broker may contact you. AFH Finance · ACR 548852</div>
+  </div></div>
+
   <footer>
     <p><b style="color:var(--charcoal)">Indicative only.</b> Rates are estimates from lender-published guides and are not an offer of finance. Your actual rate, comparison rate and repayments are subject to credit assessment. Comparison rates marked * include estimated fees. Verify before quoting.</p>
     <p style="margin-top:10px;color:var(--muteSoft);font-weight:700">AFH Finance · 03 7031 6881 · Finance Made Easy.</p>
@@ -475,7 +501,76 @@ function results(){const s=st[funnel];const{list,fallback,capped,nearmiss}=match
    h+=`</div>`;}
  h+=`<a class="callbtn" href="tel:${PHONE}">${ICON.phone} Prefer to talk? Call 03 7031 6881</a>`;
  return h;}
-function enquire(n){alert("✅ Thanks — a Melbourne broker will be in touch shortly about your "+n+" enquiry.\n\nPrefer to talk now? Call 03 7031 6881.\n\n(In the live site this opens a name/mobile/email form and saves the lead.)");}
+
+// ⬇️ PASTE YOUR FORMSPREE FORM ID HERE (e.g. "xeoqwabc") — from formspree.io
+const FORMSPREE_ID="xkoljnnb";
+let enquireLender="";
+
+function buildLeadDetails(){const s=st[funnel];const out={};
+ const money=v=>"$"+(+v).toLocaleString();
+ const CREDIT=["Rebuilding","Below average","Average","Good","Excellent"];
+ out["Loan type"]={car:"Car / Asset",personal:"Personal",business:"Business"}[funnel];
+ out["Amount requested"]=money(s.amount);
+ out["Loan term"]=s.term+" years";
+ if(funnel==="car"){
+   out["Found the car?"]=s.found==="yes"?"Yes, found it":"Still looking";
+   out["Vehicle condition"]=s.cond||"—";
+   out["Electric vehicle?"]=s.ev==="ev"?"Yes, electric":s.ev==="petrol"?"Petrol/diesel":"—";
+   out["Purpose"]=s.use==="business"?"Business use":"Personal use";
+   out["Balloon / final payment"]=s.balloon>0?money(s.balloon):"None";
+ }
+ if(funnel==="personal"){
+   out["Purpose"]=s.purpose||"—";
+   out["Secured or unsecured"]=s.secured==="secured"?"Secured":s.secured==="unsecured"?"Unsecured":"Either / not sure";
+ }
+ if(funnel==="business"){
+   out["Finance type"]=s.sub==="cashflow"?"Working capital / cashflow":"Asset / equipment";
+   out["Business structure"]=s.structure||"—";
+   out["ABN age"]=s.abn>=12?Math.floor(s.abn/12)+"+ years":s.abn+" months";
+   out["GST registered"]=s.gst>0?(s.gst>=12?Math.floor(s.gst/12)+"+ years":s.gst+" months"):"Not registered";
+   out["Annual turnover"]=money(s.turn);
+   out["Property owner"]=s.property==="owner"?"Yes":"No";
+   out["Financials available"]=s.doc==="yes"?"Yes":"Low-doc";
+ }
+ // shared personal/car fields
+ if(funnel!=="business"){
+   out["Credit rating (self-assessed)"]=CREDIT[Math.min(4,Math.max(0,s.credit))]||"—";
+   out["Residential status"]={owner:"Home owner",renter:"Renting",boarding:"Boarding / with family"}[s.res]||s.res;
+   out["Time at address"]={lt6:"Less than 6 months","6to12":"6–12 months","1to2":"1–2 years","2to5":"2–5 years","5plus":"5+ years"}[s.resLen]||"—";
+   out["Residency status"]={citizen:"Australian citizen",pr:"Permanent resident",temp:"Temporary visa",bridging:"Bridging visa"}[s.visa]||s.visa;
+   if(s.visa==="temp"||s.visa==="bridging"){out["Visa subclass"]=s.visaSub||"—";out["Visa expiry"]=s.visaExpiry||"—";}
+   out["Employment"]={fulltime:"Full-time",parttime:"Part-time",casual:"Casual",selfemployed:"Self-employed",contract:"Contract",benefits:"Centrelink / benefits"}[s.emp]||s.emp;
+   const net=annualWage(s.wage,s.wageFreq);
+   out["Take-home pay (entered)"]=s.wage?money(s.wage)+" "+s.wageFreq:"—";
+   out["Est. annual take-home"]=s.wage?money(net):"—";
+   out["Est. annual GROSS (before tax)"]=s.wage?money(grossFromNet(net)):"—";
+   out["Active payday loans?"]=s.payday==="yes"?"Yes":"No";
+ }
+ return out;}
+function enquire(n){enquireLender=n;
+ const s=st[funnel];
+ document.getElementById("enqLender").textContent=n;
+ document.getElementById("enqContext").value=`${funnel} | ${fmt(s.amount)} over ${s.term}yr | lender: ${n}`;
+ document.getElementById("enqModal").classList.add("on");}
+function closeEnq(){document.getElementById("enqModal").classList.remove("on");}
+async function submitEnq(ev){ev.preventDefault();
+ const f=ev.target;const btn=f.querySelector(".enqsend");btn.textContent="Sending...";btn.disabled=true;
+ const lead=buildLeadDetails();
+ const data={
+   name:f.name.value,mobile:f.mobile.value,email:f.email.value,
+   lender_enquired:enquireLender,
+   ...lead,
+   _subject:`New AFH enquiry: ${f.name.value} — ${enquireLender} (${lead["Loan type"]})`};
+ try{
+  if(FORMSPREE_ID==="YOUR_FORM_ID"){ // not configured yet — show fallback
+   alert("✅ Thanks "+f.name.value+"! A Melbourne broker will be in touch about your "+enquireLender+" enquiry.\n\nCall now: 03 7031 6881");
+  }else{
+   const r=await fetch("https://formspree.io/f/"+FORMSPREE_ID,{method:"POST",headers:{"Accept":"application/json","Content-Type":"application/json"},body:JSON.stringify(data)});
+   if(!r.ok)throw new Error("send failed");
+  }
+  document.getElementById("enqBody").innerHTML=`<div style="text-align:center;padding:20px 0"><div style="font-size:42px">✅</div><div style="font-weight:800;font-size:19px;margin:10px 0 4px">Thanks, ${f.name.value}!</div><div style="color:var(--mute)">A Melbourne broker will be in touch shortly about your ${enquireLender} enquiry.</div><a href="tel:03 7031 6881" style="display:inline-block;margin-top:16px;color:var(--blue);font-weight:800">Or call 03 7031 6881 now →</a></div>`;
+ }catch(e){btn.textContent="Try again";btn.disabled=false;alert("Sorry, something went wrong sending that. Please call 03 7031 6881 and we will sort it straight away.");}
+}
 
 function render(){tabs();document.getElementById("screen").innerHTML=view==="form"?form():results();applyView();}
 
