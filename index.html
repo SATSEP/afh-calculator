@@ -2,6 +2,23 @@
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AFH Finance — Loan Calculator</title>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', 'YOUR_PIXEL_ID');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=YOUR_PIXEL_ID&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -713,7 +730,11 @@ async function sendLead(action){
    _subject:`New AFH lead: ${contact.name} — ${lead["Loan type"]} ${lead["Amount requested"]} (${action})`};
  try{
   if(FORMSPREE_ID==="YOUR_FORM_ID")return; // not configured — skip silently
-  await fetch("https://formspree.io/f/"+FORMSPREE_ID,{method:"POST",headers:{"Accept":"application/json","Content-Type":"application/json"},body:JSON.stringify(data)});
+  const res=await fetch("https://formspree.io/f/"+FORMSPREE_ID,{method:"POST",headers:{"Accept":"application/json","Content-Type":"application/json"},body:JSON.stringify(data)});
+  // Fire Meta Lead event ONLY when Formspree confirms the lead was delivered
+  if(res.ok && typeof fbq==="function"){
+    fbq('track','Lead',{content_name:lead["Loan type"]+" loan",content_category:lead["Loan type"]});
+  }
  }catch(e){/* fail silently — broker still gets earlier gate lead */}
 }
 
@@ -761,4 +782,6 @@ function goForm(){view="form";signalParent("form");render();window.scrollTo(0,0)
 
 function applyView(){document.body.classList.toggle("embed",!!EMBED);document.body.classList.toggle("fullresults",view==="results");}
 render();
+// Fire Meta top-of-funnel signal once the calculator has loaded
+if(typeof fbq==="function"){fbq('trackCustom','CalculatorStart');}
 </script></body></html>
