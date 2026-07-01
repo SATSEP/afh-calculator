@@ -784,4 +784,22 @@ function applyView(){document.body.classList.toggle("embed",!!EMBED);document.bo
 render();
 // Fire Meta top-of-funnel signal once the calculator has loaded
 if(typeof fbq==="function"){fbq('trackCustom','CalculatorStart');}
-</script></body></html>
+</script>
+<script>
+/* Embedded auto-height: tell the parent page how tall we are so the iframe never clips a step. */
+(function(){
+  if(window.parent===window) return;            // only when embedded
+  var last=0;
+  function report(){
+    var h=Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+    if(Math.abs(h-last)>2){ last=h; parent.postMessage({afhCalcHeight:h}, "*"); }
+  }
+  if(window.ResizeObserver){ new ResizeObserver(report).observe(document.body); }
+  window.addEventListener("load", report);
+  window.addEventListener("resize", report);
+  document.addEventListener("click", function(){ setTimeout(report,60); }, true); // after step changes
+  setInterval(report, 800);                       // safety net
+  report();
+})();
+</script>
+</body></html>
