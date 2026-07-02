@@ -837,7 +837,15 @@ if(typeof fbq==="function"){fbq('trackCustom','CalculatorStart');}
   if(window.parent===window) return;            // only when embedded
   var last=0;
   function report(){
-    var h=Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+    // Measure actual content (bottom edge of body's children), not scrollHeight,
+    // which can never be smaller than the iframe viewport and so ratchets upward.
+    var h=0, kids=document.body.children;
+    for(var i=0;i<kids.length;i++){
+      var r=kids[i].getBoundingClientRect();
+      var bottom=r.bottom+(window.scrollY||document.documentElement.scrollTop||0);
+      if(bottom>h)h=bottom;
+    }
+    h=Math.ceil(h)+24; // breathing room
     if(Math.abs(h-last)>2){ last=h; parent.postMessage({afhCalcHeight:h}, "*"); }
   }
   if(window.ResizeObserver){ new ResizeObserver(report).observe(document.body); }
