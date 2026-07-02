@@ -329,6 +329,7 @@ const PHONE="0370316881";
 const URLP=new URLSearchParams(location.search);
 const LOCKTAB=URLP.get("tab");                 // "car"|"personal"|"business" -> lock to one funnel (legacy: also hides tabs)
 const URLTYPE=URLP.get("type");                // "car"|"personal"|"business" -> open straight into that funnel, tabs stay visible (HIGHEST priority)
+const URLPURPOSE=URLP.get("purpose");          // personal only: pre-select a loan purpose (e.g. "debt") and skip the purpose step
 const EMBED=URLP.get("embed")==="1"||LOCKTAB||URLP.get("mode")==="quick";  // embed mode hides header
 const QUICK=URLP.get("mode")==="quick";  // hero quick-calculator mode
 let repayFreq="weekly";  // hero repayment frequency
@@ -339,7 +340,7 @@ let contact={name:"",mobile:"",email:""},leadSent=false,triedNext=false;
 let view0=QUICK?"quick":"form";
 let st={
  car:{found:null,cond:null,ev:null,use:"personal",knowType:null,carType:"",amount:35000,term:5,balloon:0,credit:3,res:"owner",resLen:"",visa:"citizen",visaSub:"",visaExpiry:"",emp:"fulltime",wage:0,wageFreq:"weekly",income:65000,payday:"no"},
- personal:{purpose:null,amount:20000,term:5,balloon:0,secured:"any",credit:3,res:"owner",resLen:"",emp:"fulltime",wage:0,wageFreq:"weekly",income:65000,visa:"citizen",visaSub:"",visaExpiry:"",payday:"no"},
+ personal:{purpose:(URLPURPOSE||null),amount:20000,term:5,balloon:0,secured:"any",credit:3,res:"owner",resLen:"",emp:"fulltime",wage:0,wageFreq:"weekly",income:65000,visa:"citizen",visaSub:"",visaExpiry:"",payday:"no"},
  business:{sub:null,amount:80000,term:5,balloon:0,bizSecured:"secured",structure:"company",abn:48,gst:30,turn:600000,property:"owner",doc:"yes"}
 };
 const fmt=n=>"$"+Math.round(n).toLocaleString("en-AU");
@@ -436,17 +437,24 @@ function carSteps(){const s=st[funnel];return[
  {t:"A bit about you",render:()=>residencyBlock()},
  {t:"Work & income",render:()=>employmentBlock()},
 ];}
-function personalSteps(){const s=st[funnel];return[
+function personalSteps(){const s=st[funnel];const all=[
  {t:"What's the loan for?",render:()=>`<div class="grid three">
    ${tile('purpose','debt','blue','card','Debt consolidation','')}${tile('purpose','home','green','home','Home improvement','')}${tile('purpose','car','blue','car','New or used car','')}
    ${tile('purpose','wedding','pink','heart','Wedding','')}${tile('purpose','travel','sun','plane','Travel','')}${tile('purpose','medical','pink','health','Medical / dental','')}
    ${tile('purpose','investing','green','trending','Investing','')}${tile('purpose','legal','slate','shield','Legal','')}${tile('purpose','other','slate','sparkle','Something else','')}</div>`},
- {t:"Your loan",render:()=>amountTerm()+`<div class="qlabel">${ICON.lock} Secured or unsecured?</div>${securedInfo('secinfoP')}
-   ${rowtile('secured','any','blue','help','Not sure','We will show you both')}${rowtile('secured','unsecured','blue','doc','Unsecured','No asset needed')}${rowtile('secured','secured','green','lock','Secured','Lower rate with an asset')}`+livePreview()},
+ {t:"Your loan",render:()=>{
+   if(s.purpose==="debt"){ s.secured="unsecured"; return amountTerm()+livePreview(); }
+   return amountTerm()+`<div class="qlabel">${ICON.lock} Secured or unsecured?</div>${securedInfo('secinfoP')}
+   ${rowtile('secured','any','blue','help','Not sure','We will show you both')}${rowtile('secured','unsecured','blue','doc','Unsecured','No asset needed')}${rowtile('secured','secured','green','lock','Secured','Lower rate with an asset')}`+livePreview();
+ }},
  {t:"Credit history",sub:"How would you rate your credit?",render:()=>creditGrid()+paydayQ()},
  {t:"A bit about you",render:()=>residencyBlock()},
  {t:"Work & income",render:()=>employmentBlock()},
-];}
+];
+ // if a purpose was locked in via the URL (e.g. debt consolidation landing page), skip the purpose-picker step
+ const valid=["debt","home","car","wedding","travel","medical","investing","legal","other"];
+ if(URLPURPOSE&&valid.indexOf(URLPURPOSE)>-1){s.purpose=URLPURPOSE;return all.slice(1);}
+ return all;}
 function businessSteps(){const s=st[funnel];return[
  {t:"What do you need finance for?",render:()=>`
    ${rowtile('sub','asset','blue','truck','Vehicle or equipment','Cars, trucks, machinery')}
@@ -649,10 +657,10 @@ function missingFields(){const s=st[funnel];const m=[];
    else if(qi===4){if(!s.resLen)m.push("how long at your address");if(s.visa==="temp"||s.visa==="bridging"){if(!s.visaSub)m.push("your visa subclass");if(!s.visaExpiry)m.push("your visa expiry");}}
    else if(qi===5){if(!s.wage)m.push("your take-home pay");}
  }
- if(funnel==="personal"){
-   if(qi===0){if(!s.purpose)m.push("what the loan is for");}
-   else if(qi===3){if(!s.resLen)m.push("how long at your address");if(s.visa==="temp"||s.visa==="bridging"){if(!s.visaSub)m.push("your visa subclass");if(!s.visaExpiry)m.push("your visa expiry");}}
-   else if(qi===4){if(!s.wage)m.push("your take-home pay");}
+ if(funnel==="personal"){const S=steps();const stp=S[qi];const title=typeof stp.t==="function"?stp.t():stp.t;
+   if(title==="What's the loan for?"){if(!s.purpose)m.push("what the loan is for");}
+   else if(title==="A bit about you"){if(!s.resLen)m.push("how long at your address");if(s.visa==="temp"||s.visa==="bridging"){if(!s.visaSub)m.push("your visa subclass");if(!s.visaExpiry)m.push("your visa expiry");}}
+   else if(title==="Work & income"){if(!s.wage)m.push("your take-home pay");}
  }
  if(funnel==="business"){
    if(qi===0){if(!s.sub)m.push("what you need finance for");}
