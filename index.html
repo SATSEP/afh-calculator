@@ -844,7 +844,7 @@ if(typeof fbq==="function"){fbq('trackCustom','CalculatorStart');}
 (function(){
   if(window.parent===window) return;            // only when embedded
   var last=0;
-  function report(){
+  function report(force){
     // Measure actual content (bottom edge of body's children), not scrollHeight,
     // which can never be smaller than the iframe viewport and so ratchets upward.
     var h=0, kids=document.body.children;
@@ -854,14 +854,21 @@ if(typeof fbq==="function"){fbq('trackCustom','CalculatorStart');}
       if(bottom>h)h=bottom;
     }
     h=Math.ceil(h)+24; // breathing room
-    if(Math.abs(h-last)>2){ last=h; parent.postMessage({afhCalcHeight:h}, "*"); }
+    // force=true re-sends even if unchanged, so a parent whose listener attached
+    // late (common on iOS Safari) still receives the height of a static first step.
+    if(force||Math.abs(h-last)>2){ last=h; parent.postMessage({afhCalcHeight:h}, "*"); }
   }
-  if(window.ResizeObserver){ new ResizeObserver(report).observe(document.body); }
-  window.addEventListener("load", report);
-  window.addEventListener("resize", report);
+  function reportForced(){ report(true); }
+  if(window.ResizeObserver){ new ResizeObserver(function(){report();}).observe(document.body); }
+  window.addEventListener("load", reportForced);
+  window.addEventListener("resize", function(){report();});
   document.addEventListener("click", function(){ setTimeout(report,60); }, true); // after step changes
-  setInterval(report, 800);                       // safety net
-  report();
+  window.addEventListener("pageshow", reportForced);            // iOS back/forward cache
+  if(document.fonts&&document.fonts.ready){ document.fonts.ready.then(reportForced); } // fonts change text height
+  // staged forced re-posts cover a parent whose message listener attaches after our first post
+  [100,300,600,1000,1600,2500,4000].forEach(function(ms){ setTimeout(reportForced, ms); });
+  setInterval(function(){report();}, 800);          // ongoing safety net (guarded)
+  reportForced();
 })();
 </script>
 </body></html>
