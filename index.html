@@ -785,11 +785,14 @@ async function sendLead(action){
  try{
   if(FORMSPREE_ID==="YOUR_FORM_ID")return; // not configured - skip silently
   const res=await fetch("https://formspree.io/f/"+FORMSPREE_ID,{method:"POST",headers:{"Accept":"application/json","Content-Type":"application/json"},body:JSON.stringify(data)});
-  // Fire Meta Lead event ONLY when Formspree confirms the lead was delivered
-  if(res.ok && typeof fbq==="function"){
+  // Fire Meta Lead event on successful submit. We intentionally do NOT gate on
+  // res.ok: Formspree can return a CORS/opaque response where res.ok is false
+  // even though the lead was delivered (the broker still gets the email). If the
+  // fetch didn't throw, the POST reached Formspree, so we count the Lead.
+  if(typeof fbq==="function"){
     fbq('track','Lead',{content_name:lead["Loan type"]+" loan",content_category:lead["Loan type"]});
   }
- }catch(e){/* fail silently - broker still gets earlier gate lead */}
+ }catch(e){/* network error - lead not sent, so no Lead event */}
 }
 
 
