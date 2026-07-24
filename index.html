@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AFH Finance - Loan Calculator</title>
-<!-- AFH-CALC-VERSION: 2026-07-03-lead-fire-first -->
+<!-- AFH-CALC-VERSION: 2026-07-24-caravan+consent -->
 <!-- Meta Pixel Code -->
 <script>
 !function(f,b,e,v,n,t,s)
@@ -311,6 +311,40 @@ footer{margin-top:28px;padding:4px}footer p{font-size:12px;color:var(--mute);lin
 .ltag.c-sun{background:var(--sunSoft);color:#B5781A}
 .ltag.c-pink{background:var(--pinkSoft);color:var(--pink)}
 .ltag.c-teal{background:#D8F5F1;color:#0B8C7F}
+
+/* ── consent block (compact) ─────────────────────────────────────── */
+.afhc{margin:14px 0 2px;text-align:left}
+.afhc-note{font-size:11.5px;line-height:1.5;color:var(--slate);background:var(--blueWash);
+  border:1px solid #E4DEFB;border-radius:11px;padding:9px 11px}
+.afhc-note summary{list-style:none;cursor:pointer;font-weight:700;color:var(--blue);
+  display:flex;align-items:center;gap:5px;font-size:11.5px}
+.afhc-note summary::-webkit-details-marker{display:none}
+.afhc-note summary::after{content:'';width:6px;height:6px;border-right:2px solid currentColor;
+  border-bottom:2px solid currentColor;transform:rotate(45deg);margin-top:-3px;transition:.18s}
+.afhc-note[open] summary::after{transform:rotate(-135deg);margin-top:2px}
+.afhc-note p{margin:8px 0 0}
+.afhc-note a{color:var(--blue);font-weight:700}
+.afhc-row{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;margin-top:8px;
+  border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer;transition:.15s}
+.afhc-row:hover{border-color:#C9BEF6}
+.afhc-row.on{border-color:var(--blue);background:var(--blueWash)}
+.afhc-row.is-error{border-color:var(--pink);background:var(--pinkSoft);animation:afhcShake .3s}
+@keyframes afhcShake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.afhc-row input{-webkit-appearance:none;appearance:none;flex:0 0 18px;width:18px;height:18px;
+  margin:1px 0 0;border:2px solid #C3CAD6;border-radius:6px;background:#fff;cursor:pointer;
+  position:relative;transition:.15s}
+.afhc-row input:checked{background:var(--blue);border-color:var(--blue)}
+.afhc-row input:checked::after{content:'';position:absolute;left:4.5px;top:1px;width:4px;height:9px;
+  border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(43deg)}
+.afhc-row input:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.afhc-txt{font-size:12px;line-height:1.45;color:#2B3038;font-weight:500}
+.afhc-txt b{font-weight:800;color:var(--charcoal)}
+.afhc-txt .opt{font-weight:700;color:var(--mute)}
+.afhc-err{display:none;font-size:11.5px;font-weight:700;color:var(--pink);margin:6px 0 0 2px}
+.afhc-err.is-shown{display:block}
+.afhc-fine{font-size:10.5px;line-height:1.5;color:var(--mute);margin:9px 2px 0;font-weight:500}
+.afhc-fine a{color:var(--slate);font-weight:700}
+@media(prefers-reduced-motion:reduce){.afhc-row{transition:none}.afhc-row.is-error{animation:none}}
 </style></head>
 <body>
 <div class="wrap">
@@ -334,7 +368,98 @@ const URLPURPOSE=URLP.get("purpose");          // personal only: pre-select a lo
 const EMBED=URLP.get("embed")==="1"||LOCKTAB||URLP.get("mode")==="quick";  // embed mode hides header
 const QUICK=URLP.get("mode")==="quick";  // hero quick-calculator mode
 let repayFreq="weekly";  // hero repayment frequency
-const TABMAP={car:"car",personal:"personal",business:"business"};
+const TABMAP={car:"car",personal:"personal",business:"business",caravan:"car"};
+/* ── CARAVAN MODE ──────────────────────────────────────────────────────────────
+   Caravan reuses the car funnel engine. ASSET only changes wording + lender pool. */
+let ASSET=(URLTYPE==="caravan"||LOCKTAB==="caravan")?"caravan":"car";
+const AL={
+ car:{noun:"car",badge:"Car / Asset",icon:"car",
+   foundQ:"Have you found the car yet?",tellUs:"Tell us about the car",
+   condQ:"Is the car new or used?",typeQ:"Do you know what type of car you want?",
+   foundLbl:"Found the car?",condLbl:"Vehicle condition",
+   opts:[["Select...",""],["Small / hatchback","small"],["Sedan","sedan"],["SUV / 4WD","suv"],["Ute / van","ute"],["Luxury / prestige","luxury"],["Electric / hybrid","ev"],["Not sure yet","unsure"]]},
+ caravan:{noun:"caravan",badge:"Caravan",icon:"truck",
+   foundQ:"Have you found the caravan yet?",tellUs:"Tell us about the caravan",
+   condQ:"Is the caravan new or used?",typeQ:"Do you know what type of caravan you want?",
+   foundLbl:"Found the caravan?",condLbl:"Caravan condition",
+   opts:[["Select...",""],["Pop-top","poptop"],["Full caravan","full"],["Off-road caravan","offroad"],["Camper trailer","camper"],["Motorhome / campervan","motorhome"],["Slide-on / hybrid","hybrid"],["Not sure yet","unsure"]]}
+};
+function A(k){return AL[ASSET][k];}
+
+/* ── CONSENT ───────────────────────────────────────────────────────────────────
+   State lives here because the gate is re-rendered with innerHTML. Handlers never
+   call render(), so a tick cannot wipe details the applicant has already typed. */
+const CONSENT_WORDING="Yes, contact me about this enquiry. I agree AFH Finance may call, text or "
+ +"email me about my enquiry, and may share my details with lenders to check my options. This "
+ +"overrides my listing on the Do Not Call Register for this enquiry.";
+const PRIVACY_URL="https://afhfinance.com.au/privacy/";
+let consent={contact:false,marketing:false,ts:"",page:""};
+
+function consentBlock(){return `<div class="afhc">
+  <details class="afhc-note"><summary>Why we ask for your details</summary>
+    <p>AFH Finance is a credit representative, not a lender. We use your details to work out which
+    lenders on our panel may suit you, and to contact you about your enquiry. We share your
+    information with lenders and our aggregator only where it is needed to do that. We do not sell
+    your data. Full detail is in our <a href="${PRIVACY_URL}" target="_blank" rel="noopener">Privacy Policy</a>.</p></details>
+  <label class="afhc-row ${consent.contact?'on':''}" id="afhContactRow">
+    <input type="checkbox" id="afhContact" ${consent.contact?'checked':''} onchange="consentTick(this,'contact')">
+    <span class="afhc-txt"><b>Yes, contact me about this enquiry.</b> I agree AFH Finance may call,
+    text or email me about my enquiry, and may share my details with lenders to check my options.
+    This overrides my listing on the Do Not Call Register for this enquiry.</span></label>
+  <label class="afhc-row ${consent.marketing?'on':''}">
+    <input type="checkbox" id="afhMarketing" ${consent.marketing?'checked':''} onchange="consentTick(this,'marketing')">
+    <span class="afhc-txt">Send me rate updates and offers.
+    <span class="opt">Optional. Unsubscribe anytime.</span></span></label>
+  <div class="afhc-err" id="afhConsentErr">Please tick the first box so we can contact you.</div>
+  <p class="afhc-fine">BC Detailing Services Pty Ltd trading as AFH Finance, ABN 30 633 575 005,
+  Australian Credit Representative 548852 under Fintelligence Pty Ltd, Australian Credit Licence
+  511803. <a href="${PRIVACY_URL}" target="_blank" rel="noopener">Privacy Policy</a></p></div>`;}
+
+function consentTick(el,key){
+  consent[key]=!!el.checked;
+  const row=el.closest('.afhc-row');
+  if(row)row.classList.toggle('on',!!el.checked);
+  if(key==="contact"){
+    consent.ts=el.checked?new Date().toISOString():"";
+    try{consent.page=location.href.split('#')[0];}catch(e){consent.page="";}
+    if(el.checked&&row){
+      row.classList.remove('is-error');
+      const er=document.getElementById('afhConsentErr');
+      if(er)er.classList.remove('is-shown');
+    }
+  }
+}
+
+function afhConsentOK(){
+  try{
+    if(consent.contact)return true;
+    const row=document.getElementById('afhContactRow');
+    const er=document.getElementById('afhConsentErr');
+    if(row)row.classList.add('is-error');
+    if(er)er.classList.add('is-shown');
+    if(row&&typeof row.scrollIntoView==='function'){
+      try{row.scrollIntoView({behavior:'smooth',block:'center'});}
+      catch(e){try{row.scrollIntoView();}catch(e2){}}
+    }
+    return false;
+  }catch(e){return !!consent.contact;}
+}
+
+function consentFields(){return{
+  consent_contact:consent.contact?"yes":"no",
+  consent_marketing:consent.marketing?"yes":"no",
+  consent_wording:consent.contact?CONSENT_WORDING:"",
+  consent_timestamp:consent.ts||"",
+  consent_version:"afh-consent-v2",
+  consent_page:consent.page||""};}
+
+/* Lenders confirmed on the AFH panel for caravans and leisure assets.
+   Add a name to this list only once appetite is confirmed with Fintelligence. */
+const CARAVAN_LENDERS=["Liberty","Pepper","Latitude","AFS"];
+function carPool(){return ASSET==="caravan"?DATA.car.filter(l=>CARAVAN_LENDERS.indexOf(l.name)>=0):DATA.car;}
+function evBlock(){if(ASSET==="caravan")return "";
+ return `<div class="qlabel">${ICON.bolt} Is this an electric vehicle?</div><div class="grid">${tile('ev','yes','sun','bolt','Yes, electric','')}${tile('ev','no','slate','fuel','Petrol / diesel','')}</div>`;}
+function assetTypeOpts(s){return A('opts').map(([l,v])=>`<option value="${v}" ${s.carType===v?'selected':''}>${l}</option>`).join('');}
 let PICK=(URLTYPE&&TABMAP[URLTYPE])?TABMAP[URLTYPE]:((LOCKTAB&&TABMAP[LOCKTAB])?TABMAP[LOCKTAB]:null); // funnel explicitly chosen via URL, else null
 let funnel=PICK||"car",view=(QUICK?"quick":(PICK?"form":"chooser")),qi=0,lastQi=-1,lastFunnel="";  // no ?type/?tab -> show chooser first (don't default to car)
 let contact={name:"",mobile:"",email:""},leadSent=false,triedNext=false;
@@ -393,7 +518,7 @@ function visaPenalty(l,s){ // returns extra soft-fails for visa situation
  return p;}
 
 function match(){const s=st[funnel];let pool=[];
- if(funnel==="car")pool=DATA.car;else if(funnel==="personal")pool=DATA.personal;
+ if(funnel==="car")pool=carPool();else if(funnel==="personal")pool=DATA.personal;
  else pool=s.sub==="cashflow"?DATA.bizC:s.sub==="asset"?DATA.bizA:DATA.bizA.concat(DATA.bizC); // null/any => both
  const sc=pool.map(l=>{let f=0,hard=false;
   if(s.amount<l.min||s.amount>l.max){f++;hard=true;}if(s.term>l.term){f++;hard=true;}
@@ -425,12 +550,11 @@ function rowtile(key,val,grad,icon,title,sub){const s=st[funnel];const on=String
 function setA(k,v){st[funnel][k]=v;render();}
 
 function carSteps(){const s=st[funnel];return[
- {t:"Have you found the car yet?",render:()=>`<div class="grid">${tile('found','yes','blue','car','Yes, found it!','')}${tile('found','no','sun','search','Still looking','')}</div>`},
- {t:()=>st.car.found==="no"?"What are you after?":"Tell us about the car",render:()=>st.car.found==="no"?carLookingStep():`
-   <div class="qlabel">${ICON.car} Is the car new or used?</div>
+ {t:()=>A('foundQ'),render:()=>`<div class="grid">${tile('found','yes','blue','car','Yes, found it!','')}${tile('found','no','sun','search','Still looking','')}</div>`},
+ {t:()=>st.car.found==="no"?"What are you after?":A('tellUs'),render:()=>st.car.found==="no"?carLookingStep():`
+   <div class="qlabel">${ICON[A('icon')]} ${A('condQ')}</div>
    ${rowtile('cond','new','green','sparkle','New','Brand new vehicle')}${rowtile('cond','demo','sun','cartag','Demo','Ex-demonstrator')}${rowtile('cond','used','blue','gauge2','Used','Pre-owned vehicle')}
-   <div class="qlabel">${ICON.bolt} Is this an electric vehicle?</div>
-   <div class="grid">${tile('ev','yes','sun','bolt','Yes, electric','')}${tile('ev','no','slate','fuel','Petrol / diesel','')}</div>
+   ${evBlock()}
    <div class="qlabel">${ICON.user} What's it mainly for?</div>
    <div class="grid">${tile('use','personal','pink','user','Personal','')}${tile('use','business','blue','briefcase','Business','')}</div>`},
  {t:"Your loan",render:()=>amountTerm()+balloonBox()+livePreview()},
@@ -480,12 +604,12 @@ function businessSteps(){const s=st[funnel];return[
 
 
 function carLookingStep(){const s=st.car;return `
-   <div class="qlabel">${ICON.help} Do you know what type of car you want?</div>
+   <div class="qlabel">${ICON.help} ${A('typeQ')}</div>
    <div class="grid">${tile('knowType','yes','blue','check','Yes, I have an idea','')}${tile('knowType','no','slate','help','Not yet','')}</div>
-   ${s.knowType==="yes"?`<div class="qlabel">${ICON.car} Roughly what are you after?</div>
-     <select class="field" onchange="setA('carType',this.value)">${[['Select...',''],['Small / hatchback','small'],['Sedan','sedan'],['SUV / 4WD','suv'],['Ute / van','ute'],['Luxury / prestige','luxury'],['Electric / hybrid','ev'],['Not sure yet','unsure']].map(([l,v])=>`<option value="${v}" ${s.carType===v?'selected':''}>${l}</option>`).join('')}</select>
+   ${s.knowType==="yes"?`<div class="qlabel">${ICON[A('icon')]} Roughly what are you after?</div>
+     <select class="field" onchange="setA('carType',this.value)">${assetTypeOpts(s)}</select>
      <div class="helper">No problem if this changes. It just helps your broker point you in the right direction.</div>`:''}
-   ${s.knowType==="no"?`<div class="helper">All good. We will show you indicative rates now, and your broker can help you work out the right car and budget.</div>`:''}
+   ${s.knowType==="no"?`<div class="helper">All good. We will show you indicative rates now, and your broker can help you work out the right ${A('noun')} and budget.</div>`:''}
    <div class="qlabel">${ICON.user} What's it mainly for?</div>
    <div class="grid">${tile('use','personal','pink','user','Personal','')}${tile('use','business','blue','briefcase','Business','')}</div>`;}
 
@@ -529,9 +653,9 @@ function balloonBox(){const s=st[funnel];const cap=balloonMaxPct();const maxBall
  return `<div class="hl"><div class="ht">Add a balloon payment?</div>
   <div class="hs">Pay less each week by parking part of the loan as one lump sum at the end. <button type="button" class="binfo-toggle" onclick="toggleBalloonInfo(event)">How does it work?</button></div>
   <div class="binfo" id="binfo"><div class="binfo-inner">
-    <div class="binfo-row"><span class="binfo-num">1</span><div><b>A balloon is a chunk of the loan you set aside</b> to pay at the very end — instead of spreading all of it across your weekly repayments.</div></div>
+    <div class="binfo-row"><span class="binfo-num">1</span><div><b>A balloon is a chunk of the loan you set aside</b> to pay at the very end, instead of spreading all of it across your weekly repayments.</div></div>
     <div class="binfo-row"><span class="binfo-num">2</span><div><b>Your weekly repayments drop now</b>, because you're only paying off the rest of the loan week to week.</div></div>
-    <div class="binfo-row"><span class="binfo-num">3</span><div><b>At the end of the ${s.term} years you settle the balloon</b> — pay it out, refinance it into a new term, or sell/trade the car to cover it.</div></div>
+    <div class="binfo-row"><span class="binfo-num">3</span><div><b>At the end of the ${s.term} years you settle the balloon</b>, pay it out, refinance it into a new term, or sell/trade the car to cover it.</div></div>
     <div class="binfo-foot">Max ${cap}% of the loan on a ${s.term}-year term</div>
   </div></div>
   <div class="grid">${tile('balloon',0,'slate','x','No balloon','')}<div class="tile ${s.balloon>0?'on g-blue':''}" data-c="blue" onclick="setBalloon(${maxBalloon||5000})"><div class="chk">${ICON.check}</div><div class="ti">${ICON.trending}</div><div class="tt">With balloon</div><div class="ts">Lower weekly</div></div></div>
@@ -548,7 +672,7 @@ function balloonNums(){const s=st[funnel];const{list}=match();const rate=list.le
    <div class="bcmp-arrow">${ICON.trending}</div>
    <div class="bcmp on"><div class="bcmp-l">With balloon</div><div class="bcmp-v">${fmt(wBal)}<span>/wk</span></div></div>
  </div>
- <div class="bsave">${ICON.check}<span>You keep about <b>${fmt(save)}/week</b> in your pocket — around <b>${fmt(save*52)}/yr</b> lower repayments.</span></div>
+ <div class="bsave">${ICON.check}<span>You keep about <b>${fmt(save)}/week</b> in your pocket, around <b>${fmt(save*52)}/yr</b> lower repayments.</span></div>
  <div class="bfinal">${ICON.clock}<span>One final payment of <b>${fmt(s.balloon)}</b> is due at the end of your ${s.term}-year term.</span></div>`;}
 function setBalloon(v){st[funnel].balloon=v;render();}
 function toggleBalloonInfo(e){e.stopPropagation();const el=document.getElementById('binfo');if(!el)return;const open=el.classList.toggle('open');const btn=e.currentTarget;if(btn)btn.textContent=open?'Hide':'How does it work?';}
@@ -557,7 +681,7 @@ function securedInfo(id){return `<div class="secinfo-line">Not sure which to cho
  <div class="binfo" id="${id}"><div class="binfo-inner">
    <div class="binfo-row"><span class="binfo-num">1</span><div><b>Secured</b> ties the loan to an asset (like the car or equipment). The lender has that security, so the interest rate is usually <b>lower</b>.</div></div>
    <div class="binfo-row"><span class="binfo-num">2</span><div><b>Unsecured</b> has no asset attached. Rates are a little higher, but nothing of yours is held against the loan.</div></div>
-   <div class="binfo-foot">Still unsure? Choose "Not sure" and we'll show you both — your broker recommends the best fit.</div>
+   <div class="binfo-foot">Still unsure? Choose "Not sure" and we'll show you both, your broker recommends the best fit.</div>
  </div></div>`;}
 function paintRange(el){if(!el)return;const min=+el.min||0,max=+el.max||0,v=+el.value;const pct=max>min?Math.max(0,Math.min(100,((v-min)/(max-min))*100)):0;el.style.background=`linear-gradient(90deg,var(--blue) ${pct}%,var(--line) ${pct}%)`;}
 function paintRanges(){document.querySelectorAll('#screen input[type=range]').forEach(paintRange);}
@@ -617,7 +741,7 @@ function refreshPreview(){const old=document.querySelector('.preview');if(!old)r
 function livePreview(){const s=st[funnel];let{list}=match();
  if(!list.length){
    // relax: find any lender in this funnel that fits the AMOUNT (ignore term) so we always show an estimate
-   let pool=funnel==="car"?DATA.car:funnel==="personal"?DATA.personal:(s.sub==="cashflow"?DATA.bizC:s.sub==="asset"?DATA.bizA:DATA.bizA.concat(DATA.bizC));
+   let pool=funnel==="car"?carPool():funnel==="personal"?DATA.personal:(s.sub==="cashflow"?DATA.bizC:s.sub==="asset"?DATA.bizA:DATA.bizA.concat(DATA.bizC));
    let alt=pool.filter(l=>s.amount>=l.min&&s.amount<=l.max).sort((a,b)=>a.lo-b.lo);
    if(alt.length){const c=alt[0];const[rl]=disp(c.lo,c.hi);const ef=Math.min(s.term,c.term);const w=weekly(s.amount,rl,ef,s.balloon||0);
      return `<div class="preview"><div class="pvtop"><div><div class="pvlabel">Your estimated repayment</div><div class="pvval">${fmt(w)}<span>/week</span></div></div><div class="pvbadge">from ${rl.toFixed(2)}% p.a.</div></div><div class="pvsub">Indicative · adjust term to ${c.term} yr or less for these lenders</div></div>`;}
@@ -627,20 +751,22 @@ function livePreview(){const s=st[funnel];let{list}=match();
   <div class="pvsub">Based on ${list.length} matching lender${list.length>1?'s':''} · over ${s.term} yr on ${fmt(s.amount)}${s.balloon>0?' · balloon '+fmt(s.balloon):''}</div></div>`;}
 
 function steps(){return funnel==="car"?carSteps():funnel==="personal"?personalSteps():businessSteps();}
-function tabs(){const tb=document.getElementById("tabs");if(LOCKTAB||view==="chooser"){tb.style.display="none";return;}tb.style.display="";tb.innerHTML=[["car","car","Car & Asset"],["personal","card","Personal"],["business","briefcase","Business"]].map(([f,ic,lbl])=>
- `<button class="tab ${funnel===f?'on':''}" onclick="setFunnel('${f}')">${ICON[ic]}<span class="tx">${lbl}</span></button>`).join("");}
+function tabs(){const tb=document.getElementById("tabs");if(LOCKTAB||view==="chooser"){tb.style.display="none";return;}tb.style.display="";tb.innerHTML=[["car","car","Car"],["caravan","truck","Caravan"],["personal","card","Personal"],["business","briefcase","Business"]].map(([f,ic,lbl])=>{
+ const on=(f==="caravan")?(funnel==="car"&&ASSET==="caravan"):(f==="car")?(funnel==="car"&&ASSET==="car"):(funnel===f);
+ return `<button class="tab ${on?'on':''}" onclick="setFunnel('${f}')">${ICON[ic]}<span class="tx">${lbl}</span></button>`;}).join("");}
 function chooser(){return `<div class="card anim chooser">
    <div class="qtitle" style="text-align:center">What kind of finance do you need?</div>
    <div class="qsub" style="text-align:center">Pick one to see your indicative repayments and matched lenders.</div>
-   <div class="grid three choosergrid">
+   <div class="grid choosergrid">
      ${chooserTile('car','car','Car & Asset','New, used, EV or equipment')}
+     ${chooserTile('caravan','truck','Caravan','Pop-top, full van or camper')}
      ${chooserTile('personal','card','Personal','Debt, travel, medical & more')}
      ${chooserTile('business','briefcase','Business','Equipment & working capital')}
    </div>
    <div class="trust" style="justify-content:center;margin-top:14px">${ICON.shield} No credit score impact \u00b7 No obligation</div>
  </div>`;}
 function chooserTile(f,ic,title,sub){return `<div class="tile choosertile" onclick="setFunnel('${f}')"><div class="ti">${ICON[ic]}</div><div class="tt">${title}</div><div class="ts">${sub}</div></div>`;}
-function setFunnel(f){funnel=f;view="form";qi=0;triedNext=false;signalParent("form");render();}
+function setFunnel(f){if(f==="caravan"){ASSET="caravan";f="car";}else if(f==="car"){ASSET="car";}funnel=f;view="form";qi=0;triedNext=false;signalParent("form");render();}
 
 function form(){const S=steps();const step=S[qi];const pct=Math.round(((qi+1)/S.length)*100);const stepTitle=typeof step.t==="function"?step.t():step.t;
  let h=`<div class="prog"><span class="step">Step ${qi+1} of ${S.length}</span><span class="sub">${stepTitle}</span></div><div class="bar"><i style="width:${pct}%"></i></div>`;
@@ -653,8 +779,8 @@ function form(){const S=steps();const step=S[qi];const pct=Math.round(((qi+1)/S.
  h+=`</div>`;return h;}
 function missingFields(){const s=st[funnel];const m=[];
  if(funnel==="car"){
-   if(qi===0){if(!s.found)m.push("whether you've found the car");}
-   else if(qi===1){if(s.found==="no"){if(!s.knowType)m.push("whether you know the type of car");}else{if(!s.cond)m.push("the car's condition");if(!s.ev)m.push("whether it's electric");}}
+   if(qi===0){if(!s.found)m.push("whether you've found the "+A('noun'));}
+   else if(qi===1){if(s.found==="no"){if(!s.knowType)m.push("whether you know the type of "+A('noun'));}else{if(!s.cond)m.push("the "+A('noun')+"'s condition");if(ASSET!=="caravan"&&!s.ev)m.push("whether it's electric");}}
    else if(qi===4){if(!s.resLen)m.push("how long at your address");if(s.visa==="temp"||s.visa==="bridging"){if(!s.visaSub)m.push("your visa subclass");if(!s.visaExpiry)m.push("your visa expiry");}}
    else if(qi===5){if(!s.wage)m.push("your take-home pay");}
  }
@@ -675,9 +801,9 @@ function prev(){if(qi>0){qi--;triedNext=false;window.scrollTo({top:0,behavior:'s
 
 function results(){const s=st[funnel];const{list,fallback,capped,nearmiss}=match();
  signalParent("results");  // tell host page to expand the iframe to full screen
- const badge={car:"Car / Asset",personal:"Personal",business:"Business"}[funnel];
+ const badge=funnel==="car"?A('badge'):{personal:"Personal",business:"Business"}[funnel];
  const credLbl=["Below average","Average","Good","Excellent"][Math.min(3,Math.max(0,s.credit-1))];
- let mini=funnel==="car"?[credLbl,s.cond||"-",s.balloon>0?"Balloon "+fmt(s.balloon):"No balloon"]:funnel==="personal"?[credLbl,s.purpose||"-"]:[s.abn>=48?"4+ yr ABN":"newer ABN",s.sub||"-"];
+ let mini=funnel==="car"?[credLbl,(ASSET==="caravan"?A('badge')+" "+(s.cond||"-"):(s.cond||"-")),s.balloon>0?"Balloon "+fmt(s.balloon):"No balloon"]:funnel==="personal"?[credLbl,s.purpose||"-"]:[s.abn>=48?"4+ yr ABN":"newer ABN",s.sub||"-"];
  let h=`<div class="resultsbar"><button class="backform" onclick="goForm()">${ICON.back||"←"} Start over</button><div style="font-weight:800;color:var(--charcoal)">Your lender matches</div></div><div class="summary"><div class="head"><b>${ICON.doc} Your loan details</b><button class="editbtn" onclick="goForm()">Edit</button></div>
    <div class="stats"><div class="stat"><div class="l">Loan type</div><div class="v"><span class="badge">${badge}</span></div></div>
    <div class="stat"><div class="l">Amount</div><div class="v">${fmt(s.amount)}</div></div>
@@ -721,13 +847,16 @@ function detailsGate(){const s=st[funnel];const{list}=match();const n=list.lengt
      <input class="enqfield" name="name" placeholder="Your full name" value="${contact.name}" required>
      <input class="enqfield" name="mobile" type="tel" placeholder="Mobile number" value="${contact.mobile}" required>
      <input class="enqfield" name="email" type="email" placeholder="Email address" value="${contact.email}" required>
+     ${consentBlock()}
      <button class="cta" type="submit" style="width:100%;margin-top:6px">See my ${n} match${n!==1?"es":""} →</button>
    </form>
    <div class="dgtrust">${ICON.lock} Your details are secure · No obligation · A Melbourne broker will help you</div>
    <button class="dgback" onclick="goForm()">← Back to questions</button>
  </div>`;}
 function submitGate(ev){ev.preventDefault();const f=ev.target;
- contact.name=f.name.value;contact.mobile=f.mobile.value;contact.email=f.email.value;
+ if(!afhConsentOK())return false;   // no consent, no lead
+ const gv=k=>{const el=(f.elements&&f.elements[k])||f[k];return(el&&el.value!=null)?el.value:"";};
+ contact.name=gv('name');contact.mobile=gv('mobile');contact.email=gv('email');
  view="results";                      // switch to results FIRST so nothing can block it
  try{render();}catch(err){console.error("render error",err);}
  window.scrollTo({top:0,behavior:'smooth'});
@@ -737,13 +866,13 @@ function submitGate(ev){ev.preventDefault();const f=ev.target;
 function buildLeadDetails(){const s=st[funnel];const out={};
  const money=v=>"$"+(+v).toLocaleString();
  const CREDIT=["Rebuilding","Below average","Average","Good","Excellent"];
- out["Loan type"]={car:"Car / Asset",personal:"Personal",business:"Business"}[funnel];
+ out["Loan type"]=funnel==="car"?A('badge'):{personal:"Personal",business:"Business"}[funnel];
  out["Amount requested"]=money(s.amount);
  out["Loan term"]=s.term+" years";
  if(funnel==="car"){
-   out["Found the car?"]=s.found==="yes"?"Yes, found it":"Still looking";
-   out["Vehicle condition"]=s.cond||"-";
-   out["Electric vehicle?"]=s.ev==="ev"?"Yes, electric":s.ev==="petrol"?"Petrol/diesel":"-";
+   out[A('foundLbl')]=s.found==="yes"?"Yes, found it":"Still looking";
+   out[A('condLbl')]=s.cond||"-";
+   if(ASSET!=="caravan")out["Electric vehicle?"]=s.ev==="ev"?"Yes, electric":s.ev==="petrol"?"Petrol/diesel":"-";
    out["Purpose"]=s.use==="business"?"Business use":"Personal use";
    out["Balloon / final payment"]=s.balloon>0?money(s.balloon):"None";
  }
@@ -782,6 +911,7 @@ async function sendLead(action){
    name:contact.name,mobile:contact.mobile,email:contact.email,
    action:action,
    ...lead,
+   ...consentFields(),
    _subject:`New AFH lead: ${contact.name} - ${lead["Loan type"]} ${lead["Amount requested"]} (${action})`};
  // Fire the Meta Lead event FIRST, independently of Formspree's response.
  // Formspree receives and emails the lead even when the browser later throws a
