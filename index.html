@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AFH Finance - Loan Calculator</title>
-<!-- AFH-CALC-VERSION: 2026-07-24-caravan+consent -->
+<!-- AFH-CALC-VERSION: 2026-07-24-caravan+consent+scoring-v3 -->
 <!-- Meta Pixel Code -->
 <script>
 !function(f,b,e,v,n,t,s)
@@ -445,7 +445,154 @@ function afhConsentOK(){
   }catch(e){return !!consent.contact;}
 }
 
+/* ── LEAD SCORING ──────────────────────────────────────────────────────────────
+   Grades every lead so the pixel can optimise for value instead of volume, and
+   so the CRM knows which leads to call first.
+
+   TUNE THESE TWO TABLES. They drive the value sent to Meta.
+   COMMISSION_PCT is your average commission as a share of the amount financed.
+   Replace the placeholders with your real Fintelligence schedule. */
+const COMMISSION_PCT = {
+  business: 0.080,   /* highest category, mostly low doc. 8 to 10% quoted, 8 used. */
+  car:      0.040,   /* lands around $1.6k on a $40k car, matches the $1-2k range */
+  caravan:  0.040,   /* asset finance, assumed to behave like car until measured  */
+  personal: 0.020    /* lowest commission of the four                             */
+};
+/* Share of leads at each grade that reach settlement, PER FUNNEL. Business is the
+   easiest to settle and personal the hardest, so these cannot share one number.
+   Personal is set low deliberately: 46 debt consolidation leads produced zero
+   settlements. Update all of these from the CRM as real data accumulates. */
+const SETTLE_RATE = {
+  business: { strong:0.35, medium:0.18, weak:0.05 },
+  car:      { strong:0.20, medium:0.10, weak:0.02 },
+  caravan:  { strong:0.18, medium:0.09, weak:0.02 },
+  personal: { strong:0.10, medium:0.04, weak:0.01 }
+};
+/* Biggest deal we realistically settle per funnel. The valuation uses the lower
+   of the requested amount and this, so an aspirational slider drag cannot
+   dominate what Meta learns. Raise these only if you actually settle that size. */
+const VALUE_AMOUNT_CAP = { car:150000, caravan:150000, personal:75000, business:250000 };
+/* Sanity ceiling on any single lead, in dollars of expected commission. Nothing
+   should be able to swamp Meta's learning off one enquiry. */
+const VALUE_HARD_CAP = 8000;
+
+/* Is the amount they asked for plausible against their capacity to service it?
+   Returns ok, stretch, unrealistic, or unknown when we have nothing to compare. */
+function capacityCheck(){
+  try{
+    const s = st[funnel];
+    const amt = +s.amount || 0;
+    if(funnel === 'business'){
+      const turn = +s.turn || 0;
+      if(turn <= 0) return { level:'unknown', ratio:null };
+      const r = amt / turn;
+      return { level: r <= 0.75 ? 'ok' : r <= 1.5 ? 'stretch' : 'unrealistic', ratio:r };
+    }
+    /* Consumer. income is gross annual, derived from take-home pay.
+       If they never entered a wage, income is only a default, so do not judge. */
+    if(!s.wage) return { level:'unknown', ratio:null };
+    const inc = +s.income || 0;
+    if(inc <= 0) return { level:'unknown', ratio:null };
+    const r = amt / inc;
+    return { level: r <= 1.0 ? 'ok' : r <= 2.0 ? 'stretch' : 'unrealistic', ratio:r };
+  }catch(e){ return { level:'unknown', ratio:null }; }
+}
+
+function leadQuality(){
+  try{
+    const s = st[funnel];
+    let matches = 0;
+    try{ matches = (match().list || []).length; }catch(e){ matches = 0; }
+    let grade = 'weak', reasons = [];
+
+    if(funnel === 'business'){
+      const abnOK   = s.abn  >= 24;          // 2+ years trading
+      const gstOK   = s.gst  >= 12;          // GST registered 12+ months
+      const turnOK  = s.turn >= 250000;
+      const propOK  = s.property === 'owner' || s.property === 'spouse';
+      if(abnOK && gstOK && (turnOK || propOK) && matches > 0){
+        grade = 'strong';
+        reasons.push('ABN 2yr+', gstOK?'GST 1yr+':'', turnOK?'turnover $250k+':'', propOK?'director property':'');
+      } else if(s.abn >= 12 && matches > 0){
+        grade = 'medium';
+        reasons.push('ABN 1yr+');
+      } else {
+        grade = 'weak';
+        if(s.abn < 12) reasons.push('ABN under 12 months');
+        if(s.gst === 0) reasons.push('not GST registered');
+        if(matches === 0) reasons.push('no lender match');
+      }
+    } else {
+      /* car, caravan and personal all run on income */
+      const emp = s.emp;
+      if(emp === 'centrelink'){
+        grade = 'weak'; reasons.push('Centrelink income');
+      } else if((emp === 'fulltime' || emp === 'self') && s.credit >= 3 && matches > 0){
+        grade = 'strong'; reasons.push('stable income', 'good credit');
+      } else if(matches > 0){
+        grade = 'medium';
+        if(emp === 'casual') reasons.push('casual income');
+        if(s.credit <= 2)    reasons.push('credit needs work');
+      } else {
+        grade = 'weak'; reasons.push('no lender match');
+      }
+    }
+
+    /* Reality check the amount before it becomes a value signal. */
+    const cap = capacityCheck();
+    if(cap.level === 'unrealistic'){
+      grade = 'weak';
+      reasons.push('amount not serviceable');
+    } else if(cap.level === 'stretch' && grade === 'strong'){
+      grade = 'medium';
+      reasons.push('amount is a stretch');
+    }
+
+    const key    = (ASSET === 'caravan' && funnel === 'car') ? 'caravan' : funnel;
+    const pct    = COMMISSION_PCT[key] || 0.03;
+    const rate   = (SETTLE_RATE[key] && SETTLE_RATE[key][grade]) || 0.03;
+    const capAmt = VALUE_AMOUNT_CAP[key] || 100000;
+    /* Value the deal they could realistically get, not the one they asked for.
+       Someone requesting $500k on $80k turnover may still be a real customer,
+       but the deal on the table is the serviceable one. */
+    let servAmt = Infinity;
+    if(funnel === 'business' && (+s.turn || 0) > 0) servAmt = (+s.turn) * 0.75;
+    else if(funnel !== 'business' && s.wage && (+s.income || 0) > 0) servAmt = (+s.income) * 1.0;
+    const valAmt = Math.min(+s.amount || 0, capAmt, servAmt);
+    const value  = Math.min(Math.round(valAmt * pct * rate), VALUE_HARD_CAP);
+
+    return {
+      grade: grade,
+      qualified: grade !== 'weak',
+      value: value,
+      matches: matches,
+      realism: cap.level,
+      ratio: cap.ratio === null ? '' : cap.ratio.toFixed(2),
+      capped: (+s.amount || 0) > capAmt,
+      reasons: reasons.filter(Boolean).join(', ')
+    };
+  }catch(e){
+    /* Never let scoring break a real lead. */
+    return { grade:'medium', qualified:true, value:0, matches:0,
+             realism:'unknown', ratio:'', capped:false, reasons:'' };
+  }
+}
+
+function qualityFields(){
+  const q = leadQuality();
+  return {
+    lead_grade:      q.grade,
+    lead_qualified:  q.qualified ? 'yes' : 'no',
+    lead_est_value:  String(q.value),
+    lender_matches:  String(q.matches),
+    lead_signals:    q.reasons,
+    amount_realism:  q.realism || 'unknown',
+    capacity_ratio:  q.ratio || ''
+  };
+}
+
 function consentFields(){return{
+
   consent_contact:consent.contact?"yes":"no",
   consent_marketing:consent.marketing?"yes":"no",
   consent_wording:consent.contact?CONSENT_WORDING:"",
@@ -912,14 +1059,36 @@ async function sendLead(action){
    action:action,
    ...lead,
    ...consentFields(),
-   _subject:`New AFH lead: ${contact.name} - ${lead["Loan type"]} ${lead["Amount requested"]} (${action})`};
+   ...qualityFields(),
+   _subject:`${leadQuality().grade==='strong'?'[HOT] ':leadQuality().grade==='weak'?'[LOW] ':''}New AFH lead: ${contact.name} - ${lead["Loan type"]} ${lead["Amount requested"]} (${action})`};
  // Fire the Meta Lead event FIRST, independently of Formspree's response.
  // Formspree receives and emails the lead even when the browser later throws a
  // CORS error reading the response - so gating the pixel on the fetch resolving
  // (or on res.ok) silently drops real Leads. We count the Lead at the moment of
  // submit, then send to Formspree separately.
  if(FORMSPREE_ID!=="YOUR_FORM_ID" && typeof fbq==="function"){
-   try{ fbq('track','Lead',{content_name:lead["Loan type"]+" loan",content_category:lead["Loan type"]}); }catch(e){}
+   try{
+     const q = leadQuality();
+     /* Send an expected value with every Lead so Meta can optimise for revenue
+        rather than raw form fills. */
+     fbq('track','Lead',{
+       content_name: lead["Loan type"]+" loan",
+       content_category: lead["Loan type"],
+       value: q.value,
+       currency: 'AUD',
+       lead_grade: q.grade
+     });
+     /* Only leads that can realistically settle. Use THIS as the optimisation
+        event once an ad set is producing enough of them. */
+     if(q.qualified){
+       fbq('trackCustom','QualifiedLead',{
+         content_category: lead["Loan type"],
+         value: q.value,
+         currency: 'AUD',
+         lead_grade: q.grade
+       });
+     }
+   }catch(e){}
  }
  try{
   if(FORMSPREE_ID==="YOUR_FORM_ID")return; // not configured - skip silently
