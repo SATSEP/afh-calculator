@@ -562,7 +562,7 @@ body.fullresults{background:transparent!important}
 .r2rib{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,#FF8A3D,#F24E6B);padding:5px 10px;border-radius:99px;margin-bottom:12px}.r2rib svg{width:12px;height:12px}
 .r2lh{display:flex;align-items:center;gap:12px}
 .r2logo{flex:none;width:48px;height:48px;border-radius:14px;display:grid;place-items:center;font-weight:800;font-size:20px;color:#4B2EDB;background:linear-gradient(135deg,#EDE9FD,#E1F3FB)}
-.r2logo.sm{width:40px;height:40px;border-radius:12px;font-size:16px}
+.r2logo.img{background:#fff;border:1px solid #ECE9F4;padding:6px}.r2logo.img img{max-width:100%;max-height:100%;object-fit:contain;display:block}.r2logo.sm.img{padding:5px}.r2logo.sm{width:40px;height:40px;border-radius:12px;font-size:16px}
 .r2logo.mute{color:#717A88;background:#F1F2F5}
 .r2nm h3{font-size:19px;font-weight:800;letter-spacing:-.01em;margin:0}
 .r2ok{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:#0F8A5F}.r2ok svg{width:12px;height:12px}
@@ -1313,19 +1313,19 @@ function results(){const s=st[funnel];const{list,fallback,capped,nearmiss}=match
  if(fallback)h+=`<div class="r2note">${ICON.help} These are the closest options. Your broker will confirm the best fit.</div>`;
  if(list.length){const l=list[0],p=pay(l);const fits=fitBadges(l,funnel,s);const tags=fits.concat(l.tags).slice(0,3);
   h+=`<div class="r2best"><div class="r2rib">${ICON.star} Best match</div>
-   <div class="r2lh"><span class="r2logo">${l.name[0]}</span><div class="r2nm"><h3>${l.name}</h3><span class="r2ok">${TICK} Matched to you</span></div></div>
+   <div class="r2lh"><span class="r2logo${LG(l)?' img':''}">${LG(l)||l.name[0]}</span><div class="r2nm"><h3>${l.name}</h3><span class="r2ok">${TICK} Matched to you</span></div></div>
    <div class="r2pay"><span class="r2l">Estimated repayment</span><div class="r2v">${fmt(p.lo)}<small>/${F[1]}</small></div><span class="r2r">up to ${fmt(p.hi)}/${F[1]} depending on your final rate</span></div>
    <div class="r2rates"><div><span>Interest rate p.a.</span><b>from ${p.rlo.toFixed(2)}%</b></div><div><span>Comparison rate p.a.*</span><b>from ${p.clo.toFixed(2)}%</b></div></div>
    <div class="r2tags">${tags.map((t,i)=>`<span class="${i<fits.length?'fit':''}">${i<fits.length?TICK:''}${t}</span>`).join('')}</div></div>`;}
  h+=bookingCard();
  if(list.length>1){h+=`<div class="r2sec">More matches <span>${list.length-1}</span></div><div class="r2list">`;
   list.slice(1,showAll?99:6).forEach((l,i)=>{const p=pay(l);const fit=fitBadges(l,funnel,s)[0]||l.tags[0]||"";
-   h+=`<div class="r2item" style="animation-delay:${Math.min(i,8)*50}ms"><span class="r2logo sm">${l.name[0]}</span><div class="r2in"><b>${l.name}</b><small>${fit}</small><em>from ${p.rlo.toFixed(2)}% p.a. · comp. ${p.clo.toFixed(2)}%*</em></div><div class="r2ip"><b>${fmt(p.lo)}</b><small>/${F[2]}</small></div></div>`;});
+   h+=`<div class="r2item" style="animation-delay:${Math.min(i,8)*50}ms"><span class="r2logo sm${LG(l)?' img':''}">${LG(l)||l.name[0]}</span><div class="r2in"><b>${l.name}</b><small>${fit}</small><em>from ${p.rlo.toFixed(2)}% p.a. · comp. ${p.clo.toFixed(2)}%*</em></div><div class="r2ip"><b>${fmt(p.lo)}</b><small>/${F[2]}</small></div></div>`;});
   h+=`</div>`;if(!showAll&&list.length>6)h+=`<button type="button" class="r2more" onclick="showAll=true;render()">Show ${list.length-6} more matches</button>`;}
  if(capped&&capped.length){h+=`<div class="r2sec">Also on our panel</div><div class="r2list">`;
-  capped.slice(0,6).forEach(l=>{h+=`<div class="r2item"><span class="r2logo sm mute">${l.name[0]}</span><div class="r2in"><b>${l.name}</b><small>Lends up to ${fmt(l.max)}</small></div></div>`;});h+=`</div>`;}
+  capped.slice(0,6).forEach(l=>{h+=`<div class="r2item"><span class="r2logo sm mute${LG(l)?' img':''}">${LG(l)||l.name[0]}</span><div class="r2in"><b>${l.name}</b><small>Lends up to ${fmt(l.max)}</small></div></div>`;});h+=`</div>`;}
  if(nearmiss&&nearmiss.length){h+=`<div class="r2sec">Might still qualify</div><div class="r2list">`;
-  nearmiss.slice(0,5).forEach(o=>{h+=`<div class="r2item"><span class="r2logo sm mute">${o.l.name[0]}</span><div class="r2in"><b>${o.l.name}</b><small>${o.reasons.length?'Usually wants '+o.reasons.join(' & '):'Close fit'}</small></div></div>`;});h+=`</div>`;}
+  nearmiss.slice(0,5).forEach(o=>{h+=`<div class="r2item"><span class="r2logo sm mute${LG(o.l)?' img':''}">${LG(o.l)||o.l.name[0]}</span><div class="r2in"><b>${o.l.name}</b><small>${o.reasons.length?'Usually wants '+o.reasons.join(' & '):'Close fit'}</small></div></div>`;});h+=`</div>`;}
  h+=`<p class="r2fine">Estimates use indicative rates and the details you entered. *Comparison rates include estimated fees. A broker confirms your actual rate and repayments.</p>`;
  return h;}
 
@@ -1361,6 +1361,11 @@ function unlocking(){return `<div class="card anim an"><div class="anring sm"><s
  <h2 class="antitle">Unlocking your matches</h2><p class="rdsub" style="margin:0">Preparing your repayments…</p></div>`;}
 
 /* ── results ── */
+/* lender logos: loaded from afhfinance.com.au/lp-assets only on the results screen (lazy), initial letter if missing */
+const LOGO_BASE="https://afhfinance.com.au/lp-assets/";
+const LOGO_MAP={"Plenti":"plenti-auto","Plenti (auto)":"plenti-auto","MONEYME":"moneyme-autopay","MONEYME (Autopay)":"moneyme-autopay","Azora (commercial)":"azora","Metro Commercial":"metro-consumer","Affordable Car Loans":"affordable-car-loans"};
+function LG(l){if(!l||!l.name)return "";const slug=LOGO_MAP[l.name]||l.name.toLowerCase().replace(/\(.*?\)/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+ const ch=l.name[0];return `<img src="${LOGO_BASE}${slug}.webp" alt="${l.name}" loading="lazy" decoding="async" onerror="var p=this.parentNode;p.classList.remove('img');p.textContent='${ch}'">`;}
 let bk={day:"",time:""},booked=null,showAll=false;
 ICON.mail='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>';
 const FREQ={weekly:[52,'week','wk'],fortnightly:[26,'fortnight','fn'],monthly:[12,'month','mth']};
