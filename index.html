@@ -491,6 +491,7 @@ footer{margin-top:14px}footer p{font-size:11.5px}
 .lmbens{display:flex;flex-direction:column;gap:12px}.lmben{display:flex;gap:12px;align-items:flex-start}.lmben b{display:block;font-size:15px}.lmben small{display:block;font-size:13.5px;color:var(--mute)}.lmbi{flex:none;width:36px;height:36px;border-radius:11px;background:#EEEBFA;color:#4B2EDB;display:flex;align-items:center;justify-content:center}.lmbi svg{width:19px;height:19px}
 .lmhr{border:0;height:1px;background:var(--line);margin:0}#lmForm{display:flex;flex-direction:column;gap:12px}.lmf{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:700}.lmf input{height:50px;box-sizing:border-box;border:1.5px solid var(--line);border-radius:14px;padding:0 14px;font:600 16px inherit;font-family:inherit;color:var(--ink)}.lmf input:focus{outline:none;border-color:#4B2EDB;box-shadow:0 0 0 4px #EEEBFA}.lmf.bad input{border-color:#D64545;box-shadow:0 0 0 4px #FCE8E8}
 .lmcons{margin:4px 0 0}.lmerr{display:none;color:#C03030;font-size:13px;font-weight:600}.lmerr.is-shown{display:block}.lmcta{display:flex;align-items:center;justify-content:center;gap:10px;width:100%}.lmcta svg{width:20px;height:20px;stroke-width:2.5}
+.lmben2{display:flex;flex-direction:column;gap:8px}.lmchips{display:flex;flex-wrap:wrap;gap:8px}.lmchip{font:inherit;font-size:13.5px;font-weight:600;padding:9px 12px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:inherit;cursor:pointer;text-align:left}.lmchip.on{border-color:#4B2EDB;background:#F1EEFD;color:#3A1FB8}.lmf.bad .lmchip{border-color:#E5484D}
 .lmfh2{display:block;margin-top:4px;font-size:12px;font-weight:500;color:var(--mute)}.lmback{align-self:center;background:none;border:0;padding:6px;font:inherit;font-size:12.5px;color:var(--mute);text-decoration:underline;cursor:pointer}.lmcta.busy{opacity:.7;pointer-events:none}
 .lmsafe{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12.5px;color:var(--mute)}.lmsafe svg{width:14px;height:14px}.lmnils{padding:14px;border-radius:14px;background:#FFF8EC;font-size:13px;line-height:1.5}.lmnils a{color:#4B2EDB;font-weight:700}.lmskip{align-self:center;background:none;border:0;min-height:44px;padding:8px 12px;font:600 14px inherit;font-family:inherit;color:var(--mute);text-decoration:underline;cursor:pointer}
 .lmeb{font-size:13px;font-weight:800;color:#4B2EDB;letter-spacing:.04em}.lmbox{display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:16px;background:var(--panel);font-size:14px}.lmneed{display:flex;align-items:center;gap:10px}.lmneed svg{width:18px;height:18px;color:#4B2EDB;flex:none}.lmsec{background:#EFFAF5;color:#24433A;font-size:13.5px;line-height:1.5}.lmsec b{display:flex;align-items:center;gap:8px;color:#0E6B4B;font-size:14px}.lmsec b svg{width:18px;height:18px}.lmnote{text-align:center;font-size:12.5px;color:var(--mute)}
@@ -1478,7 +1479,7 @@ const LM_WORDING="I agree AFH Finance and Lead Market (operated by Credit Sense)
  +"and that AFH Finance can share my details and the answers I gave here with Lead Market so specialist lenders "
  +"can contact me. I understand I may be offered a different loan type, amount or lender to what I asked for. "
  +"I'll be asked to share my bank statements. AFH Finance may receive a fee for this referral.";
-let lm={consent:false,ts:"",declined:false,sent:false,err:"",tok:"",leadId:"",relay:null};let lmT=0;
+let lm={benefit:"",consent:false,ts:"",declined:false,sent:false,err:"",tok:"",leadId:"",relay:null};let lmT=0;
 function lmIcon(p){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;}
 function lmBar(done,part){const seg=i=>i<done?'<i class="lmseg on"></i>':i===done?`<i class="lmseg" style="background:linear-gradient(90deg,#4B2EDB ${part}%,#E4E0F7 ${part}%)"></i>`:'<i class="lmseg"></i>';
  const lab=(i,t)=>`<span class="${i<done?'ok':i===done?'cur':''}">${t}${i<done?' ✓':''}</span>`;
@@ -1507,6 +1508,7 @@ function lmHand(){const cl=st[funnel].emp==='centrelink';const v=k=>(contact[k]|
    <label class="lmf" id="lmf-mobile">Mobile<input name="mobile" type="tel" inputmode="tel" autocomplete="tel" placeholder="04xx xxx xxx" value="${v('mobile')}" oninput="contact.mobile=this.value;this.parentNode.classList.remove('bad')"></label>
    <label class="lmf" id="lmf-dob">Date of birth<input name="dob" type="text" inputmode="numeric" autocomplete="bday" placeholder="DD/MM/YYYY" maxlength="10" value="${v('dob')}" oninput="lmDobIn(this)"><small class="lmfh2">Lenders use this to confirm it's you</small></label>
    <label class="lmf" id="lmf-email">Email<input name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" value="${v('email')}" oninput="contact.email=this.value;this.parentNode.classList.remove('bad')"></label>
+   ${cl?`<div class="lmf lmben2" id="lmf-ben">Which Centrelink payment is your main one?<div class="lmchips">${LM_BENEFITS.map(([k,t])=>`<button type="button" class="lmchip ${lm.benefit===k?'on':''}" onclick="lmSetBenefit('${k}')">${t}</button>`).join('')}</div></div>`:''}
    <label class="afhc-row lmcons ${lm.consent?'on':''}" id="lmRow"><input type="checkbox" id="lmTickBox" ${lm.consent?'checked':''} onchange="window.lmTick(this)"><span class="afhc-txt">${LM_WORDING}</span></label>
    <div class="lmerr" id="lmErr">Please tick the box to continue.</div>
    ${LM.turnstile?'<div id="lmTs" class="lmts"></div>':''}
@@ -1526,6 +1528,7 @@ function lmValid(f){let ok=true;const g=k=>(f.elements[k]&&f.elements[k].value||
  const m=g('mobile').replace(/[^0-9+]/g,'').replace(/^\+?61/,'0');if(!/^04\d{8}$/.test(m))bad('lmf-mobile');
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(g('email')))bad('lmf-email');
  if(!lmDobIso(g('dob')))bad('lmf-dob');
+ if(st[funnel].emp==='centrelink'&&!lm.benefit)bad('lmf-ben');
  if(!lm.consent){const r=document.getElementById('lmRow'),e=document.getElementById('lmErr');if(r)r.classList.add('is-error');if(e)e.classList.add('is-shown');ok=false;}
  return ok;}
 function lmSubmit(ev){ev.preventDefault();const f=ev.target;if(!lmValid(f))return false;
@@ -1533,7 +1536,7 @@ function lmSubmit(ev){ev.preventDefault();const f=ev.target;if(!lmValid(f))retur
  consent.contact=true;consent.ts=lm.ts;
  afhTrack('LMConsent',{reasons:subparCheck().reasons.join(', ')});
  /* AFH keeps its own copy of the lead, tagged as referred, before anything leaves for Lead Market. */
- try{sendLead("referred to lead market",{consent_wording:LM_WORDING,lm_consent:"yes",lm_consent_wording:LM_WORDING,lm_consent_timestamp:lm.ts,lm_route:"lead market",date_of_birth:lmDobIso(contact.dob)},true);}catch(e){}
+ try{sendLead("referred to lead market",{consent_wording:LM_WORDING,lm_consent:"yes",lm_consent_wording:LM_WORDING,lm_consent_timestamp:lm.ts,lm_route:"lead market",date_of_birth:lmDobIso(contact.dob),centrelink_payment:(LM_BENEFITS.find(b=>b[0]===lm.benefit)||["",""])[1]},true);}catch(e){}
  lmRelay();
  view="lmbank";render();window.scrollTo(0,0);return false;}
 /* Declining returns them to the question they were on and carries on the normal AFH flow,
@@ -1562,6 +1565,11 @@ function lmDobIso(t){const m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec((t||"").trim());
  const n=new Date(),min=new Date(n.getFullYear()-18,n.getMonth(),n.getDate()),max=new Date(n.getFullYear()-100,n.getMonth(),n.getDate());if(dt>min||dt<max)return "";
  return y+"-"+String(mo).padStart(2,'0')+"-"+String(d).padStart(2,'0');}
 function lmBack(){clearTimeout(lmT);afhTrack('LMBack',{});view="form";render();window.scrollTo(0,0);}
+/* Centrelink payment type: Lead Market buyers bid on unemployment vs other benefits separately. */
+const LM_BENEFITS=[["jobseeker","JobSeeker / Youth Allowance"],["pension","Age or Disability Pension"],["carer","Carer Payment"],["family","Family / Parenting Payment"],["other","Something else"]];
+function lmSetBenefit(k){lm.benefit=k;document.querySelectorAll('.lmchip').forEach(b=>b.classList.toggle('on',b.getAttribute('onclick').indexOf("'"+k+"'")>-1));
+ const f=document.getElementById('lmf-ben');if(f)f.classList.remove('bad');}
+const LM_WORK_VISAS=["482","494","491","485","417","462","408","400","403","457","187"];
 const LM_MAP={
  emp:{fulltime:"full_time",parttime:"part_time",casual:"casual",self:"self_employed_contract",centrelink:"other_benefits"},
  credit:{4:"excellent",3:"good",2:"fair",1:"low"},
@@ -1571,21 +1579,23 @@ const LM_MAP={
  per:{weekly:52,fortnightly:26,monthly:12}};
 function lmCitizenship(s){if(s.visa==="citizen")return "australian_citizen";if(s.visa==="pr")return "permanent_resident";
  const sc=String(s.visaSub||"").replace(/[^0-9]/g,"");if(sc==="444")return "new_zealand_citizen";if(sc==="500")return "student_visa";
- return s.visa==="temp"?"working_visa":"other";}
+ return (s.visa==="temp"&&LM_WORK_VISAS.indexOf(sc)>-1)?"working_visa":"other";}
 function lmPayload(){const s=st[funnel];const nm=(contact.name||"").trim().split(/\s+/);
  let mob=(contact.mobile||"").replace(/[^0-9]/g,"");if(mob.indexOf("61")===0)mob="0"+mob.slice(2);if(mob.indexOf("0")===0)mob="+61"+mob.slice(1);
  const isCar=funnel==="car";const per=LM_MAP.per[s.wageFreq]||52;
  return {
   lead_reference:afhLeadEid(),
   consent:{customer_authority:lm.consent===true,authority_type:"Explicit",anti_hawking:lm.consent===true,wording:LM_WORDING,timestamp:lm.ts,page:location.href.split("?")[0]},
-  application:{date:new Date().toISOString().slice(0,10),type:isCar?(ASSET==="caravan"?"Caravan Loan":"Car Loan"):"Personal Loan",
+  application:{date:new Date().toISOString().slice(0,10),type:"Loan",
+   repayment_cycle:LM_MAP.per[repayFreq]?repayFreq:"",repayment_count:(LM_MAP.per[repayFreq]&&+s.term)?String(Math.round(+s.term*LM_MAP.per[repayFreq])):"",
    amount:String(Math.round(+s.amount||0)),reason:isCar?(ASSET==="caravan"?"other_vehicle_purchase":"car_purchase"):(LM_MAP.reason[s.purpose]||""),
    description:(+s.term||0)+" year term requested"+(s.purpose==="investing"?". Purpose: investing":""),
    security_asset:isCar?"vehicle":""},
   person:{first_name:nm[0]||"",last_name:nm.slice(1).join(" "),dob:lmDobIso(contact.dob),mobile:mob,email:(contact.email||"").trim(),
    citizenship:s._visa?lmCitizenship(s):"",can_provide_security:isCar?"true":"",
    postcode:s.postcode||"",residential_status:s._res?(LM_MAP.res[s.res]||""):"",months_at_address:String(LM_MAP.months[s.resLen]||"")},
-  employment:{type:s._emp?(LM_MAP.emp[s.emp]||""):""},
+  employment:{type:s._emp?(s.emp==="centrelink"?(lm.benefit==="jobseeker"?"unemployment_benefits":"other_benefits"):(LM_MAP.emp[s.emp]||"")):"",
+   benefit:s.emp==="centrelink"?((LM_BENEFITS.find(b=>b[0]===lm.benefit)||["",""])[1]):""},
   income:s.wage?{net:String(Math.round(+s.wage)),gross:String(Math.round((+s.income||0)/per)),frequency:s.wageFreq||"weekly"}:null,
   payday_loans:s.payday==="yes"?(s.paydayN||"1"):"0",
   credit_rating:(s._cp===undefined||s._cp===0)?"":(LM_MAP.credit[+s._cp]||""),
@@ -1618,7 +1628,7 @@ function lmDone(){const first=(contact.name||"").trim().split(/\s+/)[0]||"";cons
 /* The partner page tells us when the bank step is finished or the lead is accepted. */
 window.addEventListener("message",function(e){if(e.origin!==LM.origin)return;const d=e.data;if(!d||typeof d!=="object")return;
  if(d.afhLmDone&&view==="lmframe"){afhTrack('LMCompleted',{});view="lmdone";render();window.scrollTo(0,0);}
- if(d.afhLmHeight){const f=document.querySelector('.lmif');if(f)f.style.height=Math.max(560,Math.min(2400,+d.afhLmHeight||0))+'px';}});
+ if(d.afhLmHeight){const f=document.querySelector('.lmif');if(f)f.style.height=Math.max(320,Math.min(3000,+d.afhLmHeight||0))+'px';}});
 function buildLeadDetails(){const s=st[funnel];const out={};
  const money=v=>"$"+(+v).toLocaleString();
  const CREDIT=["Rebuilding","Below average","Average","Good","Excellent"];
