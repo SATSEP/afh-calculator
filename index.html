@@ -1472,7 +1472,7 @@ function subparCheck(){
    LM.on MUST stay false until: Access Lending Group has approved referrals out, the
    privacy policy covers them, and partner/index.html accepts the afhLmPrefill message.
    The API key never lives here: lmRelay() posts to /lm/relay.php, which holds the key and calls Lead Market. */
-const LM={on:false,url:"https://afhfinance.com.au/partner/embed.html?v=1",origin:"https://afhfinance.com.au",relay:"https://afhfinance.com.au/partner/lm/relay.php",turnstile:""};  /* turnstile = Cloudflare site key; set together with turnstile_secret in lm-config.php */
+const LM={on:true,url:"https://afhfinance.com.au/partner/embed.html?v=1",origin:"https://afhfinance.com.au",relay:"https://afhfinance.com.au/partner/lm/relay.php",turnstile:""};  /* turnstile = Cloudflare site key; set together with turnstile_secret in lm-config.php */
 const NILS_URL="https://nils.com.au/";
 const LM_WORDING="I agree AFH Finance and Lead Market (operated by Credit Sense) can contact me about this enquiry, "
  +"and that AFH Finance can share my details and the answers I gave here with Lead Market so specialist lenders "
