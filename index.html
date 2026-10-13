@@ -497,6 +497,8 @@ footer{margin-top:14px}footer p{font-size:11.5px}
 .lmeb{font-size:13px;font-weight:800;color:#4B2EDB;letter-spacing:.04em}.lmbox{display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:16px;background:var(--panel);font-size:14px}.lmneed{display:flex;align-items:center;gap:10px}.lmneed svg{width:18px;height:18px;color:#4B2EDB;flex:none}.lmsec{background:#EFFAF5;color:#24433A;font-size:13.5px;line-height:1.5}.lmsec b{display:flex;align-items:center;gap:8px;color:#0E6B4B;font-size:14px}.lmsec b svg{width:18px;height:18px}.lmnote{text-align:center;font-size:12.5px;color:var(--mute)}
 .lmfr{padding:0;overflow:hidden;gap:0}.lmfh{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line);font-size:13px;font-weight:700;color:#0E6B4B}.lmfh span{display:flex;align-items:center;gap:8px}.lmfh svg{width:16px;height:16px}.lmfh small{font-weight:600;color:var(--mute)}.lmif{width:100%;height:760px;border:0;display:block}.lmhelp{display:flex;align-items:center;gap:10px;margin:12px 16px 16px;padding:12px 14px;border-radius:14px;background:var(--panel);font-size:13px;line-height:1.45}.lmhelp svg{width:20px;height:20px;flex:none;color:#4B2EDB}
 .lmdn{padding-top:34px}.lmtick{align-self:center;width:84px;height:84px;border-radius:50%;background:#16B57F;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 10px #E3F7EE}.lmtick svg{width:42px;height:42px;stroke-width:3}.lmdn .lmh,.lmdn .lmp{text-align:center}.lmtls{display:flex;flex-direction:column}.lmtl{display:flex;gap:14px}.lmtl b{display:block;font-size:15px}.lmtl small{display:block;font-size:13.5px;color:var(--mute);padding-bottom:16px}.lmtn{display:flex;flex-direction:column;align-items:center}.lmtn i{width:30px;height:30px;border-radius:50%;background:#EEEBFA;color:#4B2EDB;font-style:normal;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center}.lmtn i.on{background:#4B2EDB;color:#fff}.lmtn em{width:2px;flex-grow:1;background:#E4E0F7;min-height:20px}.lmfine{text-align:center;font-size:12px;line-height:1.5;color:var(--mute)}
+.alcco{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:16px;border:1px solid #DCE8D3;background:#F5FAF1}.alcco img{height:30px;width:auto;display:block}.alcco span{font-size:12.5px;color:var(--mute);line-height:1.4}.alcco b{display:block;font-size:14px;color:var(--charcoal)}
+.alcfine{font-size:11.5px;line-height:1.5;color:var(--mute)}.alcfine a{color:inherit}.alcpill{background:#EAF2E4;color:#2E6B30}
 .an,.rd{text-align:center;padding:30px 20px 26px;position:relative;overflow:hidden}
 .anring{position:relative;width:112px;height:112px;margin:4px auto 18px}
 .anring.sm{width:84px;height:84px}
@@ -982,7 +984,7 @@ function rowtile(key,val,grad,icon,title,sub){const s=st[funnel];const on=String
  return `<div class="rowtile ${on?'on g-'+grad:''}" data-c="${grad}" onclick="setA('${key}','${val}')"><div class="ti">${ICON[icon]||''}</div><div><div class="tt">${title}</div><div class="ts">${sub}</div></div><div class="chk">${ICON.check}</div></div>`;}
 let autoT=null,navDir=1;
 const TICK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
-function setA(k,v){afhStart();st[funnel][k]=v;if(k==="payday"&&v!=="yes")st[funnel].paydayN="";
+function setA(k,v){afhStart();st[funnel][k]=v;if(k==="purpose"&&v==="debt")alcCheck();if(k==="payday"&&v!=="yes")st[funnel].paydayN="";
  if(k==="carType"){st.car.knowType=(v==="unsure"?"no":"yes");if(v==="ev")st.car.ev="yes";}
  render();if(lmArm())return;maybeAuto(k);}
 /* Lets the tick land, then switches the moment a tapped answer flags them. */
@@ -1319,6 +1321,8 @@ function missingFields(){const s=st[funnel];const m=[];
 function next(){clearTimeout(autoT);const miss=stepNeed(steps()[qi]);if(miss.length){triedNext=true;render();const e=document.querySelector(".reqerr");if(e&&e.scrollIntoView)e.scrollIntoView({block:"center",behavior:"smooth"});return;}
  if(lmShouldSwitch()){lmStart();return;}
  triedNext=false;const S=steps();afhStart();{const _t=typeof S[qi].t==="function"?S[qi].t():S[qi].t;afhOnce('step'+funnel+qi,'CalcStep'+(qi+1),{step:qi+1,of:S.length,step_name:_t});if(qi===S.length-1)afhOnce('done'+funnel,'CalcCompleted',{steps:S.length});}if(qi<S.length-1){qi++;window.scrollTo({top:0,behavior:'smooth'});render();}else{
+   if(alcRoute()){alcStart();return;}
+   if(debtLow()&&LM.on&&!lm.declined){lmStart();return;}
    if(contact.name){view="results";}else{view="analysing";setTimeout(function(){if(view==="analysing"){view="ready";render();}},2700);}  // always capture name/mobile/email before showing matches
    window.scrollTo({top:0,behavior:'smooth'});render();}}
 function prev(){clearTimeout(autoT);if(qi>0){navDir=-1;qi--;triedNext=false;window.scrollTo({top:0,behavior:'smooth'});render();}}
@@ -1485,7 +1489,7 @@ function lmBar(done,part){const seg=i=>i<done?'<i class="lmseg on"></i>':i===don
  const lab=(i,t)=>`<span class="${i<done?'ok':i===done?'cur':''}">${t}${i<done?' ✓':''}</span>`;
  return `<div class="lmbar"><div class="lmsegs">${seg(0)}${seg(1)}${seg(2)}</div><div class="lmlabs">${lab(0,'Your answers')}${lab(1,'Your details')}${lab(2,'Bank check')}</div></div>`;}
 /* Called from next(): switch the moment the answer that disqualifies them is confirmed. */
-function lmShouldSwitch(){return LM.on&&!lm.declined&&funnel!=='business'&&subparCheck().sub;}
+function lmShouldSwitch(){return LM.on&&!lm.declined&&funnel!=='business'&&!alcRoute()&&subparCheck().sub;}
 function lmStart(){afhTrack('LMRouted',{reasons:subparCheck().reasons.join(', ')});view="lmswitch";render();window.scrollTo(0,0);lmTsLoad();
  setTimeout(function(){if(view==="lmswitch"){view="lmhand";render();lmTsMount();afhTrack('LMOfferShown',{});}},1700);}
 function lmTsLoad(){if(!LM.turnstile||window.turnstile||document.getElementById('lmTsJs'))return;const sc=document.createElement('script');sc.id='lmTsJs';sc.async=true;
@@ -1500,7 +1504,7 @@ function lmHand(){const cl=st[funnel].emp==='centrelink';const v=k=>(contact[k]|
  return `${lmBar(1,30)}<div class="card anim lmc">
   <span class="lmpill">${lmIcon('<path d="M5 12.5l4.5 4.5L19 7.5"/>')} Specialist lenders available</span>
   <h2 class="lmh">Good news, there's a way forward for you</h2>
-  <p class="lmp">Our partner Lead Market works with lenders who look past the usual boxes. Your answers carry over, so there's nothing to repeat.</p>
+  <p class="lmp">${debtLow()?'Our partner Lead Market works with lenders who handle smaller debt consolidation loans.':'Our partner Lead Market works with lenders who look past the usual boxes.'} Your answers carry over, so there's nothing to repeat.</p>
   <div class="lmbens">${ben('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>','Lenders matched to you','Specialists in your situation')}${ben('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/>','No payslips or paperwork','A secure bank check does the work')}${ben('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>','About 3 minutes','Finish now while it\'s fresh')}</div>
   <hr class="lmhr">
   <form id="lmForm" onsubmit="return lmSubmit(event)" novalidate>
@@ -1555,6 +1559,108 @@ function lmBank(){const first=(contact.name||"").trim().split(/\s+/)[0]||"";
    <span>Only your transaction history is collected, and only the lenders you're matched to see it.</span></div>
   <button type="button" class="cta lmcta" onclick="lmGoBank(this)">Connect my bank ${lmIcon('<path d="M5 12h14M13 6l6 6-6 6"/>')}</button>
   <div class="lmnote">Takes about 2 minutes</div></div>`;}
+/* ── AUSTRALIAN LENDING CENTRE HAND-OFF ─────────────────────────────────────────
+   Debt consolidation at or over ALC's minimum goes to our partner ALC, never Lead Market.
+   Under the minimum goes to Lead Market. Every other path is unchanged.
+   intake.php checks the limits set in the CRM (on/off, total and daily caps, minimum), so
+   alc.open is only true while ALC is taking leads. Anything else falls back to the normal flow. */
+const ALC={on:true,api:"https://afhfinance.com.au/partner/alc/intake.php",logo:"https://afhfinance.com.au/partner/alc/alc-logo.png"};
+/* Must match PL_CONSENT_WEB in private/partner-lib.php exactly. */
+const ALC_WORDING="Yes, connect me with Australian Lending Centre. I agree AFH Finance can share my details and the answers I gave here "
+ +"with Australian Lending Centre Pty Ltd (Australian Credit Licence 389119) so they can call, text or email me about consolidating my debts, "
+ +"and AFH Finance can contact me about this enquiry. This overrides my listing on the Do Not Call Register for this enquiry. "
+ +"AFH Finance may receive a fee for this referral.";
+let alc={open:null,min:7000,checking:null,consent:false,ts:"",declined:false,ref:"",ok:false};
+function alcCheck(){if(!ALC.on||alc.checking)return alc.checking;
+ alc.checking=fetch(ALC.api+"?status=1",{credentials:"omit",cache:"no-store"}).then(function(r){return r.json();})
+  .then(function(j){alc.open=!!(j&&j.ok&&j.open);if(j&&+j.min>0)alc.min=+j.min;return alc.open;})
+  .catch(function(){alc.open=false;return false;});
+ return alc.checking;}
+function debtFunnel(){return funnel==="personal"&&st.personal.purpose==="debt";}
+function alcRoute(){return ALC.on&&debtFunnel()&&alc.open===true&&!alc.declined&&(+st.personal.amount||0)>=alc.min;}
+function debtLow(){return debtFunnel()&&(+st.personal.amount||0)<alc.min;}
+function alcStart(){afhTrack('ALCRouted',{amount:+st.personal.amount||0});view="alcmatch";render();window.scrollTo(0,0);
+ setTimeout(function(){if(view==="alcmatch"){view="alchand";render();afhTrack('ALCOfferShown',{});}},1700);}
+function alcMatch(){const row=(t,done)=>`<div class="lmchk ${done?'ok':''}">${done?lmIcon('<circle cx="12" cy="12" r="10"/><path d="M7.5 12.5l3 3 6-6.5"/>'):lmIcon('<path d="M12 3a9 9 0 1 0 9 9"/>')}<span>${t}</span></div>`;
+ return `<div class="card anim lmc lmsw"><div class="anring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" fill="none" stroke="#EEEBFA" stroke-width="9"/><circle class="anarc" cx="60" cy="60" r="50" fill="none" stroke="#4B2EDB" stroke-width="9" stroke-linecap="round"/></svg><span class="anicon">${ICON.search||''}</span></div>
+  <h2 class="lmh">Finding the right specialist</h2><p class="lmp">Debt consolidation works best with a specialist who does it every day.</p>
+  <div class="lmchks">${row('Your answers are saved',1)}${row('Debt consolidation specialist found',1)}${row('Preparing your next step',0)}</div></div>`;}
+function alcHand(){const v=k=>(contact[k]||"").replace(/"/g,'&quot;');const amt=+st.personal.amount||0;
+ const ben=(i,b,t)=>`<div class="lmben"><span class="lmbi">${lmIcon(i)}</span><span><b>${b}</b><small>${t}</small></span></div>`;
+ return `<div class="card anim lmc">
+  <span class="lmpill alcpill">${lmIcon('<path d="M5 12.5l4.5 4.5L19 7.5"/>')} Debt consolidation specialist</span>
+  <h2 class="lmh">We've matched you with a specialist</h2>
+  <p class="lmp">For ${amt?fmt(amt)+' of ':''}debt consolidation, we work with our lending partner Australian Lending Centre. Your answers carry over, so there's nothing to repeat.</p>
+  <div class="alcco"><img src="${ALC.logo}" alt="Australian Lending Centre" width="116" height="30" onerror="this.style.display='none'"><span><b>Australian Lending Centre</b>Australian Credit Licence 389119</span></div>
+  <div class="lmbens">${ben('<path d="M4 7h16M4 12h16M4 17h10"/>','Focused on debt consolidation','Rolling debts into one loan is what they do')}${ben('<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/>','A real person calls you','To talk through your options')}${ben('<circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/>','No obligation','You decide if it\'s right for you')}</div>
+  <hr class="lmhr">
+  <form id="alcForm" onsubmit="return alcSubmit(event)" novalidate>
+   <label class="lmf" id="alcf-name">First and last name<input name="name" autocomplete="name" autocapitalize="words" value="${v('name')}" oninput="contact.name=this.value;this.parentNode.classList.remove('bad')"></label>
+   <label class="lmf" id="alcf-mobile">Mobile<input name="mobile" type="tel" inputmode="tel" autocomplete="tel" placeholder="04xx xxx xxx" value="${v('mobile')}" oninput="contact.mobile=this.value;this.parentNode.classList.remove('bad')"></label>
+   <label class="lmf" id="alcf-email">Email<input name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" placeholder="you@example.com" value="${v('email')}" oninput="contact.email=this.value;this.parentNode.classList.remove('bad')"></label>
+   <label class="afhc-row lmcons ${alc.consent?'on':''}" id="alcRow"><input type="checkbox" id="alcTickBox" ${alc.consent?'checked':''} onchange="window.alcTick(this)"><span class="afhc-txt">${ALC_WORDING}</span></label>
+   <div class="lmerr" id="alcErr">Please tick the box to continue.</div>
+   <button type="submit" class="cta lmcta">Connect me ${lmIcon('<path d="M5 12h14M13 6l6 6-6 6"/>')}</button>
+  </form>
+  <div class="lmsafe">${lmIcon('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>')} Encrypted. Only shared with Australian Lending Centre</div>
+  <p class="alcfine">BC Detailing Services Pty Ltd trading as AFH Finance, ABN 30 633 575 005, Authorised Credit Representative 548852 of Access Lending Group Pty Ltd, Australian Credit Licence 531308. <a href="${PRIVACY_URL}" target="_blank" rel="noopener">Privacy Policy</a></p>
+  <button type="button" class="lmskip" onclick="alcDecline()">No thanks, show my AFH matches</button>
+  <button type="button" class="lmback" onclick="alcBack()">Tapped the wrong answer? Go back</button>
+ </div>`;}
+function alcTick(el){alc.consent=!!el.checked;alc.ts=el.checked?new Date().toISOString():"";
+ const r=document.getElementById('alcRow');if(r){r.classList.toggle('on',el.checked);r.classList.remove('is-error');}
+ const e=document.getElementById('alcErr');if(e)e.classList.remove('is-shown');}
+function alcValid(f){let ok=true,first=null;const g=k=>(f.elements[k]&&f.elements[k].value||"").trim();
+ const bad=id=>{const el=document.getElementById(id);if(el){el.classList.add('bad');if(!first)first=el;}ok=false;};
+ if(g('name').split(/\s+/).filter(Boolean).length<2)bad('alcf-name');
+ const m=g('mobile').replace(/[^0-9+]/g,'').replace(/^\+?61/,'0');if(!/^04\d{8}$/.test(m))bad('alcf-mobile');
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(g('email')))bad('alcf-email');
+ if(!alc.consent){const r=document.getElementById('alcRow'),e=document.getElementById('alcErr');if(r)r.classList.add('is-error');if(e)e.classList.add('is-shown');if(!first)first=r;ok=false;}
+ if(first){const i=first.querySelector('input');if(i&&i.type!=='checkbox')i.focus();else if(first.scrollIntoView)first.scrollIntoView({block:'center',behavior:'smooth'});afhTrack('ALCFormError',{field:(first.id||'').replace('alcf-','')});}
+ return ok;}
+function alcPayload(){const s=st.personal;const L=buildLeadDetails();const net=annualWage(s.wage,s.wageFreq);
+ const pd=s.payday==="yes"?(s.paydayN||""):(s.payday==="no"?"0":"");
+ return {event_id:afhLeadEid(),consent:{agreed:alc.consent===true,wording:ALC_WORDING,timestamp:alc.ts,page:location.href.split(/[?#]/)[0]},
+  person:{name:contact.name,mobile:contact.mobile,email:contact.email},
+  loan:{purpose:"debt",amount:String(Math.round(+s.amount||0)),term:String(+s.term||"")},
+  profile:{employment:L["Employment"]||"",income:s.wage?String(Math.round(grossFromNet(net))):"",credit:L["Credit rating (self-assessed)"]||"",
+   paydays:pd,residency:L["Residency status"]||"",housing:L["Residential status"]||"",postcode:s.postcode||""}};}
+function alcSubmit(ev){ev.preventDefault();const f=ev.target;if(!alcValid(f))return false;
+ contact.name=f.elements.name.value.trim();contact.mobile=f.elements.mobile.value.trim();contact.email=f.elements.email.value.trim();
+ consent.contact=true;consent.ts=alc.ts;try{consent.page=location.href.split('#')[0];}catch(e){}
+ afhTrack('ALCConsent',{});view="alcsend";render();window.scrollTo(0,0);
+ const body=alcPayload();const ctl=typeof AbortController!=="undefined"?new AbortController():null;const tm=setTimeout(function(){if(ctl)ctl.abort();},15000);
+ fetch(ALC.api,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body),credentials:"omit",signal:ctl?ctl.signal:undefined})
+  .then(function(r){return r.json().catch(function(){return {};});})
+  .then(function(j){clearTimeout(tm);if(j&&j.ok){alc.ok=true;alc.ref=j.ref||"";afhTrack('ALCSent',{});}else{alc.ok=false;afhTrack('ALCError',{err:(j&&j.error)||"server"});}})
+  .catch(function(){clearTimeout(tm);alc.ok=false;afhTrack('ALCError',{err:"network"});})
+  .then(function(){
+   /* AFH always keeps its own copy. If ALC didn't take it, an AFH broker calls instead. */
+   try{sendLead(alc.ok?"referred to ALC":"debt consolidation callback (ALC unavailable)",{consent_wording:ALC_WORDING,consent_version:"afh-alc-v1",alc_consent:"yes",alc_consent_timestamp:alc.ts,alc_ref:alc.ref,alc_route:alc.ok?"sent":"failed"});}catch(e){}
+   view="alcdone";render();window.scrollTo(0,0);});
+ return false;}
+function alcSending(){return `<div class="card anim an"><div class="anring sm"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" fill="none" stroke="#EEEBFA" stroke-width="9"/><circle class="anarc fast" cx="60" cy="60" r="50" fill="none" stroke="#4B2EDB" stroke-width="9" stroke-linecap="round"/></svg><span class="anicon">${ICON.lock}</span></div>
+ <h2 class="antitle">Connecting you with Australian Lending Centre</h2><p class="rdsub" style="margin:0">Sending your details securely…</p></div>`;}
+function alcDone(){const first=(contact.name||"").trim().split(/\s+/)[0]||"";
+ const step=(n,b,t,on,last)=>`<div class="lmtl"><div class="lmtn"><i class="${on?'on':''}">${n}</i>${last?'':'<em></em>'}</div><div><b>${b}</b><small>${t}</small></div></div>`;
+ if(!alc.ok)return `<div class="card anim lmc lmdn"><div class="lmtick">${lmIcon('<path d="M5 12.5l4.5 4.5L19 7.5"/>')}</div>
+  <h2 class="lmh">Thanks${first?', '+first:''}, we've got your details</h2>
+  <p class="lmp">An AFH Finance broker will call you shortly to go through your debt consolidation options. Keep your phone nearby.</p>
+  <a class="cta lmcta" href="tel:${PHONE}">${ICON.phone} Or call us now on 03 7031 6881</a></div>`;
+ return `<div class="card anim lmc lmdn"><div class="lmtick">${lmIcon('<path d="M5 12.5l4.5 4.5L19 7.5"/>')}</div>
+  <h2 class="lmh">You're all set${first?', '+first:''}</h2>
+  <p class="lmp">Australian Lending Centre has your details and will be in touch shortly. We've emailed you a confirmation.</p>
+  <div class="alcco"><img src="${ALC.logo}" alt="Australian Lending Centre" width="116" height="30" onerror="this.style.display='none'"><span><b>Australian Lending Centre</b>Your debt consolidation specialist</span></div>
+  <div class="lmtls">${step(1,'They review your details','Your answers are already with them.',1)}${step(2,'They call you','Keep your phone nearby. They may call from a number you don\'t know.',0)}${step(3,'You decide','Talk through your options. There\'s no obligation to go ahead.',0,1)}</div>
+  <div class="lmfine">AFH Finance referred you to Australian Lending Centre and may receive a fee. Questions? Call 03 7031 6881.</div></div>`;}
+/* Declining keeps them with AFH: the normal matches screen and AFH's own consent. */
+function alcDecline(){alc.declined=true;afhTrack('ALCDecline',{});
+ if(contact.name&&consent.contact){view="results";}else{view="ready";afhOnce('ready','CalcResultsReady',{});}
+ render();window.scrollTo(0,0);}
+function alcBack(){afhTrack('ALCBack',{});view="form";render();window.scrollTo(0,0);}
+window.alcTick=alcTick;
+if(ALC.on&&URLPURPOSE==="debt")alcCheck();
+
 /* ── Lead Market data mapping (API v1.1 enums). The browser builds plain values only;
    relay.php validates them, builds the escaped XML Payload and holds the API key. */
 function lmDobIn(el){let d=el.value.replace(/[^0-9]/g,'').slice(0,8);
@@ -1790,7 +1896,7 @@ window.addEventListener("message",function(e){const d=e.data;if(!d||typeof d!=="
    afhTrack('CalcAnswer',{step:1,answer:String(a.k)+':'+String(a.v),source:'landing'});
  }catch(err){console.error(err);}}
 });
-function render(){tabs();document.getElementById("screen").innerHTML=view==="chooser"?chooser():view==="quick"?quickCalc():view==="form"?form():view==="details"?detailsGate():view==="analysing"?analysing():view==="ready"?readyScreen():view==="unlocking"?unlocking():view==="lmswitch"?lmSwitch():view==="lmhand"?lmHand():view==="lmbank"?lmBank():view==="lmframe"?lmFrame():view==="lmdone"?lmDone():results();applyView();paintRanges();
+function render(){tabs();document.getElementById("screen").innerHTML=view==="chooser"?chooser():view==="quick"?quickCalc():view==="form"?form():view==="details"?detailsGate():view==="analysing"?analysing():view==="ready"?readyScreen():view==="unlocking"?unlocking():view==="lmswitch"?lmSwitch():view==="lmhand"?lmHand():view==="lmbank"?lmBank():view==="lmframe"?lmFrame():view==="lmdone"?lmDone():view==="alcmatch"?alcMatch():view==="alchand"?alcHand():view==="alcsend"?alcSending():view==="alcdone"?alcDone():results();applyView();paintRanges();
  afhPost({afhCalcView:{view:view,qi:qi,funnel:funnel}});
  if(view==="details")afhOnce('details','CalcDetailsForm',{});
  if(view==="results")afhOnce('results','CalcViewedMatches',{});
