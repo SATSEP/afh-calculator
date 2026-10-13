@@ -1447,7 +1447,8 @@ function submitGate(ev){ev.preventDefault();const f=ev.target;
  view="unlocking";setTimeout(function(){if(view==="unlocking"){view="results";render();window.scrollTo(0,0);}},1400);
  try{render();}catch(err){console.error("render error",err);}
  window.scrollTo({top:0,behavior:'smooth'});
- try{sendLead("viewed matches");}catch(err){console.error("lead send error",err);}  // send AFTER, never blocks
+ const dbt=debtFunnel();try{sendLead("viewed matches",undefined,dbt);}catch(err){console.error("lead send error",err);}  // send AFTER, never blocks
+ if(dbt)debtPixelOther(alc.declined?'declined_alc':'alc_closed');
  return false;}
 
 
@@ -1542,6 +1543,7 @@ function lmSubmit(ev){ev.preventDefault();const f=ev.target;if(!lmValid(f))retur
  /* AFH keeps its own copy of the lead, tagged as referred, before anything leaves for Lead Market. */
  try{sendLead("referred to lead market",{consent_wording:LM_WORDING,lm_consent:"yes",lm_consent_wording:LM_WORDING,lm_consent_timestamp:lm.ts,lm_route:"lead market",date_of_birth:lmDobIso(contact.dob),centrelink_payment:(LM_BENEFITS.find(b=>b[0]===lm.benefit)||["",""])[1]},true);}catch(e){}
  lmRelay();
+ if(debtFunnel())debtPixelOther('lead_market');
  view="lmbank";render();window.scrollTo(0,0);return false;}
 /* Declining returns them to the question they were on and carries on the normal AFH flow,
    so every remaining question is still asked. */
@@ -1636,7 +1638,8 @@ function alcSubmit(ev){ev.preventDefault();const f=ev.target;if(!alcValid(f))ret
   .catch(function(){clearTimeout(tm);alc.ok=false;afhTrack('ALCError',{err:"network"});})
   .then(function(){
    /* AFH always keeps its own copy. If ALC didn't take it, an AFH broker calls instead. */
-   try{sendLead(alc.ok?"referred to ALC":"debt consolidation callback (ALC unavailable)",{consent_wording:ALC_WORDING,consent_version:"afh-alc-v1",alc_consent:"yes",alc_consent_timestamp:alc.ts,alc_ref:alc.ref,alc_route:alc.ok?"sent":"failed"});}catch(e){}
+   try{sendLead(alc.ok?"referred to ALC":"debt consolidation callback (ALC unavailable)",{consent_wording:ALC_WORDING,consent_version:"afh-alc-v1",alc_consent:"yes",alc_consent_timestamp:alc.ts,alc_ref:alc.ref,alc_route:alc.ok?"sent":"failed"},true);}catch(e){}
+   if(alc.ok)debtPixelLead();else debtPixelOther('unplaced');
    view="alcdone";render();window.scrollTo(0,0);});
  return false;}
 function alcSending(){return `<div class="card anim an"><div class="anring sm"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" fill="none" stroke="#EEEBFA" stroke-width="9"/><circle class="anarc fast" cx="60" cy="60" r="50" fill="none" stroke="#4B2EDB" stroke-width="9" stroke-linecap="round"/></svg><span class="anicon">${ICON.lock}</span></div>
@@ -1653,6 +1656,16 @@ function alcDone(){const first=(contact.name||"").trim().split(/\s+/)[0]||"";
   <div class="alcco"><img src="${ALC.logo}" alt="Australian Lending Centre" width="116" height="30" onerror="this.style.display='none'"><span><b>Australian Lending Centre</b>Your debt consolidation specialist</span></div>
   <div class="lmtls">${step(1,'They review your details','Your answers are already with them.',1)}${step(2,'They call you','Keep your phone nearby. They may call from a number you don\'t know.',0)}${step(3,'You decide','Talk through your options. There\'s no obligation to go ahead.',0,1)}</div>
   <div class="lmfine">AFH Finance referred you to Australian Lending Centre and may receive a fee. Questions? Call 03 7031 6881.</div></div>`;}
+/* ── Meta signal for debt consolidation ─────────────────────────────────────────
+   All debt consolidation goes to ALC, so Meta should learn from leads ALC actually takes.
+   Lead (value $15) fires only when ALC accepts. Every other debt outcome fires
+   DebtLeadOther, a custom event the ad sets don't optimise on. */
+function debtPixelUD(){try{const nm=(contact.name||"").trim().toLowerCase().split(/\s+/);let ph=(contact.mobile||"").replace(/[^0-9]/g,"");if(ph.indexOf("0")===0)ph="61"+ph.slice(1);
+ const ud={em:(contact.email||"").trim().toLowerCase(),ph:ph,fn:nm[0]||"",ln:nm.length>1?nm[nm.length-1]:"",country:"au"};const pc=st.personal.postcode||"";if(pc)ud.zp=pc;fbq('init','1029171376262400',ud);}catch(e){}}
+function debtPixelLead(){if(typeof fbq!=="function")return;debtPixelUD();
+ try{fbq('track','Lead',{content_name:'Debt consolidation loan',content_category:'Personal',value:15,currency:'AUD',lead_route:'alc',funnel:'personal',loan_purpose:'debt',loan_amount:+st.personal.amount||0},{eventID:afhLeadEid()});}catch(e){}}
+function debtPixelOther(why){if(typeof fbq!=="function")return;
+ try{fbq('trackCustom','DebtLeadOther',{reason:why,loan_amount:+st.personal.amount||0},{eventID:'dbo_'+afhLeadEid()});}catch(e){}}
 /* Declining keeps them with AFH: the normal matches screen and AFH's own consent. */
 function alcDecline(){alc.declined=true;afhTrack('ALCDecline',{});
  if(contact.name&&consent.contact){view="results";}else{view="ready";afhOnce('ready','CalcResultsReady',{});}
