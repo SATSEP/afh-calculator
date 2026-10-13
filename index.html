@@ -1822,6 +1822,11 @@ async function sendLead(action,extra,noPixel){
        const ud={em:(contact.email||"").trim().toLowerCase(),ph:ph,fn:nm[0]||"",ln:nm.length>1?nm[nm.length-1]:"",country:"au"};
        const pc=(st[funnel]&&st[funnel].postcode)||"";if(pc)ud.zp=pc;
        fbq('init','1029171376262400',ud);}catch(e){}
+     /* Car and caravan: Centrelink as the main income is not a lead we want Meta to find more of.
+        It still reaches AFH (or Lead Market), but goes to Meta as CarLeadOther, not Lead. */
+     if(funnel==="car"&&(st.car.emp==="centrelink"||st.car.emp==="benefits")){
+       fbq('trackCustom','CarLeadOther',{reason:'centrelink',asset:ASSET,loan_amount:+st.car.amount||0},{eventID:'clo_'+data.event_id});
+     }else{
      /* Send an expected value with every Lead so Meta can optimise for revenue
         rather than raw form fills. */
      fbq('track','Lead',{
@@ -1845,6 +1850,7 @@ async function sendLead(action,extra,noPixel){
          currency: 'AUD',
          lead_grade: q.grade
        },{eventID: "q_"+data.event_id});
+     }
      }
    }catch(e){}
  }
