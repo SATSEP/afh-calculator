@@ -1448,7 +1448,8 @@ function submitGate(ev){ev.preventDefault();const f=ev.target;
  try{render();}catch(err){console.error("render error",err);}
  window.scrollTo({top:0,behavior:'smooth'});
  const dbt=debtFunnel();try{sendLead("viewed matches",undefined,dbt);}catch(err){console.error("lead send error",err);}  // send AFTER, never blocks
- if(dbt)debtPixelOther(alc.declined?'declined_alc':'alc_closed');
+ /* ALC takes any debt consolidation of $7k+. With ALC paused or full, the lead stays with AFH but is the same customer, so Meta still counts it. */
+ if(dbt){if(alc.declined)debtPixelOther('declined_alc');else if((+st.personal.amount||0)>=alc.min)debtPixelLead('afh');else debtPixelOther('below_min');}
  return false;}
 
 
@@ -1634,12 +1635,14 @@ function alcSubmit(ev){ev.preventDefault();const f=ev.target;if(!alcValid(f))ret
  const body=alcPayload();const ctl=typeof AbortController!=="undefined"?new AbortController():null;const tm=setTimeout(function(){if(ctl)ctl.abort();},15000);
  fetch(ALC.api,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body),credentials:"omit",signal:ctl?ctl.signal:undefined})
   .then(function(r){return r.json().catch(function(){return {};});})
-  .then(function(j){clearTimeout(tm);if(j&&j.ok){alc.ok=true;alc.ref=j.ref||"";afhTrack('ALCSent',{});}else{alc.ok=false;afhTrack('ALCError',{err:(j&&j.error)||"server"});}})
+  .then(function(j){clearTimeout(tm);if(j&&j.ok){alc.ok=true;alc.repeat=!!j.repeat;alc.ref=j.ref||"";afhTrack('ALCSent',{repeat:alc.repeat?1:0});}else{alc.ok=false;afhTrack('ALCError',{err:(j&&j.error)||"server"});}})
   .catch(function(){clearTimeout(tm);alc.ok=false;afhTrack('ALCError',{err:"network"});})
   .then(function(){
    /* AFH always keeps its own copy. If ALC didn't take it, an AFH broker calls instead. */
    try{sendLead(alc.ok?"referred to ALC":"debt consolidation callback (ALC unavailable)",{consent_wording:ALC_WORDING,consent_version:"afh-alc-v1",alc_consent:"yes",alc_consent_timestamp:alc.ts,alc_ref:alc.ref,alc_route:alc.ok?"sent":"failed"},true);}catch(e){}
-   if(alc.ok)debtPixelLead();else debtPixelOther('unplaced');
+   /* Every consented $7k+ debt lead is one ALC takes: a failed hand-off is sent on by a broker, so it still counts.
+      Only a person ALC already has (same mobile, 90 days) is not a new Lead. */
+   if(alc.ok&&alc.repeat)debtPixelOther('repeat');else debtPixelLead(alc.ok?'alc':'alc_fallback');
    view="alcdone";render();window.scrollTo(0,0);});
  return false;}
 function alcSending(){return `<div class="card anim an"><div class="anring sm"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" fill="none" stroke="#EEEBFA" stroke-width="9"/><circle class="anarc fast" cx="60" cy="60" r="50" fill="none" stroke="#4B2EDB" stroke-width="9" stroke-linecap="round"/></svg><span class="anicon">${ICON.lock}</span></div>
@@ -1662,8 +1665,8 @@ function alcDone(){const first=(contact.name||"").trim().split(/\s+/)[0]||"";
    DebtLeadOther, a custom event the ad sets don't optimise on. */
 function debtPixelUD(){try{const nm=(contact.name||"").trim().toLowerCase().split(/\s+/);let ph=(contact.mobile||"").replace(/[^0-9]/g,"");if(ph.indexOf("0")===0)ph="61"+ph.slice(1);
  const ud={em:(contact.email||"").trim().toLowerCase(),ph:ph,fn:nm[0]||"",ln:nm.length>1?nm[nm.length-1]:"",country:"au"};const pc=st.personal.postcode||"";if(pc)ud.zp=pc;fbq('init','1029171376262400',ud);}catch(e){}}
-function debtPixelLead(){if(typeof fbq!=="function")return;debtPixelUD();
- try{fbq('track','Lead',{content_name:'Debt consolidation loan',content_category:'Personal',value:15,currency:'AUD',lead_route:'alc',funnel:'personal',loan_purpose:'debt',loan_amount:+st.personal.amount||0},{eventID:afhLeadEid()});}catch(e){}}
+function debtPixelLead(route){if(typeof fbq!=="function")return;debtPixelUD();
+ try{fbq('track','Lead',{content_name:'Debt consolidation loan',content_category:'Personal',value:15,currency:'AUD',lead_route:route||'alc',funnel:'personal',loan_purpose:'debt',loan_amount:+st.personal.amount||0},{eventID:afhLeadEid()});}catch(e){}}
 function debtPixelOther(why){if(typeof fbq!=="function")return;
  try{fbq('trackCustom','DebtLeadOther',{reason:why,loan_amount:+st.personal.amount||0},{eventID:'dbo_'+afhLeadEid()});}catch(e){}}
 /* Declining keeps them with AFH: the normal matches screen and AFH's own consent. */
@@ -1892,7 +1895,7 @@ function goFullFunnel(){view="form";qi=0;signalParent("form");render();window.sc
 
 /* ── TRACKING + HOST HANDSHAKE ─────────────────────────────────────────────── */
 let afhStarted=false,afhCtx={},afhSeen={};
-function afhTrack(name,params,std){try{if(typeof fbq!=="function")return;params=Object.assign({funnel:(typeof funnel!=="undefined"?funnel:""),asset:ASSET},params||{});fbq(std?'track':'trackCustom',name,params);}catch(e){}}
+function afhTrack(name,params,std){try{if(typeof fbq!=="function")return;params=Object.assign({funnel:(typeof funnel!=="undefined"?funnel:"")},(typeof funnel!=="undefined"&&funnel==="car")?{asset:ASSET}:{},params||{});fbq(std?'track':'trackCustom',name,params);}catch(e){}}
 function afhOnce(key,name,params,std){if(afhSeen[key])return;afhSeen[key]=1;afhTrack(name,params,std);}
 function afhStart(){if(afhStarted)return;afhStarted=true;afhTrack('CalculatorStart');}
 function afhCookie(n){const m=document.cookie.match(new RegExp('(?:^|; )'+n+'=([^;]*)'));return m?decodeURIComponent(m[1]):"";}
