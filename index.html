@@ -1449,7 +1449,7 @@ function submitGate(ev){ev.preventDefault();const f=ev.target;
  window.scrollTo({top:0,behavior:'smooth'});
  const dbt=debtFunnel();try{sendLead("viewed matches",undefined,dbt);}catch(err){console.error("lead send error",err);}  // send AFTER, never blocks
  /* ALC takes any debt consolidation of $7k+. With ALC paused or full, the lead stays with AFH but is the same customer, so Meta still counts it. */
- if(dbt){if(alc.declined)debtPixelOther('declined_alc');else if((+st.personal.amount||0)>=alc.min)debtPixelLead('afh');else debtPixelOther('below_min');}
+ if(dbt){if(debtCentrelink())debtPixelOther('centrelink');else if(alc.declined)debtPixelOther('declined_alc');else if((+st.personal.amount||0)>=alc.min)debtPixelLead('afh');else debtPixelOther('below_min');}
  return false;}
 
 
@@ -1580,7 +1580,9 @@ function alcCheck(){if(!ALC.on||alc.checking)return alc.checking;
   .catch(function(){alc.open=false;return false;});
  return alc.checking;}
 function debtFunnel(){return funnel==="personal"&&st.personal.purpose==="debt";}
-function alcRoute(){return ALC.on&&debtFunnel()&&alc.open===true&&!alc.declined&&(+st.personal.amount||0)>=alc.min;}
+/* ALC doesn't take Centrelink-only income (Oct 2026): those debt leads go to Lead Market instead. */
+function debtCentrelink(){return debtFunnel()&&(st.personal.emp==='centrelink'||st.personal.emp==='benefits');}
+function alcRoute(){return ALC.on&&debtFunnel()&&alc.open===true&&!alc.declined&&!debtCentrelink()&&(+st.personal.amount||0)>=alc.min;}
 function debtLow(){return debtFunnel()&&(+st.personal.amount||0)<alc.min;}
 function alcStart(){afhTrack('ALCRouted',{amount:+st.personal.amount||0});view="alcmatch";render();window.scrollTo(0,0);
  setTimeout(function(){if(view==="alcmatch"){view="alchand";render();afhTrack('ALCOfferShown',{});}},1700);}
@@ -1642,7 +1644,7 @@ function alcSubmit(ev){ev.preventDefault();const f=ev.target;if(!alcValid(f))ret
    try{sendLead(alc.ok?"referred to ALC":"debt consolidation callback (ALC unavailable)",{consent_wording:ALC_WORDING,consent_version:"afh-alc-v1",alc_consent:"yes",alc_consent_timestamp:alc.ts,alc_ref:alc.ref,alc_route:alc.ok?"sent":"failed"},true);}catch(e){}
    /* Every consented $7k+ debt lead is one ALC takes: a failed hand-off is sent on by a broker, so it still counts.
       Only a person ALC already has (same mobile, 90 days) is not a new Lead. */
-   if(alc.ok&&alc.repeat)debtPixelOther('repeat');else debtPixelLead(alc.ok?'alc':'alc_fallback');
+   if(debtCentrelink())debtPixelOther('centrelink');else if(alc.ok&&alc.repeat)debtPixelOther('repeat');else debtPixelLead(alc.ok?'alc':'alc_fallback');
    view="alcdone";render();window.scrollTo(0,0);});
  return false;}
 function alcSending(){return `<div class="card anim an"><div class="anring sm"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" fill="none" stroke="#EEEBFA" stroke-width="9"/><circle class="anarc fast" cx="60" cy="60" r="50" fill="none" stroke="#4B2EDB" stroke-width="9" stroke-linecap="round"/></svg><span class="anicon">${ICON.lock}</span></div>
