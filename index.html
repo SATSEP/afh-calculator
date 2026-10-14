@@ -1448,8 +1448,9 @@ function submitGate(ev){ev.preventDefault();const f=ev.target;
  try{render();}catch(err){console.error("render error",err);}
  window.scrollTo({top:0,behavior:'smooth'});
  const dbt=debtFunnel();try{sendLead("viewed matches",undefined,dbt);}catch(err){console.error("lead send error",err);}  // send AFTER, never blocks
- /* ALC takes any debt consolidation of $7k+. With ALC paused or full, the lead stays with AFH but is the same customer, so Meta still counts it. */
- if(dbt){if(debtCentrelink())debtPixelOther('centrelink');else if(alc.declined)debtPixelOther('declined_alc');else if((+st.personal.amount||0)>=alc.min)debtPixelLead('afh');else debtPixelOther('below_min');}
+ /* $15 Lead only for a debt lead ALC will pay for. ALC paused or at its limit means no one pays for it, so it isn't a Lead.
+    If the ALC check itself failed (network), the broker sends it on from the CRM, so it still counts. */
+ if(dbt){if(debtCentrelink())debtPixelOther('centrelink');else if(alc.declined)debtPixelOther('declined_alc');else if((+st.personal.amount||0)<alc.min)debtPixelOther('below_min');else if(!ALC.on||alc.state==="closed")debtPixelOther('alc_closed');else debtPixelLead('afh');}
  return false;}
 
 
@@ -1573,11 +1574,11 @@ const ALC_WORDING="Yes, connect me with Australian Lending Centre. I agree AFH F
  +"with Australian Lending Centre Pty Ltd (Australian Credit Licence 389119) so they can call, text or email me about consolidating my debts, "
  +"and AFH Finance can contact me about this enquiry. This overrides my listing on the Do Not Call Register for this enquiry. "
  +"AFH Finance may receive a fee for this referral.";
-let alc={open:null,min:7000,checking:null,consent:false,ts:"",declined:false,ref:"",ok:false};
+let alc={open:null,state:"",min:7000,checking:null,consent:false,ts:"",declined:false,ref:"",ok:false,err:""};
 function alcCheck(){if(!ALC.on||alc.checking)return alc.checking;
  alc.checking=fetch(ALC.api+"?status=1",{credentials:"omit",cache:"no-store"}).then(function(r){return r.json();})
-  .then(function(j){alc.open=!!(j&&j.ok&&j.open);if(j&&+j.min>0)alc.min=+j.min;return alc.open;})
-  .catch(function(){alc.open=false;return false;});
+  .then(function(j){alc.open=!!(j&&j.ok&&j.open);alc.state=(j&&j.ok)?(j.open?"open":"closed"):"error";if(j&&+j.min>0)alc.min=+j.min;return alc.open;})
+  .catch(function(){alc.open=false;alc.state="error";return false;});
  return alc.checking;}
 function debtFunnel(){return funnel==="personal"&&st.personal.purpose==="debt";}
 /* ALC doesn't take Centrelink-only income (Oct 2026): those debt leads go to Lead Market instead. */
@@ -1630,6 +1631,8 @@ function alcPayload(){const s=st.personal;const L=buildLeadDetails();const net=a
   loan:{purpose:"debt",amount:String(Math.round(+s.amount||0)),term:String(+s.term||"")},
   profile:{employment:L["Employment"]||"",income:s.wage?String(Math.round(grossFromNet(net))):"",credit:L["Credit rating (self-assessed)"]||"",
    paydays:pd,residency:L["Residency status"]||"",housing:L["Residential status"]||"",postcode:s.postcode||""}};}
+/* intake.php answers that mean ALC won't take this person, as opposed to a technical failure. */
+const ALC_REFUSED={closed:1,not_eligible:1,with_partner:1,amount:1,purpose:1};
 function alcSubmit(ev){ev.preventDefault();const f=ev.target;if(!alcValid(f))return false;
  contact.name=f.elements.name.value.trim();contact.mobile=f.elements.mobile.value.trim();contact.email=f.elements.email.value.trim();
  consent.contact=true;consent.ts=alc.ts;try{consent.page=location.href.split('#')[0];}catch(e){}
@@ -1637,14 +1640,15 @@ function alcSubmit(ev){ev.preventDefault();const f=ev.target;if(!alcValid(f))ret
  const body=alcPayload();const ctl=typeof AbortController!=="undefined"?new AbortController():null;const tm=setTimeout(function(){if(ctl)ctl.abort();},15000);
  fetch(ALC.api,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body),credentials:"omit",signal:ctl?ctl.signal:undefined})
   .then(function(r){return r.json().catch(function(){return {};});})
-  .then(function(j){clearTimeout(tm);if(j&&j.ok){alc.ok=true;alc.repeat=!!j.repeat;alc.ref=j.ref||"";afhTrack('ALCSent',{repeat:alc.repeat?1:0});}else{alc.ok=false;afhTrack('ALCError',{err:(j&&j.error)||"server"});}})
-  .catch(function(){clearTimeout(tm);alc.ok=false;afhTrack('ALCError',{err:"network"});})
+  .then(function(j){clearTimeout(tm);if(j&&j.ok){alc.ok=true;alc.repeat=!!j.repeat;alc.ref=j.ref||"";afhTrack('ALCSent',{repeat:alc.repeat?1:0});}else{alc.ok=false;alc.err=(j&&j.error)||"server";afhTrack('ALCError',{err:alc.err});}})
+  .catch(function(){clearTimeout(tm);alc.ok=false;alc.err="network";afhTrack('ALCError',{err:"network"});})
   .then(function(){
    /* AFH always keeps its own copy. If ALC didn't take it, an AFH broker calls instead. */
    try{sendLead(alc.ok?"referred to ALC":"debt consolidation callback (ALC unavailable)",{consent_wording:ALC_WORDING,consent_version:"afh-alc-v1",alc_consent:"yes",alc_consent_timestamp:alc.ts,alc_ref:alc.ref,alc_route:alc.ok?"sent":"failed"},true);}catch(e){}
-   /* Every consented $7k+ debt lead is one ALC takes: a failed hand-off is sent on by a broker, so it still counts.
-      Only a person ALC already has (same mobile, 90 days) is not a new Lead. */
-   if(debtCentrelink())debtPixelOther('centrelink');else if(alc.ok&&alc.repeat)debtPixelOther('repeat');else debtPixelLead(alc.ok?'alc':'alc_fallback');
+   /* $15 Lead only when ALC took it, or the hand-off failed for a technical reason and a broker sends it on.
+      ALC refusing it (closed, not eligible, already with ALC, sold through Lead Market) is never a Lead. */
+   if(debtCentrelink())debtPixelOther('centrelink');else if(alc.ok&&alc.repeat)debtPixelOther('repeat');else if(alc.ok)debtPixelLead('alc');
+   else if(ALC_REFUSED[alc.err])debtPixelOther(alc.err==="with_partner"?"with_partner":"alc_"+alc.err);else debtPixelLead('alc_fallback');
    view="alcdone";render();window.scrollTo(0,0);});
  return false;}
 function alcSending(){return `<div class="card anim an"><div class="anring sm"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" fill="none" stroke="#EEEBFA" stroke-width="9"/><circle class="anarc fast" cx="60" cy="60" r="50" fill="none" stroke="#4B2EDB" stroke-width="9" stroke-linecap="round"/></svg><span class="anicon">${ICON.lock}</span></div>
