@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AFH Finance - Loan Calculator</title>
-<!-- AFH-CALC-VERSION: 2026-10-15-pixel-v7 -->
+<!-- AFH-CALC-VERSION: 2026-10-15-v8-debtkeep-carorder -->
 <!-- Meta Pixel Code: standalone loads its own pixel; embedded relays every event to the host page's pixel (one pixel, no duplicate PageView) -->
 <script>
 (function(){
@@ -1011,8 +1011,10 @@ function carSteps(){const s=st.car;const isCar=ASSET!=="caravan";const L=[];
   if(isCar)L.push({id:"ev",icon:"bolt",secs:4,t:"Is it electric or hybrid?",auto:"ev",need:()=>s.ev?[]:["whether it's electric"],
    render:()=>`<div class="rows two">${ro('ev','yes','bolt','Electric / hybrid','')}${ro('ev','no','fuel','Petrol / diesel','')}</div>`});
  }
+ /* v8: work and pay come straight after the vehicle, so Centrelink is known early. */
+ L.push(...empSteps());
  L.push(...loanSteps());
- L.push(creditStep(),paydayStep(),...(st[funnel].payday==='yes'?[paydayCountStep()]:[]),...personSteps());
+ L.push(creditStep(),paydayStep(),...(st[funnel].payday==='yes'?[paydayCountStep()]:[]),...personSteps(true));
  return L;}
 
 const PURPOSE_LBL={debt:"Debt consolidation",home:"Home improvement",car:"Car",wedding:"Wedding",travel:"Holiday / travel",medical:"Medical / dental",investing:"Investing",legal:"Legal",other:"Something else"};
@@ -1098,7 +1100,7 @@ function paydayStep(){return {id:"payday",icon:"cash",secs:4,t:"Any payday loans
 function paydayCountStep(){return {id:"paydayn",icon:"cash",secs:3,t:"How many payday loans do you have?",sub:"Only count payday lenders. Afterpay, Zip and other buy now, pay later don't count.",auto:"paydayN",need:()=>st[funnel].paydayN?[]:["how many payday loans"],
  render:()=>`<div class="rows two">${ro('paydayN','1','','1','')}${ro('paydayN','2','','2','')}${ro('paydayN','3','','3','')}${ro('paydayN','3+','','More than 3','')}</div>`};}
 const RES_LBL={owner:"Home owner",renter:"Renting",boarding:"Boarding / with family"};
-function personSteps(){const s=st[funnel];const L=[];
+function personSteps(noEmp){const s=st[funnel];const L=[];
  L.push({id:"live",icon:"home",secs:4,t:"Where do you live?",auto:"res",need:()=>s._res?[]:["where you live"],
   render:()=>`<div class="rows">${roX('res','owner','home','I own my home','With or without a mortgage')}${roX('res','renter','key','Renting','')}${roX('res','boarding','user','With family or boarding','')}</div>`});
  L.push({id:"howlong",icon:"clock",secs:4,t:"How long have you lived there?",auto:"resLen",need:()=>s.resLen?[]:["how long at your address"],
@@ -1109,6 +1111,9 @@ function personSteps(){const s=st[funnel];const L=[];
   render:()=>`<div class="rows">${roX('visa','citizen','flag','Australian citizen','')}${roX('visa','pr','shield','Permanent resident','')}${roX('visa','temp','plane','Temporary visa','Work, student, partner and more')}${roX('visa','bridging','clock','Bridging visa','')}</div>`});
  if(s.visa==="temp"||s.visa==="bridging")L.push({id:"visa",icon:"doc",secs:10,t:"About your visa",sub:"Your loan needs to finish before it expires.",
   need:()=>{const m=[];if(!s.visaSub)m.push("your visa subclass");if(!s.visaExpiry)m.push("your visa expiry");return m;},render:()=>visaDetail()});
+ if(!noEmp)L.push(...empSteps());
+ return L;}
+function empSteps(){const s=st[funnel];const L=[];
  L.push({id:"employment",icon:"briefcase",secs:4,t:"How are you employed?",auto:"emp",need:()=>s._emp?[]:["your employment"],
   render:()=>`<div class="rows two">${roX('emp','fulltime','briefcase','Full-time','')}${roX('emp','parttime','clock','Part-time','')}${roX('emp','casual','calendar','Casual','')}${roX('emp','self','building','Self-employed','')}${roX('emp','centrelink','cash','Centrelink','')}</div>`});
  L.push({id:"pay",icon:"wallet",secs:8,t:"What's your take-home pay?",sub:"After tax. Your payslip amount is perfect.",need:()=>s.wage?[]:["your take-home pay"],
@@ -1322,7 +1327,7 @@ function next(){clearTimeout(autoT);const miss=stepNeed(steps()[qi]);if(miss.len
  if(lmShouldSwitch()){lmStart();return;}
  triedNext=false;const S=steps();afhStart();{const _t=typeof S[qi].t==="function"?S[qi].t():S[qi].t;afhOnce('step'+funnel+qi,'CalcStep'+(qi+1),{step:qi+1,of:S.length,step_name:_t});if(qi===S.length-1)afhOnce('done'+funnel,'CalcCompleted',{steps:S.length});}if(qi<S.length-1){qi++;window.scrollTo({top:0,behavior:'smooth'});render();}else{
    if(alcRoute()){alcStart();return;}
-   if(debtLow()&&LM.on&&!lm.declined){lmStart();return;}
+   if(debtLow()&&!afhKeepsDebt()&&LM.on&&!lm.declined){lmStart();return;}
    if(contact.name){view="results";}else{view="analysing";setTimeout(function(){if(view==="analysing"){view="ready";render();}},2700);}  // always capture name/mobile/email before showing matches
    window.scrollTo({top:0,behavior:'smooth'});render();}}
 function prev(){clearTimeout(autoT);if(qi>0){navDir=-1;qi--;triedNext=false;window.scrollTo({top:0,behavior:'smooth'});render();}}
@@ -1450,7 +1455,7 @@ function submitGate(ev){ev.preventDefault();const f=ev.target;
  const dbt=debtFunnel();try{sendLead("viewed matches",undefined,dbt);}catch(err){console.error("lead send error",err);}  // send AFTER, never blocks
  /* $15 Lead only for a debt lead ALC will pay for. ALC paused or at its limit means no one pays for it, so it isn't a Lead.
     If the ALC check itself failed (network), the broker sends it on from the CRM, so it still counts. */
- if(dbt){if(debtCentrelink())debtPixelOther('centrelink');else if(alc.declined)debtPixelOther('declined_alc');else if((+st.personal.amount||0)<alc.min)debtPixelOther('below_min');else if(!ALC.on||alc.state==="closed")debtPixelOther('alc_closed');else debtPixelLead('afh');}
+ if(dbt){if(debtCentrelink())debtPixelOther('centrelink');else if(afhKeepsDebt())debtPixelLead('afh_keep',Math.max(15,leadQuality().value||0));else if(alc.declined)debtPixelOther('declined_alc');else if((+st.personal.amount||0)<alc.min)debtPixelOther('below_min');else if(!ALC.on||alc.state==="closed")debtPixelOther('alc_closed');else debtPixelLead('afh');}
  return false;}
 
 
@@ -1492,7 +1497,7 @@ function lmBar(done,part){const seg=i=>i<done?'<i class="lmseg on"></i>':i===don
  const lab=(i,t)=>`<span class="${i<done?'ok':i===done?'cur':''}">${t}${i<done?' ✓':''}</span>`;
  return `<div class="lmbar"><div class="lmsegs">${seg(0)}${seg(1)}${seg(2)}</div><div class="lmlabs">${lab(0,'Your answers')}${lab(1,'Your details')}${lab(2,'Bank check')}</div></div>`;}
 /* Called from next(): switch the moment the answer that disqualifies them is confirmed. */
-function lmShouldSwitch(){return LM.on&&!lm.declined&&funnel!=='business'&&!alcRoute()&&subparCheck().sub;}
+function lmShouldSwitch(){return LM.on&&!lm.declined&&funnel!=='business'&&!alcEligible()&&subparCheck().sub;}
 function lmStart(){afhTrack('ReferRouted',{});view="lmswitch";render();window.scrollTo(0,0);lmTsLoad();
  setTimeout(function(){if(view==="lmswitch"){view="lmhand";render();lmTsMount();afhTrack('ReferOffer',{});}},1700);}
 function lmTsLoad(){if(!LM.turnstile||window.turnstile||document.getElementById('lmTsJs'))return;const sc=document.createElement('script');sc.id='lmTsJs';sc.async=true;
@@ -1583,7 +1588,15 @@ function alcCheck(){if(!ALC.on||alc.checking)return alc.checking;
 function debtFunnel(){return funnel==="personal"&&st.personal.purpose==="debt";}
 /* ALC doesn't take Centrelink-only income (Oct 2026): those debt leads go to Lead Market instead. */
 function debtCentrelink(){return debtFunnel()&&(st.personal.emp==='centrelink'||st.personal.emp==='benefits');}
-function alcRoute(){return ALC.on&&debtFunnel()&&alc.open===true&&!alc.declined&&!debtCentrelink()&&(+st.personal.amount||0)>=alc.min;}
+function alcEligible(){return ALC.on&&debtFunnel()&&alc.open===true&&!alc.declined&&!debtCentrelink()&&(+st.personal.amount||0)>=alc.min;}
+/* v8: debt leads AFH can write itself stay with AFH: employed (not Centrelink), Average credit or better,
+   no more than 1 payday loan, and nothing else that makes them subpar. Everyone else goes to ALC. */
+function afhKeepsDebt(){if(!debtFunnel())return false;const s=st.personal;
+ const employed=["fulltime","parttime","casual","self"].indexOf(s.emp)>-1;
+ const credit=(+s.credit||0)>=2;
+ const payday=s.payday!=="yes"||s.paydayN==="1";
+ return employed&&credit&&payday&&!subparCheck().sub;}
+function alcRoute(){return alcEligible()&&!afhKeepsDebt();}
 function debtLow(){return debtFunnel()&&(+st.personal.amount||0)<alc.min;}
 function alcStart(){afhTrack('HandoffRouted',{});view="alcmatch";render();window.scrollTo(0,0);
  setTimeout(function(){if(view==="alcmatch"){view="alchand";render();afhTrack('HandoffOffer',{});}},1700);}
@@ -1671,8 +1684,8 @@ function alcDone(){const first=(contact.name||"").trim().split(/\s+/)[0]||"";
    nothing to Meta (the CRM records the outcome). */
 function debtPixelUD(){try{const nm=(contact.name||"").trim().toLowerCase().split(/\s+/);let ph=(contact.mobile||"").replace(/[^0-9]/g,"");if(ph.indexOf("0")===0)ph="61"+ph.slice(1);
  const ud={em:(contact.email||"").trim().toLowerCase(),ph:ph,fn:nm[0]||"",ln:nm.length>1?nm[nm.length-1]:"",country:"au"};const pc=st.personal.postcode||"";if(pc)ud.zp=pc;fbq('init','1029171376262400',ud);}catch(e){}}
-function debtPixelLead(route){if(typeof fbq!=="function")return;debtPixelUD();
- try{fbq('track','Lead',{content_name:'Debt consolidation loan',content_category:'Personal',value:15,currency:'AUD',lead_route:route||'alc',funnel:'personal',loan_purpose:'debt',loan_amount:+st.personal.amount||0},{eventID:afhLeadEid()});}catch(e){}}
+function debtPixelLead(route,val){if(typeof fbq!=="function")return;debtPixelUD();
+ try{fbq('track','Lead',{content_name:'Debt consolidation loan',content_category:'Personal',value:(val||15),currency:'AUD',lead_route:route||'alc',funnel:'personal',loan_purpose:'debt',loan_amount:+st.personal.amount||0},{eventID:afhLeadEid()});}catch(e){}}
 function debtPixelOther(why){
  /* v7: debt enquiries ALC doesn't pay for send nothing to Meta. A new custom event would be blocked by Meta
     and raise a warning, and the CRM already records the outcome. */
