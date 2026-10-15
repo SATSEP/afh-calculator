@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AFH Finance - Loan Calculator</title>
-<!-- AFH-CALC-VERSION: 2026-10-03-ranges-v7 -->
+<!-- AFH-CALC-VERSION: 2026-10-15-pixel-v7 -->
 <!-- Meta Pixel Code: standalone loads its own pixel; embedded relays every event to the host page's pixel (one pixel, no duplicate PageView) -->
 <script>
 (function(){
@@ -1493,8 +1493,8 @@ function lmBar(done,part){const seg=i=>i<done?'<i class="lmseg on"></i>':i===don
  return `<div class="lmbar"><div class="lmsegs">${seg(0)}${seg(1)}${seg(2)}</div><div class="lmlabs">${lab(0,'Your answers')}${lab(1,'Your details')}${lab(2,'Bank check')}</div></div>`;}
 /* Called from next(): switch the moment the answer that disqualifies them is confirmed. */
 function lmShouldSwitch(){return LM.on&&!lm.declined&&funnel!=='business'&&!alcRoute()&&subparCheck().sub;}
-function lmStart(){afhTrack('LMRouted',{reasons:subparCheck().reasons.join(', ')});view="lmswitch";render();window.scrollTo(0,0);lmTsLoad();
- setTimeout(function(){if(view==="lmswitch"){view="lmhand";render();lmTsMount();afhTrack('LMOfferShown',{});}},1700);}
+function lmStart(){afhTrack('ReferRouted',{});view="lmswitch";render();window.scrollTo(0,0);lmTsLoad();
+ setTimeout(function(){if(view==="lmswitch"){view="lmhand";render();lmTsMount();afhTrack('ReferOffer',{});}},1700);}
 function lmTsLoad(){if(!LM.turnstile||window.turnstile||document.getElementById('lmTsJs'))return;const sc=document.createElement('script');sc.id='lmTsJs';sc.async=true;
  sc.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';sc.onload=lmTsMount;document.head.appendChild(sc);}
 function lmTsMount(){try{const el=document.getElementById('lmTs');if(LM.turnstile&&window.turnstile&&el&&!el.childNodes.length)turnstile.render(el,{sitekey:LM.turnstile,appearance:'interaction-only',callback:function(t){lm.tsTok=t;}});}catch(e){}}
@@ -1522,7 +1522,7 @@ function lmHand(){const cl=st[funnel].emp==='centrelink';const v=k=>(contact[k]|
    <button type="submit" class="cta lmcta">Continue ${lmIcon('<path d="M5 12h14M13 6l6 6-6 6"/>')}</button>
   </form>
   <div class="lmsafe">${lmIcon('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>')} Encrypted. Only shared with Lead Market and its lenders</div>
-  ${cl?`<div class="lmnils">On Centrelink? You may also qualify for a <a href="${NILS_URL}" target="_blank" rel="noopener" onclick="afhTrack('LMNilsClick',{})">no interest loan (NILS)</a> for essentials.</div>`:''}
+  ${cl?`<div class="lmnils">On Centrelink? You may also qualify for a <a href="${NILS_URL}" target="_blank" rel="noopener" onclick="afhTrack('ReferAltClick',{})">no interest loan (NILS)</a> for essentials.</div>`:''}
   <button type="button" class="lmskip" onclick="lmDecline()">Not now, show my results</button>
   <button type="button" class="lmback" onclick="lmBack()">Tapped the wrong answer? Go back</button>
  </div>`;}
@@ -1541,15 +1541,15 @@ function lmValid(f){let ok=true;const g=k=>(f.elements[k]&&f.elements[k].value||
 function lmSubmit(ev){ev.preventDefault();const f=ev.target;if(!lmValid(f))return false;
  contact.name=f.elements.name.value.trim();contact.mobile=f.elements.mobile.value.trim();contact.email=f.elements.email.value.trim();contact.dob=f.elements.dob.value.trim();
  consent.contact=true;consent.ts=lm.ts;
- afhTrack('LMConsent',{reasons:subparCheck().reasons.join(', ')});
+ afhTrack('ReferConsent',{});
  /* AFH keeps its own copy of the lead, tagged as referred, before anything leaves for Lead Market. */
- try{sendLead("referred to lead market",{consent_wording:LM_WORDING,lm_consent:"yes",lm_consent_wording:LM_WORDING,lm_consent_timestamp:lm.ts,lm_route:"lead market",date_of_birth:lmDobIso(contact.dob),centrelink_payment:(LM_BENEFITS.find(b=>b[0]===lm.benefit)||["",""])[1]},true);}catch(e){}
+ try{sendLead("referred to lead market",{consent_wording:LM_WORDING,lm_consent:"yes",lm_consent_wording:LM_WORDING,lm_consent_timestamp:lm.ts,lm_route:"lead market",date_of_birth:lmDobIso(contact.dob),centrelink_payment:(LM_BENEFITS.find(b=>b[0]===lm.benefit)||["",""])[1]},debtFunnel());}catch(e){}
  lmRelay();
  if(debtFunnel())debtPixelOther('lead_market');
  view="lmbank";render();window.scrollTo(0,0);return false;}
 /* Declining returns them to the question they were on and carries on the normal AFH flow,
    so every remaining question is still asked. */
-function lmDecline(){lm.declined=true;clearTimeout(lmT);afhTrack('LMDecline',{});view="form";render();next();}
+function lmDecline(){lm.declined=true;clearTimeout(lmT);afhTrack('ReferDecline',{});view="form";render();next();}
 function lmBank(){const first=(contact.name||"").trim().split(/\s+/)[0]||"";
  const need=(i,t)=>`<div class="lmneed">${lmIcon(i)}<span>${t}</span></div>`;
  return `${lmBar(2,15)}<div class="card anim lmc">
@@ -1585,8 +1585,8 @@ function debtFunnel(){return funnel==="personal"&&st.personal.purpose==="debt";}
 function debtCentrelink(){return debtFunnel()&&(st.personal.emp==='centrelink'||st.personal.emp==='benefits');}
 function alcRoute(){return ALC.on&&debtFunnel()&&alc.open===true&&!alc.declined&&!debtCentrelink()&&(+st.personal.amount||0)>=alc.min;}
 function debtLow(){return debtFunnel()&&(+st.personal.amount||0)<alc.min;}
-function alcStart(){afhTrack('ALCRouted',{amount:+st.personal.amount||0});view="alcmatch";render();window.scrollTo(0,0);
- setTimeout(function(){if(view==="alcmatch"){view="alchand";render();afhTrack('ALCOfferShown',{});}},1700);}
+function alcStart(){afhTrack('HandoffRouted',{});view="alcmatch";render();window.scrollTo(0,0);
+ setTimeout(function(){if(view==="alcmatch"){view="alchand";render();afhTrack('HandoffOffer',{});}},1700);}
 function alcMatch(){const row=(t,done)=>`<div class="lmchk ${done?'ok':''}">${done?lmIcon('<circle cx="12" cy="12" r="10"/><path d="M7.5 12.5l3 3 6-6.5"/>'):lmIcon('<path d="M12 3a9 9 0 1 0 9 9"/>')}<span>${t}</span></div>`;
  return `<div class="card anim lmc lmsw"><div class="anring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" fill="none" stroke="#EEEBFA" stroke-width="9"/><circle class="anarc" cx="60" cy="60" r="50" fill="none" stroke="#4B2EDB" stroke-width="9" stroke-linecap="round"/></svg><span class="anicon">${ICON.search||''}</span></div>
   <h2 class="lmh">Finding the right specialist</h2><p class="lmp">Debt consolidation works best with a specialist who does it every day.</p>
@@ -1622,7 +1622,7 @@ function alcValid(f){let ok=true,first=null;const g=k=>(f.elements[k]&&f.element
  const m=g('mobile').replace(/[^0-9+]/g,'').replace(/^\+?61/,'0');if(!/^04\d{8}$/.test(m))bad('alcf-mobile');
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(g('email')))bad('alcf-email');
  if(!alc.consent){const r=document.getElementById('alcRow'),e=document.getElementById('alcErr');if(r)r.classList.add('is-error');if(e)e.classList.add('is-shown');if(!first)first=r;ok=false;}
- if(first){const i=first.querySelector('input');if(i&&i.type!=='checkbox')i.focus();else if(first.scrollIntoView)first.scrollIntoView({block:'center',behavior:'smooth'});afhTrack('ALCFormError',{field:(first.id||'').replace('alcf-','')});}
+ if(first){const i=first.querySelector('input');if(i&&i.type!=='checkbox')i.focus();else if(first.scrollIntoView)first.scrollIntoView({block:'center',behavior:'smooth'});afhTrack('HandoffFormError',{});}
  return ok;}
 function alcPayload(){const s=st.personal;const L=buildLeadDetails();const net=annualWage(s.wage,s.wageFreq);
  const pd=s.payday==="yes"?(s.paydayN||""):(s.payday==="no"?"0":"");
@@ -1636,12 +1636,12 @@ const ALC_REFUSED={closed:1,not_eligible:1,with_partner:1,amount:1,purpose:1};
 function alcSubmit(ev){ev.preventDefault();const f=ev.target;if(!alcValid(f))return false;
  contact.name=f.elements.name.value.trim();contact.mobile=f.elements.mobile.value.trim();contact.email=f.elements.email.value.trim();
  consent.contact=true;consent.ts=alc.ts;try{consent.page=location.href.split('#')[0];}catch(e){}
- afhTrack('ALCConsent',{});view="alcsend";render();window.scrollTo(0,0);
+ afhTrack('HandoffConsent',{});view="alcsend";render();window.scrollTo(0,0);
  const body=alcPayload();const ctl=typeof AbortController!=="undefined"?new AbortController():null;const tm=setTimeout(function(){if(ctl)ctl.abort();},15000);
  fetch(ALC.api,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body),credentials:"omit",signal:ctl?ctl.signal:undefined})
   .then(function(r){return r.json().catch(function(){return {};});})
-  .then(function(j){clearTimeout(tm);if(j&&j.ok){alc.ok=true;alc.repeat=!!j.repeat;alc.ref=j.ref||"";afhTrack('ALCSent',{repeat:alc.repeat?1:0});}else{alc.ok=false;alc.err=(j&&j.error)||"server";afhTrack('ALCError',{err:alc.err});}})
-  .catch(function(){clearTimeout(tm);alc.ok=false;alc.err="network";afhTrack('ALCError',{err:"network"});})
+  .then(function(j){clearTimeout(tm);if(j&&j.ok){alc.ok=true;alc.repeat=!!j.repeat;alc.ref=j.ref||"";afhTrack('HandoffSent',{});}else{alc.ok=false;alc.err=(j&&j.error)||"server";afhTrack('HandoffError',{});}})
+  .catch(function(){clearTimeout(tm);alc.ok=false;alc.err="network";afhTrack('HandoffError',{});})
   .then(function(){
    /* AFH always keeps its own copy. If ALC didn't take it, an AFH broker calls instead. */
    try{sendLead(alc.ok?"referred to ALC":"debt consolidation callback (ALC unavailable)",{consent_wording:ALC_WORDING,consent_version:"afh-alc-v1",alc_consent:"yes",alc_consent_timestamp:alc.ts,alc_ref:alc.ref,alc_route:alc.ok?"sent":"failed"},true);}catch(e){}
@@ -1668,18 +1668,20 @@ function alcDone(){const first=(contact.name||"").trim().split(/\s+/)[0]||"";
 /* ── Meta signal for debt consolidation ─────────────────────────────────────────
    All debt consolidation goes to ALC, so Meta should learn from leads ALC actually takes.
    Lead (value $15) fires only when ALC accepts. Every other debt outcome fires
-   DebtLeadOther, a custom event the ad sets don't optimise on. */
+   nothing to Meta (the CRM records the outcome). */
 function debtPixelUD(){try{const nm=(contact.name||"").trim().toLowerCase().split(/\s+/);let ph=(contact.mobile||"").replace(/[^0-9]/g,"");if(ph.indexOf("0")===0)ph="61"+ph.slice(1);
  const ud={em:(contact.email||"").trim().toLowerCase(),ph:ph,fn:nm[0]||"",ln:nm.length>1?nm[nm.length-1]:"",country:"au"};const pc=st.personal.postcode||"";if(pc)ud.zp=pc;fbq('init','1029171376262400',ud);}catch(e){}}
 function debtPixelLead(route){if(typeof fbq!=="function")return;debtPixelUD();
  try{fbq('track','Lead',{content_name:'Debt consolidation loan',content_category:'Personal',value:15,currency:'AUD',lead_route:route||'alc',funnel:'personal',loan_purpose:'debt',loan_amount:+st.personal.amount||0},{eventID:afhLeadEid()});}catch(e){}}
-function debtPixelOther(why){if(typeof fbq!=="function")return;
- try{fbq('trackCustom','DebtLeadOther',{reason:why,loan_amount:+st.personal.amount||0},{eventID:'dbo_'+afhLeadEid()});}catch(e){}}
+function debtPixelOther(why){
+ /* v7: debt enquiries ALC doesn't pay for send nothing to Meta. A new custom event would be blocked by Meta
+    and raise a warning, and the CRM already records the outcome. */
+ return;}
 /* Declining keeps them with AFH: the normal matches screen and AFH's own consent. */
-function alcDecline(){alc.declined=true;afhTrack('ALCDecline',{});
+function alcDecline(){alc.declined=true;afhTrack('HandoffDecline',{});
  if(contact.name&&consent.contact){view="results";}else{view="ready";afhOnce('ready','CalcResultsReady',{});}
  render();window.scrollTo(0,0);}
-function alcBack(){afhTrack('ALCBack',{});view="form";render();window.scrollTo(0,0);}
+function alcBack(){afhTrack('HandoffBack',{});view="form";render();window.scrollTo(0,0);}
 window.alcTick=alcTick;
 if(ALC.on&&URLPURPOSE==="debt")alcCheck();
 
@@ -1692,7 +1694,7 @@ function lmDobIso(t){const m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec((t||"").trim());
  const d=+m[1],mo=+m[2],y=+m[3],dt=new Date(y,mo-1,d);if(dt.getFullYear()!==y||dt.getMonth()!==mo-1||dt.getDate()!==d)return "";
  const n=new Date(),min=new Date(n.getFullYear()-18,n.getMonth(),n.getDate()),max=new Date(n.getFullYear()-100,n.getMonth(),n.getDate());if(dt>min||dt<max)return "";
  return y+"-"+String(mo).padStart(2,'0')+"-"+String(d).padStart(2,'0');}
-function lmBack(){clearTimeout(lmT);afhTrack('LMBack',{});view="form";render();window.scrollTo(0,0);}
+function lmBack(){clearTimeout(lmT);afhTrack('ReferBack',{});view="form";render();window.scrollTo(0,0);}
 /* Centrelink payment type: Lead Market buyers bid on unemployment vs other benefits separately. */
 const LM_BENEFITS=[["jobseeker","JobSeeker / Youth Allowance"],["pension","Age or Disability Pension"],["carer","Carer Payment"],["family","Family / Parenting Payment"],["other","Something else"]];
 function lmSetBenefit(k){lm.benefit=k;document.querySelectorAll('.lmchip').forEach(b=>b.classList.toggle('on',b.getAttribute('onclick').indexOf("'"+k+"'")>-1));
@@ -1732,15 +1734,15 @@ function lmPayload(){const s=st[funnel];const nm=(contact.name||"").trim().split
    Fires on Continue, so it finishes while they read the bank-prep screen. */
 function lmRelay(){if(lm.relay)return lm.relay;
  lm.relay=fetch(LM.relay,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(lmPayload()),credentials:"omit"})
-  .then(function(r){return r.json();}).then(function(j){if(j&&j.ok){lm.tok=j.tok||"";lm.leadId=j.lead_id||"";lm.env=(j.env==="dev"?"dev":"prod");afhTrack('LMLeadCreated',{});}
-   else{lm.err=(j&&j.error)||"relay";lm.relay=null;afhTrack('LMRelayError',{err:lm.err});}return j;})
-  .catch(function(){lm.err="network";lm.relay=null;afhTrack('LMRelayError',{err:"network"});return null;});
+  .then(function(r){return r.json();}).then(function(j){if(j&&j.ok){lm.tok=j.tok||"";lm.leadId=j.lead_id||"";lm.env=(j.env==="dev"?"dev":"prod");afhTrack('ReferCreated',{});}
+   else{lm.err=(j&&j.error)||"relay";lm.relay=null;afhTrack('ReferError',{});}return j;})
+  .catch(function(){lm.err="network";lm.relay=null;afhTrack('ReferError',{});return null;});
  return lm.relay;}
 /* The iframe only gets our opaque reference and Lead Market's token, no personal details. */
 function lmFrameUrl(){return LM.url+"&ref="+encodeURIComponent(afhLeadEid())+(lm.tok?"&tok="+encodeURIComponent(lm.tok):"")+(lm.env?"&env="+lm.env:"");}
-function lmGoBank(b){afhTrack('LMBankStart',{});if(b)b.classList.add('busy');
+function lmGoBank(b){afhTrack('ReferStep2',{});if(b)b.classList.add('busy');
  Promise.race([lmRelay(),new Promise(function(r){setTimeout(r,6000);})]).then(function(){view='lmframe';render();window.scrollTo(0,0);});}
-function lmFrameLoaded(f){try{f.contentWindow.postMessage({afhLmRef:afhLeadEid(),afhLmTok:lm.tok||""},LM.origin);}catch(e){}afhTrack('LMFrameLoaded',{});}
+function lmFrameLoaded(f){try{f.contentWindow.postMessage({afhLmRef:afhLeadEid(),afhLmTok:lm.tok||""},LM.origin);}catch(e){}afhTrack('ReferFrameLoaded',{});}
 function lmFrame(){return `${lmBar(2,60)}<div class="card anim lmc lmfr"><div class="lmfh"><span>${lmIcon('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>')} Secure connection</span><small>by Credit Sense</small></div>
   <iframe src="${lmFrameUrl()}" title="Secure bank check" onload="lmFrameLoaded(this)" class="lmif"></iframe>
   <div class="lmhelp">${lmIcon('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>')} Stuck on a step? Call us on 03 7031 6881 and we'll walk you through it.</div></div>`;}
@@ -1755,7 +1757,7 @@ function lmDone(){const first=(contact.name||"").trim().split(/\s+/)[0]||"";cons
   <div class="lmfine">AFH Finance referred you to Lead Market and may receive a fee. Questions? Call 03 7031 6881.</div></div>`;}
 /* The partner page tells us when the bank step is finished or the lead is accepted. */
 window.addEventListener("message",function(e){if(e.origin!==LM.origin)return;const d=e.data;if(!d||typeof d!=="object")return;
- if(d.afhLmDone&&view==="lmframe"){afhTrack('LMCompleted',{});view="lmdone";render();window.scrollTo(0,0);}
+ if(d.afhLmDone&&view==="lmframe"){afhTrack('ReferCompleted',{});view="lmdone";render();window.scrollTo(0,0);}
  if(d.afhLmHeight){const f=document.querySelector('.lmif');if(f)f.style.height=Math.max(320,Math.min(3000,+d.afhLmHeight||0))+'px';}});
 function buildLeadDetails(){const s=st[funnel];const out={};
  const money=v=>"$"+(+v).toLocaleString();
@@ -1828,11 +1830,9 @@ async function sendLead(action,extra,noPixel){
        const ud={em:(contact.email||"").trim().toLowerCase(),ph:ph,fn:nm[0]||"",ln:nm.length>1?nm[nm.length-1]:"",country:"au"};
        const pc=(st[funnel]&&st[funnel].postcode)||"";if(pc)ud.zp=pc;
        fbq('init','1029171376262400',ud);}catch(e){}
-     /* Car and caravan: Centrelink as the main income is not a lead we want Meta to find more of.
-        It still reaches AFH (or Lead Market), but goes to Meta as CarLeadOther, not Lead. */
-     if(funnel==="car"&&(st.car.emp==="centrelink"||st.car.emp==="benefits")){
-       fbq('trackCustom','CarLeadOther',{reason:'centrelink',asset:ASSET,loan_amount:+st.car.amount||0},{eventID:'clo_'+data.event_id});
-     }else{
+     /* v7: every car, caravan, business and non-debt personal enquiry that reaches AFH is a Lead,
+        Centrelink and Lead Market ones included (they carry a low value). QualifiedLead stays the quality signal. */
+     {
      /* Send an expected value with every Lead so Meta can optimise for revenue
         rather than raw form fills. */
      fbq('track','Lead',{
@@ -1907,7 +1907,11 @@ function goFullFunnel(){view="form";qi=0;signalParent("form");render();window.sc
 
 /* ── TRACKING + HOST HANDSHAKE ─────────────────────────────────────────────── */
 let afhStarted=false,afhCtx={},afhSeen={};
-function afhTrack(name,params,std){try{if(typeof fbq!=="function")return;params=Object.assign({funnel:(typeof funnel!=="undefined"?funnel:"")},(typeof funnel!=="undefined"&&funnel==="car")?{asset:ASSET}:{},params||{});fbq(std?'track':'trackCustom',name,params);}catch(e){}}
+/* Meta blocks any custom event name it hasn't already approved on this pixel (tested 15 Oct: new names are dropped
+   and raise the "Custom events blocked" warning). Only names already active in Events Manager are sent. */
+const AFH_META_CUSTOM={CalculatorStart:1,CalcAnswer:1,CalcCompleted:1,CalcResultsReady:1,CalcDetailsForm:1,CalcUnlockClick:1,CalcViewedMatches:1,CalcGateError:1};
+function afhMetaOK(name,std){return !!std||AFH_META_CUSTOM[name]===1||/^CalcStep\d+$/.test(name);}
+function afhTrack(name,params,std){try{if(typeof fbq!=="function")return;if(!afhMetaOK(name,std))return;params=Object.assign({funnel:(typeof funnel!=="undefined"?funnel:"")},(typeof funnel!=="undefined"&&funnel==="car")?{asset:ASSET}:{},params||{});fbq(std?'track':'trackCustom',name,params);}catch(e){}}
 function afhOnce(key,name,params,std){if(afhSeen[key])return;afhSeen[key]=1;afhTrack(name,params,std);}
 function afhStart(){if(afhStarted)return;afhStarted=true;afhTrack('CalculatorStart');}
 function afhCookie(n){const m=document.cookie.match(new RegExp('(?:^|; )'+n+'=([^;]*)'));return m?decodeURIComponent(m[1]):"";}
@@ -1928,7 +1932,7 @@ function render(){tabs();document.getElementById("screen").innerHTML=view==="cho
  afhPost({afhCalcView:{view:view,qi:qi,funnel:funnel}});
  if(view==="details")afhOnce('details','CalcDetailsForm',{});
  if(view==="results")afhOnce('results','CalcViewedMatches',{});
- if(view==="results"&&!subparCheck().sub){try{const q=leadQuality();if(q.qualified)afhOnce('qresults','QualifiedMatches',{content_category:funnel,value:q.value,currency:'AUD',lead_grade:q.grade});}catch(e){}}
+ if(view==="results"&&!subparCheck().sub){try{const q=leadQuality();if(q.qualified)afhOnce('qresults','CalcGoodFit',{});}catch(e){}}
  if(view==="ready"){afhOnce('ready','CalcResultsReady',{});countUp();}
 }
 
