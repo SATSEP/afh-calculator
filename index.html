@@ -811,7 +811,9 @@ function leadQuality(){
     } else {
       /* car, caravan and personal all run on income */
       const emp = s.emp;
-      if(emp === 'centrelink'){
+      if(!afhAsked('employment')||!afhAsked('credit')){
+        grade = 'weak'; reasons.push('left the form before employment/credit questions');
+      } else if(emp === 'centrelink'){
         grade = 'weak'; reasons.push('Centrelink income');
       } else if((emp === 'fulltime' || emp === 'self') && s.credit >= 3 && matches > 0){
         grade = 'strong'; reasons.push('stable income', 'good credit');
@@ -898,6 +900,10 @@ function assetTypeOpts(s){return A('opts').map(([l,v])=>`<option value="${v}" ${
 let PICK=(URLTYPE&&TABMAP[URLTYPE])?TABMAP[URLTYPE]:((LOCKTAB&&TABMAP[LOCKTAB])?TABMAP[LOCKTAB]:null); // funnel explicitly chosen via URL, else null
 let funnel=PICK||"car",view=(QUICK?"quick":(PICK?"form":"chooser")),qi=0,lastQi=-1,lastFunnel="";  // no ?type/?tab -> show chooser first (don't default to car)
 let contact={name:"",mobile:"",email:""},leadSent=false,triedNext=false;
+/* v9: remember how far the form got, so a lead routed out mid-form (e.g. 3+ payday loans at question 4)
+   is not recorded with default answers to questions it never saw. */
+let afhMaxQi={},afhDone={};
+function afhAsked(id){try{if(afhDone[funnel]||afhMaxQi[funnel]===undefined)return true;const i=steps().findIndex(x=>x.id===id);return i<0||i<=afhMaxQi[funnel];}catch(e){return true;}}
 let view0=QUICK?"quick":"form";
 let st={
  car:{found:null,cond:null,ev:null,use:"personal",knowType:null,carType:"",amount:35000,term:5,balloon:0,credit:3,res:"owner",resLen:"",visa:"citizen",visaSub:"",visaExpiry:"",emp:"fulltime",wage:0,wageFreq:"weekly",income:65000,payday:"no"},
@@ -1296,7 +1302,7 @@ function stepNeed(step){return step&&step.need?step.need():missingFields();}
 function form(){const S=steps();if(qi>S.length-1)qi=S.length-1;const step=S[qi];const title=typeof step.t==="function"?step.t():step.t;
  const pct=Math.max(8,Math.round(qi/S.length*100));const left=S.length-qi;const secs=S.slice(qi).reduce((a,x)=>a+(x.secs||6),0);
  const lbl=left<=1?'Last step':(qi>0&&qi===Math.floor(S.length/2))?'Halfway there':'About '+(Math.ceil(secs/5)*5)+' sec left';
- const fresh=(qi!==lastQi||funnel!==lastFunnel);lastQi=qi;lastFunnel=funnel;
+ const fresh=(qi!==lastQi||funnel!==lastFunnel);lastQi=qi;lastFunnel=funnel;afhMaxQi[funnel]=Math.max(afhMaxQi[funnel]||0,qi);
  let h=`<div class="card${fresh?(navDir<0?' back-anim':' anim'):''}">
   <div class="phead">${qi>0?`<button type="button" class="pback" onclick="prev()" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>`:''}<div class="pbar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div><span class="pleft${(left<=1||lbl==='Halfway there')?' last':''}">${lbl}</span></div>
   ${step.icon&&ICON[step.icon]?`<div class="qicon">${ICON[step.icon]}</div>`:''}<h2 class="qtitle">${title}</h2>${step.sub?`<p class="qsub">${step.sub}</p>`:''}${step.render()}`;
@@ -1325,7 +1331,7 @@ function missingFields(){const s=st[funnel];const m=[];
  return m;}
 function next(){clearTimeout(autoT);const miss=stepNeed(steps()[qi]);if(miss.length){triedNext=true;render();const e=document.querySelector(".reqerr");if(e&&e.scrollIntoView)e.scrollIntoView({block:"center",behavior:"smooth"});return;}
  if(lmShouldSwitch()){lmStart();return;}
- triedNext=false;const S=steps();afhStart();{const _t=typeof S[qi].t==="function"?S[qi].t():S[qi].t;afhOnce('step'+funnel+qi,'CalcStep'+(qi+1),{step:qi+1,of:S.length,step_name:_t});if(qi===S.length-1)afhOnce('done'+funnel,'CalcCompleted',{steps:S.length});}if(qi<S.length-1){qi++;window.scrollTo({top:0,behavior:'smooth'});render();}else{
+ triedNext=false;const S=steps();afhStart();{const _t=typeof S[qi].t==="function"?S[qi].t():S[qi].t;afhOnce('step'+funnel+qi,'CalcStep'+(qi+1),{step:qi+1,of:S.length,step_name:_t});if(qi===S.length-1)afhOnce('done'+funnel,'CalcCompleted',{steps:S.length});}if(qi<S.length-1){qi++;window.scrollTo({top:0,behavior:'smooth'});render();}else{afhDone[funnel]=1;
    if(alcRoute()){alcStart();return;}
    if(debtLow()&&!afhKeepsDebt()&&LM.on&&!lm.declined){lmStart();return;}
    if(contact.name){view="results";}else{view="analysing";setTimeout(function(){if(view==="analysing"){view="ready";render();}},2700);}  // always capture name/mobile/email before showing matches
@@ -1814,6 +1820,8 @@ function buildLeadDetails(){const s=st[funnel];const out={};
    out["Est. annual GROSS (before tax)"]=s.wage?money(grossFromNet(net)):"-";
    out["Active payday loans?"]=s.payday==="yes"?"Yes"+(s.paydayN?" ("+(s.paydayN==="3+"?"more than 3":s.paydayN)+")":""):"No";
  }
+ if(funnel!=="business"){const NA="Not asked",AM={credit:["Credit rating (self-assessed)"],payday:["Active payday loans?"],live:["Residential status"],howlong:["Time at address"],residency:["Residency status","Visa subclass","Visa expiry"],employment:["Employment"]};
+  for(const id in AM)if(!afhAsked(id))AM[id].forEach(k=>{if(k in out)out[k]=NA;});}
  return out;}
 // per-lender enquiry removed - every lead is called back by a broker automatically
 let afhEid="";function afhLeadEid(){if(!afhEid)afhEid="lead_"+Date.now()+"_"+Math.random().toString(36).slice(2,10);return afhEid;}
