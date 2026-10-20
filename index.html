@@ -1691,7 +1691,7 @@ function alcDone(){const first=(contact.name||"").trim().split(/\s+/)[0]||"";
 function debtPixelUD(){try{const nm=(contact.name||"").trim().toLowerCase().split(/\s+/);let ph=(contact.mobile||"").replace(/[^0-9]/g,"");if(ph.indexOf("0")===0)ph="61"+ph.slice(1);
  const ud={em:(contact.email||"").trim().toLowerCase(),ph:ph,fn:nm[0]||"",ln:nm.length>1?nm[nm.length-1]:"",country:"au"};const pc=st.personal.postcode||"";if(pc)ud.zp=pc;fbq('init','1029171376262400',ud);}catch(e){}}
 function debtPixelLead(route,val){if(typeof fbq!=="function")return;debtPixelUD();
- try{fbq('track','Lead',{content_name:'Debt consolidation loan',content_category:'Personal',value:(val||15),currency:'AUD',lead_route:route||'alc',funnel:'personal',loan_purpose:'debt',loan_amount:+st.personal.amount||0},{eventID:afhLeadEid()});}catch(e){}}
+ try{fbq('track','Lead',afhPxSafe({content_category:'Personal',value:(val||15),currency:'AUD'}),{eventID:afhLeadEid()});}catch(e){}}
 function debtPixelOther(why){
  /* v7: debt enquiries ALC doesn't pay for send nothing to Meta. A new custom event would be blocked by Meta
     and raise a warning, and the CRM already records the outcome. */
@@ -1856,27 +1856,19 @@ async function sendLead(action,extra,noPixel){
      {
      /* Send an expected value with every Lead so Meta can optimise for revenue
         rather than raw form fills. */
-     fbq('track','Lead',{
-       content_name: lead["Loan type"]+" loan",
+     fbq('track','Lead',afhPxSafe({
        content_category: lead["Loan type"],
        value: q.value,
-       currency: 'AUD',
-       lead_grade: q.grade,
-       funnel: funnel,
-       loan_amount: +st[funnel].amount||0,
-       loan_term: +st[funnel].term||0,
-       loan_purpose: funnel==="personal"?(st.personal.purpose||""):funnel==="car"?(st.car.found==="no"?"still looking":(st.car.cond||"")):(st.business.sub||""),
-       asset: ASSET
-     },{eventID: data.event_id});
+       currency: 'AUD'
+     }),{eventID: data.event_id});
      /* Only leads that can realistically settle. Use THIS as the optimisation
         event once an ad set is producing enough of them. */
      if(q.qualified&&!subparCheck().sub){
-       fbq('trackCustom','QualifiedLead',{
+       fbq('trackCustom','QualifiedLead',afhPxSafe({
          content_category: lead["Loan type"],
          value: q.value,
-         currency: 'AUD',
-         lead_grade: q.grade
-       },{eventID: "q_"+data.event_id});
+         currency: 'AUD'
+       }),{eventID: "q_"+data.event_id});
      }
      }
    }catch(e){}
@@ -1931,8 +1923,13 @@ let afhStarted=false,afhCtx={},afhSeen={};
 /* Meta blocks any custom event name it hasn't already approved on this pixel (tested 15 Oct: new names are dropped
    and raise the "Custom events blocked" warning). Only names already active in Events Manager are sent. */
 const AFH_META_CUSTOM={CalculatorStart:1,CalcAnswer:1,CalcCompleted:1,CalcResultsReady:1,CalcDetailsForm:1,CalcUnlockClick:1,CalcViewedMatches:1,CalcGateError:1};
+/* Pixel data rule (20 Oct 2026): the AFH Finance dataset is under Meta "core setup" (financial services), so Meta strips
+   custom parameters anyway, and loan amounts, terms, purposes, grades or answers must never reach Meta. Every event this
+   calculator sends passes through afhPxSafe(): only value, currency and a generic content_category are kept. */
+const AFH_PX_KEEP={value:1,currency:1,content_category:1};
+function afhPxSafe(p){const o={};if(p&&typeof p==="object")for(const k in p){if(AFH_PX_KEEP[k]===1&&p[k]!==""&&p[k]!=null)o[k]=p[k];}return o;}
 function afhMetaOK(name,std){return !!std||AFH_META_CUSTOM[name]===1||/^CalcStep\d+$/.test(name);}
-function afhTrack(name,params,std){try{if(typeof fbq!=="function")return;if(!afhMetaOK(name,std))return;params=Object.assign({funnel:(typeof funnel!=="undefined"?funnel:"")},(typeof funnel!=="undefined"&&funnel==="car")?{asset:ASSET}:{},params||{});fbq(std?'track':'trackCustom',name,params);}catch(e){}}
+function afhTrack(name,params,std){try{if(typeof fbq!=="function")return;if(!afhMetaOK(name,std))return;fbq(std?'track':'trackCustom',name,afhPxSafe(params));}catch(e){}}
 function afhOnce(key,name,params,std){if(afhSeen[key])return;afhSeen[key]=1;afhTrack(name,params,std);}
 function afhStart(){if(afhStarted)return;afhStarted=true;afhTrack('CalculatorStart');}
 function afhCookie(n){const m=document.cookie.match(new RegExp('(?:^|; )'+n+'=([^;]*)'));return m?decodeURIComponent(m[1]):"";}
