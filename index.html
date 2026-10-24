@@ -612,6 +612,28 @@ body.fullresults{background:transparent!important}
 .r2book .cta svg{width:18px;height:18px}
 .r2book .cta:disabled{opacity:.45;cursor:default;box-shadow:none}
 .r2call{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:10px;font-size:13.5px;font-weight:700;color:#fff;text-decoration:none;opacity:.85}.r2call svg{width:15px;height:15px}
+/* Apply now card (calculator to apply.afhfinance.com.au handoff). Only shown when the portal says it is switched on. */
+.r2apply{margin-top:14px;background:#fff;border:2px solid #4B2EDB;border-radius:22px;padding:18px;box-shadow:0 16px 36px -14px rgba(75,46,219,.35);animation:rise .45s cubic-bezier(.2,.8,.2,1) both}
+.r2ah{display:flex;gap:12px;align-items:flex-start}
+.r2ah b{display:block;font-size:16.5px;font-weight:800;color:#14171c}
+.r2ah small{display:block;font-size:13px;color:#5A6472;font-weight:500;margin-top:2px;line-height:1.4}
+.r2steps{list-style:none;margin:16px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;position:relative}
+.r2steps li{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font-size:11.5px;font-weight:700;color:#8A93A0;line-height:1.25;position:relative}
+.r2steps li:not(:last-child):after{content:"";position:absolute;top:13px;left:calc(50% + 17px);right:calc(-50% + 17px);height:2px;background:#E4E7EC;border-radius:2px}
+.r2steps li.done:after{background:#4B2EDB}
+.r2steps i{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:12.5px;font-weight:800;background:#EEF1F5;color:#8A93A0;position:relative;z-index:1}
+.r2steps i svg{width:14px;height:14px}
+.r2steps li.done{color:#3A1FB8}.r2steps li.done i{background:#4B2EDB;color:#fff}
+.r2steps li.now{color:#14171c}.r2steps li.now i{background:#fff;color:#4B2EDB;box-shadow:0 0 0 2px #4B2EDB,0 0 0 6px #EDE9FD}
+.r2apply .cta{margin-top:16px;gap:8px;text-decoration:none}
+.r2apply .cta svg{width:18px;height:18px}
+.r2apply .cta:disabled{cursor:progress;opacity:.8}
+.r2apply .cta .spin{width:18px;height:18px;border-radius:50%;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;animation:r2spin .8s linear infinite}
+@keyframes r2spin{to{transform:rotate(360deg)}}
+.r2afoot{margin-top:10px;font-size:12.5px;font-weight:600;color:#5A6472;text-align:center;line-height:1.4}
+.r2afoot svg{display:inline-block;width:14px;height:14px;vertical-align:-2px;margin-right:4px}
+.r2anote{margin-top:14px;background:#F6F4FE;border-radius:14px;padding:12px 14px;font-size:13.5px;font-weight:600;color:#3A1FB8;line-height:1.45}
+@media (prefers-reduced-motion:reduce){.r2apply{animation:none}.r2apply .cta .spin{animation-duration:2s}}
 .r2sec{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;margin:22px 2px 10px}
 .r2sec span{font-size:12px;font-weight:800;color:#3A1FB8;background:#F3F0FE;border-radius:99px;padding:2px 8px}
 .r2list{display:grid;gap:8px}
@@ -1354,7 +1376,7 @@ function results(){const s=st[funnel];const{list,fallback,capped,nearmiss}=match
    <div class="r2pay"><span class="r2l">Estimated repayment range</span><div class="r2v">${fmt(p.lo)}<i class="r2dash">–</i>${fmt(p.hi).replace('$','')}<small>/${F[1]}</small></div><span class="r2r">Indicative estimate. Where you land in this range depends on the rate the lender approves.</span></div>
    <div class="r2rates"><div><span>Interest rate p.a.</span><b>from ${p.rlo.toFixed(2)}%</b></div><div><span>Comparison rate p.a.*</span><b>from ${p.clo.toFixed(2)}%</b></div></div>
    <div class="r2tags">${tags.map((t,i)=>`<span class="${i<fits.length?'fit':''}">${i<fits.length?TICK:''}${t}</span>`).join('')}</div></div>`;}
- h+=bookingCard();
+ aplCheck();h+=`<div id="aplSlot">${applyCard()}</div>`+bookingCard();
  if(list.length>1){h+=`<div class="r2sec">More matches <span>${list.length-1}</span></div><div class="r2list">`;
   list.slice(1,showAll?99:6).forEach((l,i)=>{const p=pay(l);const fit=fitBadges(l,funnel,s)[0]||l.tags[0]||"";
    h+=`<div class="r2item" style="animation-delay:${Math.min(i,8)*50}ms"><span class="r2logo sm${LG(l)?' img':''}">${LG(l)||l.name[0]}</span><div class="r2in"><b>${l.name}</b><small>${fit}</small><em>from ${p.rlo.toFixed(2)}% p.a. · comp. ${p.clo.toFixed(2)}%*</em></div><div class="r2ip"><b>${fmt(p.lo)}–${fmt(p.hi).replace('$','')}</b><small>/${F[2]}</small></div></div>`;});
@@ -1422,11 +1444,50 @@ function bookCall(){if(!bk.day||!bk.time)return;const d=bkDays().find(x=>x.k===b
 function bookingCard(){
  if(booked)return `<div class="r2book done"><span class="r2bi ok">${TICK}</span><div><b>Call booked for ${booked.day}, ${booked.time}</b><small>A specialist broker will call ${contact.mobile||'you'}. Need us sooner? <a href="tel:${PHONE}">Call 03 7031 6881</a></small></div></div>`;
  const days=bkDays();
- return `<div class="r2book" id="book"><div class="r2bh"><span class="r2bi">${ICON.phone}</span><div><b>Talk to a specialist broker</b><small>Free 10 minute call to confirm your best option and lock it in.</small></div></div>
+ return `<div class="r2book" id="book"><div class="r2bh"><span class="r2bi">${ICON.phone}</span><div>${apl.on?`<b>Rather talk it through first?</b><small>Book a free 10 minute call with a specialist broker.</small>`:`<b>Talk to a specialist broker</b><small>Free 10 minute call to confirm your best option and lock it in.</small>`}</div></div>
   <div class="r2lbl">Pick a day</div><div class="chips">${days.map(d=>`<button type="button" class="chip ${bk.day===d.k?'on':''}" onclick="bkSet('day','${d.k}')">${d.l}</button>`).join('')}</div>
   ${bk.day?`<div class="r2lbl">Pick a time</div><div class="chips">${bkSlots(bk.day).map(([h,t])=>`<button type="button" class="chip ${bk.time===t?'on':''}" onclick="bkSet('time','${t}')">${t}</button>`).join('')}</div>`:''}
   <button type="button" class="cta" ${bk.day&&bk.time?'':'disabled'} onclick="bookCall()">${ICON.calendar} Book my call</button>
   <a class="r2call" href="tel:${PHONE}">${ICON.phone} Or call now on 03 7031 6881</a></div>`;}
+/* ── APPLY NOW (handoff to apply.afhfinance.com.au) ─────────────────────────────
+   Car and personal enquiries can carry straight on to the secure application,
+   pre-filled from these answers. The portal decides if this is switched on and
+   if this enquiry can use it (Lead Market, ALC, duplicates and tests can't).
+   Nothing personal is sent from here: only this enquiry's random event id. */
+const PORTAL_FN="https://gqgykllxzotrqfiyzkax.supabase.co/functions/v1/portal";
+let apl={on:false,checked:false,busy:false,url:"",msg:""};
+function aplPost(body){return fetch(PORTAL_FN,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}).then(r=>r.json());}
+function aplCheck(){if(apl.checked||!(funnel==="car"||funnel==="personal"))return;apl.checked=true;
+ aplPost({action:"intake_status"}).then(j=>{if(!(j&&j.ok&&j.on===true))return;apl.on=true;aplPaint();afhTrack('ApplyCardShown',{});
+   const b=document.querySelector('#book .r2bh b'),sm=document.querySelector('#book .r2bh small');if(b&&sm){b.textContent='Rather talk it through first?';sm.textContent='Book a free 10 minute call with a specialist broker.';}}).catch(()=>{});}
+function aplPaint(){const el=document.getElementById('aplSlot');if(el)el.innerHTML=applyCard();}
+function applyCard(){
+ if(!apl.on||!(funnel==="car"||funnel==="personal"))return "";
+ const arrow='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+ let act;
+ if(apl.msg)act=`<div class="r2anote" role="status">${apl.msg}</div>`;
+ else if(apl.url)act=`<a class="cta" href="${apl.url}" target="_top" rel="noopener" onclick="afhTrack('ApplyOpened',{via:'link'})">Open my application ${arrow}</a>`;
+ else if(apl.busy)act=`<button type="button" class="cta" disabled aria-busy="true"><span class="spin" aria-hidden="true"></span> Opening your application</button>`;
+ else act=`<button type="button" class="cta" onclick="aplGo()">Continue my application ${arrow}</button>`;
+ return `<div class="r2apply" id="apply"><div class="r2ah"><span class="r2bi">${ICON.doc}</span><div><b>Finish your application now</b><small>About 5 minutes. What you've told us is already filled in, so your broker can start on your options straight away.</small></div></div>
+  <ol class="r2steps" aria-label="Your progress"><li class="done"><i>${TICK}</i><span>Matches found</span></li><li class="now" aria-current="step"><i>2</i><span>Finish your application</span></li><li><i>3</i><span>Broker compares 40+ lenders</span></li></ol>
+  ${act}
+  ${apl.msg?'':`<div class="r2afoot">${ICON.lock} Secure. We'll text you a code to confirm it's you.</div>`}</div>`;}
+async function aplGo(){if(apl.busy||apl.url||apl.msg)return;apl.busy=true;aplPaint();afhTrack('ApplyStart',{});
+ const t0=Date.now();let j=null;
+ // The enquiry can take a few seconds to reach us, so "pending" is retried for up to 40 seconds.
+ while(Date.now()-t0<40000){
+  try{j=await aplPost({action:"intake",event_id:afhLeadEid()});}catch(e){j=null;}
+  if(j&&(j.ok||j.error!=="pending"))break;
+  await new Promise(r=>setTimeout(r,2500));}
+ apl.busy=false;
+ if(j&&j.ok&&typeof j.url==="string"&&/^https:\/\/apply\.afhfinance\.com\.au\/#t=[A-Za-z0-9_-]{43}$/.test(j.url)){
+  apl.url=j.url;aplPaint();afhTrack('ApplyOpened',{via:'auto'});
+  // Straight through while the tap still counts as the customer's own action; otherwise the button above opens it.
+  if(Date.now()-t0<4000){try{window.open(apl.url,"_top");}catch(e){}}
+  return;}
+ apl.msg=(j&&j.error==="submitted")?"Your application is already with us. Your broker will be in touch shortly.":"We couldn't open your application just now. Your broker will be in touch shortly to finish it with you, or call us on 03 7031 6881.";
+ aplPaint();afhTrack('ApplyUnavailable',{reason:(j&&j.error)||'network'});}
 function setFreq(f){repayFreq=f;afhTrack('CalcFreqToggle',{freq:f});render();}
 
 function detailsGate(){const{list}=match();const n=list.length;
