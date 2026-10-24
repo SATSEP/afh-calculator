@@ -1458,7 +1458,7 @@ const PORTAL_FN="https://gqgykllxzotrqfiyzkax.supabase.co/functions/v1/portal";
 let apl={on:false,checked:false,busy:false,url:"",msg:""};
 function aplPost(body){return fetch(PORTAL_FN,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}).then(r=>r.json());}
 function aplCheck(){if(apl.checked||!(funnel==="car"||funnel==="personal"))return;apl.checked=true;
- aplPost({action:"intake_status"}).then(j=>{if(!(j&&j.ok&&j.on===true))return;apl.on=true;aplPaint();afhTrack('ApplyCardShown',{});
+ aplPost({action:"intake_status"}).then(j=>{if(!(j&&j.ok&&j.on===true))return;apl.on=true;aplPaint();afhTrack('ApplyCardShown',{});aplGo(true);
    const b=document.querySelector('#book .r2bh b'),sm=document.querySelector('#book .r2bh small');if(b&&sm){b.textContent='Rather talk it through first?';sm.textContent='Book a free 10 minute call with a specialist broker.';}}).catch(()=>{});}
 function aplPaint(){const el=document.getElementById('aplSlot');if(el)el.innerHTML=applyCard();}
 function applyCard(){
@@ -1473,7 +1473,7 @@ function applyCard(){
   <ol class="r2steps" aria-label="Your progress"><li class="done"><i>${TICK}</i><span>Matches found</span></li><li class="now" aria-current="step"><i>2</i><span>Finish your application</span></li><li><i>3</i><span>Broker compares 40+ lenders</span></li></ol>
   ${act}
   ${apl.msg?'':`<div class="r2afoot">${ICON.lock} Secure. We'll send you a code to confirm it's you.</div>`}</div>`;}
-async function aplGo(){if(apl.busy||apl.url||apl.msg)return;apl.busy=true;aplPaint();afhTrack('ApplyStart',{});
+async function aplGo(auto){if(apl.busy||apl.url||apl.msg)return;apl.busy=true;aplPaint();afhTrack('ApplyStart',{via:auto?'auto':'tap'});
  const t0=Date.now();let j=null;
  // The enquiry can take a few seconds to reach us, so "pending" is retried for up to 40 seconds.
  while(Date.now()-t0<40000){
@@ -1482,10 +1482,15 @@ async function aplGo(){if(apl.busy||apl.url||apl.msg)return;apl.busy=true;aplPai
   await new Promise(r=>setTimeout(r,2500));}
  apl.busy=false;
  if(j&&j.ok&&typeof j.url==="string"&&/^https:\/\/(afhfinance\.com\.au\/apply\/|apply\.afhfinance\.com\.au\/)#t=[A-Za-z0-9_-]{43}$/.test(j.url)){
-  apl.url=j.url;aplPaint();afhTrack('ApplyOpened',{via:'auto'});
-  // Straight through while the tap still counts as the customer's own action; otherwise the button above opens it.
-  if(Date.now()-t0<4000){try{window.open(apl.url,"_top");}catch(e){}}
+  apl.url=j.url;aplPaint();afhTrack('ApplyOpened',{via:auto?'redirect':'tap'});
+  // Straight to their secure application. Embedded: the AFH landing page does the redirect (afhApply message, AFH origins only).
+  // Standalone: this page goes there. The button above stays as the fallback.
+  if(window.parent&&window.parent!==window){["https://afhfinance.com.au","https://www.afhfinance.com.au"].forEach(o=>{try{window.parent.postMessage({afhApply:true,url:apl.url},o);}catch(e){}});
+   if(!auto&&Date.now()-t0<4000){try{window.open(apl.url,"_top");}catch(e){}}}
+  else{try{location.assign(apl.url);}catch(e){}}
   return;}
+ // Automatic start: if they can't apply online, quietly drop the card (the broker calls). A network hiccup leaves the button to try again.
+ if(auto&&!(j&&j.error==="submitted")){if(j&&j.error&&j.error!=="pending")apl.on=false;aplPaint();afhTrack('ApplyUnavailable',{reason:(j&&j.error)||'network',via:'auto'});return;}
  apl.msg=(j&&j.error==="submitted")?"Your application is already with us. Your broker will be in touch shortly.":"We couldn't open your application just now. Your broker will be in touch shortly to finish it with you, or call us on 03 7031 6881.";
  aplPaint();afhTrack('ApplyUnavailable',{reason:(j&&j.error)||'network'});}
 function setFreq(f){repayFreq=f;afhTrack('CalcFreqToggle',{freq:f});render();}
