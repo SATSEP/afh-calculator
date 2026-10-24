@@ -612,7 +612,7 @@ body.fullresults{background:transparent!important}
 .r2book .cta svg{width:18px;height:18px}
 .r2book .cta:disabled{opacity:.45;cursor:default;box-shadow:none}
 .r2call{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:10px;font-size:13.5px;font-weight:700;color:#fff;text-decoration:none;opacity:.85}.r2call svg{width:15px;height:15px}
-/* Apply now card (calculator to apply.afhfinance.com.au handoff). Only shown when the portal says it is switched on. */
+/* Apply now card (calculator to afhfinance.com.au/apply handoff). Only shown when the portal says it is switched on. */
 .r2apply{margin-top:14px;background:#fff;border:2px solid #4B2EDB;border-radius:22px;padding:18px;box-shadow:0 16px 36px -14px rgba(75,46,219,.35);animation:rise .45s cubic-bezier(.2,.8,.2,1) both}
 .r2ah{display:flex;gap:12px;align-items:flex-start}
 .r2ah b{display:block;font-size:16.5px;font-weight:800;color:#14171c}
@@ -1449,7 +1449,7 @@ function bookingCard(){
   ${bk.day?`<div class="r2lbl">Pick a time</div><div class="chips">${bkSlots(bk.day).map(([h,t])=>`<button type="button" class="chip ${bk.time===t?'on':''}" onclick="bkSet('time','${t}')">${t}</button>`).join('')}</div>`:''}
   <button type="button" class="cta" ${bk.day&&bk.time?'':'disabled'} onclick="bookCall()">${ICON.calendar} Book my call</button>
   <a class="r2call" href="tel:${PHONE}">${ICON.phone} Or call now on 03 7031 6881</a></div>`;}
-/* ── APPLY NOW (handoff to apply.afhfinance.com.au) ─────────────────────────────
+/* ── APPLY NOW (handoff to afhfinance.com.au/apply) ─────────────────────────────
    Car and personal enquiries can carry straight on to the secure application,
    pre-filled from these answers. The portal decides if this is switched on and
    if this enquiry can use it (Lead Market, ALC, duplicates and tests can't).
@@ -1472,7 +1472,7 @@ function applyCard(){
  return `<div class="r2apply" id="apply"><div class="r2ah"><span class="r2bi">${ICON.doc}</span><div><b>Finish your application now</b><small>About 5 minutes. What you've told us is already filled in, so your broker can start on your options straight away.</small></div></div>
   <ol class="r2steps" aria-label="Your progress"><li class="done"><i>${TICK}</i><span>Matches found</span></li><li class="now" aria-current="step"><i>2</i><span>Finish your application</span></li><li><i>3</i><span>Broker compares 40+ lenders</span></li></ol>
   ${act}
-  ${apl.msg?'':`<div class="r2afoot">${ICON.lock} Secure. We'll text you a code to confirm it's you.</div>`}</div>`;}
+  ${apl.msg?'':`<div class="r2afoot">${ICON.lock} Secure. We'll send you a code to confirm it's you.</div>`}</div>`;}
 async function aplGo(){if(apl.busy||apl.url||apl.msg)return;apl.busy=true;aplPaint();afhTrack('ApplyStart',{});
  const t0=Date.now();let j=null;
  // The enquiry can take a few seconds to reach us, so "pending" is retried for up to 40 seconds.
@@ -1481,7 +1481,7 @@ async function aplGo(){if(apl.busy||apl.url||apl.msg)return;apl.busy=true;aplPai
   if(j&&(j.ok||j.error!=="pending"))break;
   await new Promise(r=>setTimeout(r,2500));}
  apl.busy=false;
- if(j&&j.ok&&typeof j.url==="string"&&/^https:\/\/apply\.afhfinance\.com\.au\/#t=[A-Za-z0-9_-]{43}$/.test(j.url)){
+ if(j&&j.ok&&typeof j.url==="string"&&/^https:\/\/(afhfinance\.com\.au\/apply\/|apply\.afhfinance\.com\.au\/)#t=[A-Za-z0-9_-]{43}$/.test(j.url)){
   apl.url=j.url;aplPaint();afhTrack('ApplyOpened',{via:'auto'});
   // Straight through while the tap still counts as the customer's own action; otherwise the button above opens it.
   if(Date.now()-t0<4000){try{window.open(apl.url,"_top");}catch(e){}}
