@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AFH Finance - Loan Calculator</title>
-<!-- AFH-CALC-VERSION: 2026-10-15-v8-debtkeep-carorder -->
+<!-- AFH-CALC-VERSION: 2026-10-29-v11-guided -->
 <!-- Meta Pixel Code: standalone loads its own pixel; embedded relays every event to the host page's pixel (one pixel, no duplicate PageView) -->
 <script>
 (function(){
@@ -559,6 +559,8 @@ footer{margin-top:14px}footer p{font-size:11.5px}
 .gate2 .afhc-fine{font-size:10px;line-height:1.45;color:#9AA1AE;margin-top:6px}
 .gate2 .cta{margin-top:12px}
 .gate2 .gtrust{margin-top:10px}
+.g2back{display:block;margin:8px auto 0;background:none;border:0;font:inherit;font-size:13px;font-weight:700;color:#4B5563;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:8px 10px}
+.g2back:hover{color:var(--ink)}
 /* results */
 body.fullresults{background:transparent!important}
 .pvval.rng{font-size:clamp(24px,7.2vw,30px);white-space:nowrap}.pvval i,.r2v i.r2dash{font-style:normal;opacity:.55;margin:0 3px;font-weight:600}.r2v{white-space:nowrap}.r2ip b{white-space:nowrap;font-size:15px;letter-spacing:-.03em}.r2ip small{display:block}.r2list{grid-template-columns:minmax(0,1fr)}
@@ -646,6 +648,77 @@ body.fullresults{background:transparent!important}
 .r2more{display:block;width:100%;margin-top:10px;font:inherit;font-size:14px;font-weight:700;color:#3A1FB8;background:#F3F0FE;border:0;border-radius:14px;padding:13px;cursor:pointer}.r2fine{font-size:11px;color:var(--mute);line-height:1.5;margin:16px 2px 0}
 body.fullresults footer{display:none}
 @media(prefers-reduced-motion:reduce){.confetti{display:none}}
+<style>/* v11 guided details. Tokens: purple #4B2EDB, cyan #29ABE2, ink #14171C, green #0F9F6E for ticks only,
+   input borders #8E88AC (3.3:1 on white), white text only on #4B2EDB-or-darker fills. */
+.gdcard{gap:14px}
+.gate2.gdcard{display:flex;flex-direction:column;gap:12px}
+.gate2.gdcard h2{margin:0}
+.gate2.gdcard .g2top{margin:0}
+.gate2.gdcard .gtrust,.gate2.gdcard .g2back{margin-top:0}
+.gdhead{display:flex;align-items:center;gap:10px;min-width:0}
+.gdhead .pback{flex:none}
+.gdhead .pback[hidden]{display:none}
+.gdbar{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.gdbar .lmsegs{gap:5px}
+.gdbar .lmseg{height:6px;transition:background .25s ease}
+.gdbar .lmseg.ok{background:#0F9F6E}
+.gdbar .lmlabs{font-size:11px;gap:5px}
+.gdbar .lmlabs span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gdbar .lmlabs .ok{color:#0B7552}
+.gdtrail{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+.gdtrail:empty{display:none}
+.gdchip{display:inline-flex;align-items:center;gap:6px;max-width:100%;min-height:34px;padding:5px 12px 5px 6px;border-radius:999px;border:1px solid #BFE6D6;background:#F2FBF7;color:#14171C;font:inherit;font-size:13.5px;font-weight:650;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.gdchip svg{flex:none;width:20px;height:20px;padding:3px;box-sizing:border-box;border-radius:50%;background:#0F9F6E;color:#fff;stroke-width:4}
+.gdchip .gdcv{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.gdchip:hover{border-color:#0F9F6E}
+.gdchip:focus-visible{outline:2px solid #4B2EDB;outline-offset:2px}
+.gdchip.pop{animation:gdchip .2s ease-out}
+.gdchip.pop svg{animation:gdtick .2s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes gdchip{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes gdtick{from{transform:scale(.2)}to{transform:none}}
+form[data-gd]{display:flex;flex-direction:column;gap:12px;margin:0}
+.gds{display:none;flex-direction:column;gap:8px;min-width:0}
+.gds.on{display:flex}
+.gds.on.in{animation:gdin .2s cubic-bezier(.2,.8,.2,1)}
+.gds.on.back{animation:gdout .2s cubic-bezier(.2,.8,.2,1)}
+.gdin{animation:gdin .2s cubic-bezier(.2,.8,.2,1)}
+@keyframes gdin{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
+@keyframes gdout{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:none}}
+.gdq{display:block;margin:0;font-size:19px;line-height:1.3;font-weight:800;letter-spacing:-.015em;color:#14171C;outline:none}
+.gdbox{position:relative;display:block}
+.gdbox input{display:block;width:100%;box-sizing:border-box;height:58px;margin:0;padding:0 48px 0 46px;font:inherit;font-size:18px;font-weight:650;color:#14171C;background:#fff;border:1.5px solid #8E88AC;border-radius:14px;-webkit-appearance:none;appearance:none;transition:border-color .15s,box-shadow .15s}
+.gdbox input::placeholder{color:#6B7280;font-weight:500}
+.gdbox input:focus{outline:none;border-color:#4B2EDB;box-shadow:0 0 0 4px #E8E3FC}
+.gdi{position:absolute;left:15px;top:50%;transform:translateY(-50%);display:flex;color:#6B6590;pointer-events:none}
+.gdi svg{width:19px;height:19px}
+.gdbox:focus-within .gdi{color:#4B2EDB}
+.gdok{position:absolute;right:14px;top:50%;width:24px;height:24px;margin-top:-12px;border-radius:50%;background:#0F9F6E;color:#fff;display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(.4);transition:opacity .18s,transform .18s cubic-bezier(.2,.9,.3,1.4);pointer-events:none}
+.gdok svg{width:14px;height:14px;stroke-width:3.5}
+.gds.ok .gdok{opacity:1;transform:none}
+.gds.ok .gdbox input{border-color:#0F9F6E}
+.gds.ok .gdbox input:focus{box-shadow:0 0 0 4px #DDF3EA}
+.gds.bad .gdbox input{border-color:#C8323F;background:#FFF8F9}
+.gds.bad .gdbox input:focus{box-shadow:0 0 0 4px #FCE4E7}
+.gderr{display:none;font-style:normal;font-size:14px;font-weight:650;color:#B42335;line-height:1.4}
+.gds.bad .gderr{display:block}
+.gdhint{display:block;font-size:13px;color:#5E6573;line-height:1.4}
+.gds.bad .gdhint{display:none}
+.gdwage input{border-color:#8E88AC}
+.gdwage input:focus{border-color:#4B2EDB}
+.gdfix{align-self:flex-start;font:inherit;font-size:14px;font-weight:600;color:#3A1FB8;background:#F1EEFD;border:0;border-radius:10px;padding:9px 12px;cursor:pointer;min-height:40px;max-width:100%;overflow-wrap:anywhere;text-align:left}
+.gdfix[hidden],#wageHelper[hidden]{display:none}
+.gdcons .afhc{margin-top:0}
+.gdcons .afhc-row{margin-top:0}
+.gdcard .gdgo{margin-top:2px}
+.gdcard.gdl .gdintro{display:none}
+.gdintro{display:flex;flex-direction:column;gap:16px}
+.gdchips .lmchip{min-height:46px;font-size:15px;padding:10px 14px}
+.gds.bad .lmchip{border-color:#C8323F}
+.gdsr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
+.gdpaytrail{margin:2px 0 14px}
+.gdfreq .ro small{color:#5E6573}
+#gdpayq{margin:0 0 10px}
+@media(prefers-reduced-motion:reduce){.gds.on.in,.gds.on.back,.gdin,.gdchip.pop,.gdchip.pop svg{animation:none}.gdok,.gdbar .lmseg{transition:none}}
 </style>
 </head>
 <body>
@@ -675,6 +748,17 @@ const URLTYPE=URLP.get("type");                // "car"|"personal"|"business" ->
 const URLPURPOSE=URLP.get("purpose");          // personal only: pre-select a loan purpose (e.g. "debt") and skip the purpose step
 const EMBED=URLP.get("embed")==="1"||LOCKTAB||URLP.get("mode")==="quick";  // embed mode hides header
 const QUICK=URLP.get("mode")==="quick";  // hero quick-calculator mode
+const SELL=URLP.get("sell")==="lm";
+/* v10 completion fixes. Each one can be switched off on its own. */
+const CALC_STEP_LOG=true;   /* log each answered question and the results/details screens to our own step log (Meta strips step names) */
+const GATE_FORGIVING=true;  /* accept +61, 61 and 9-digit mobiles, store 04xxxxxxxx, and record why a details submit failed */
+const GUIDED_DETAILS=true; /* v11: details, Lead Market and ALC forms ask one thing at a time; pay asks amount then how often */
+let gatePassed=false;   /* set only by a consented details submit (submitGate) */
+const GATE_BACK=true;       /* "Change my answers" link on the details screen */  // v9: /small-debts/ page. ALC still takes the debt leads it can; every other debt lead goes to Lead Market (AFH keeps none)
+/* v9: on the sell page, debts under ALC's minimum skip the term and address questions. Lead Market's bank check covers them,
+   and Oct referrals that skipped them (early switch) sold as well as the rest. Employment and pay stay: they decide Centrelink. */
+const SELL_SKIP=["term","live","howlong","postcode","residency"];
+function sellShort(){if(!SELL||funnel!=="personal"||st.personal.purpose!=="debt")return false;let m=5000;try{m=alc.min;}catch(e){}return (+st.personal.amount||0)<m;}
 let repayFreq="weekly";  // hero repayment frequency
 const TABMAP={car:"car",personal:"personal",business:"business",caravan:"car"};
 /* ── CARAVAN MODE ──────────────────────────────────────────────────────────────
@@ -1053,7 +1137,7 @@ function personalSteps(){const s=st.personal;const L=[];
   render:()=>`<div class="rows two">${ro('purpose','debt','card','Debt consolidation','')}${ro('purpose','home','home','Home improvement','')}${ro('purpose','car','car','Car','')}${ro('purpose','travel','plane','Holiday / travel','')}${ro('purpose','wedding','heart','Wedding','')}${ro('purpose','medical','health','Medical / dental','')}${ro('purpose','investing','trending','Investing','')}${ro('purpose','other','sparkle','Something else','')}</div>`});
  L.push(...loanSteps());
  L.push(creditStep(),paydayStep(),...(st[funnel].payday==='yes'?[paydayCountStep()]:[]),...personSteps());
- return L;}
+ return sellShort()?L.filter(x=>SELL_SKIP.indexOf(x.id)<0):L;}
 
 function businessSteps(){const s=st[funnel];return[
  {t:"What do you need finance for?",render:()=>`
@@ -1082,7 +1166,7 @@ function businessSteps(){const s=st[funnel];return[
 const FLAME='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 3.5 4.5 5.5 4.5 10a4.5 4.5 0 0 1-9 0c0-2 .8-3.3 1.8-4.4.2 1.6 1 2.6 2 3C11 8 11.5 5 12 2z"/></svg>';
 function quickAmts(){const s=st[funnel];
  if(funnel==="car")return ASSET==="caravan"?[[30000],[50000],[70000,1],[90000],[120000],[150000]]:[[10000],[20000],[30000,1],[40000],[50000],[75000]];
- return s.purpose==="debt"?[[5000],[10000],[15000],[20000,1],[30000],[50000]]:[[5000],[10000],[15000,1],[20000],[30000],[50000]];}
+ return s.purpose==="debt"?(SELL?[[2500],[3000],[4000,1],[5000],[7000],[10000]]:[[5000],[10000],[15000],[20000,1],[30000],[50000]]):[[5000],[10000],[15000,1],[20000],[30000],[50000]];}
 function pickAmt(v){afhStart();const s=st[funnel];s.amount=v;s._amt=1;render();maybeAuto("_amt");}
 function clearAmt(){st[funnel]._amt=0;document.querySelectorAll('.amt.on').forEach(e=>e.classList.remove('on'));}
 function estFor(term,bal){const s=st[funnel];const old=s.term;s.term=term;const{list}=match();s.term=old;
@@ -1145,7 +1229,7 @@ function empSteps(){const s=st[funnel];const L=[];
  L.push({id:"employment",icon:"briefcase",secs:4,t:"How are you employed?",auto:"emp",need:()=>s._emp?[]:["your employment"],
   render:()=>`<div class="rows two">${roX('emp','fulltime','briefcase','Full-time','')}${roX('emp','parttime','clock','Part-time','')}${roX('emp','casual','calendar','Casual','')}${roX('emp','self','building','Self-employed','')}${roX('emp','centrelink','cash','Centrelink','')}</div>`});
  L.push({id:"pay",icon:"wallet",secs:8,t:"What's your take-home pay?",sub:"After tax. Your payslip amount is perfect.",need:()=>s.wage?[]:["your take-home pay"],
-  render:()=>`<div class="wagebox"><span class="pre">$</span><input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done" placeholder="1,200" value="${s.wage?Number(s.wage).toLocaleString('en-AU'):''}" oninput="wageIn(this)" aria-label="Take-home pay"></div>
+  render:()=>GUIDED_DETAILS?gdPay():`<div class="wagebox"><span class="pre">$</span><input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done" placeholder="1,200" value="${s.wage?Number(s.wage).toLocaleString('en-AU'):''}" oninput="wageIn(this)" aria-label="Take-home pay"></div>
   ${segA('wageFreq',[['weekly','Weekly'],['fortnightly','Fortnightly'],['monthly','Monthly']])}
   <div class="helper" id="wageHelper" style="margin-top:10px">${wageHelperText()}</div>`});
  return L;}
@@ -1163,7 +1247,7 @@ function carLookingStep(){const s=st.car;return `
    <div class="qlabel">${ICON.user} What's it mainly for?</div>
    <div class="grid">${tile('use','personal','pink','user','Personal','')}${tile('use','business','blue','briefcase','Business','')}</div>`;}
 
-function amtBounds(){return{max:{car:250000,personal:100000,business:500000}[funnel],min:{car:2000,personal:2000,business:5000}[funnel]};}
+function amtBounds(){return{max:{car:250000,personal:100000,business:500000}[funnel],min:{car:2000,personal:(SELL?2500:2000),business:5000}[funnel]};}
 function amountTerm(){const s=st[funnel];const b=amtBounds();
  return `<div class="amtcard"><div class="amtlabel">Loan amount</div>
   <div class="amtrow"><button type="button" class="stepbtn" onclick="amtStep(-1)" aria-label="Decrease amount">−</button>
@@ -1324,13 +1408,16 @@ function stepNeed(step){return step&&step.need?step.need():missingFields();}
 function form(){const S=steps();if(qi>S.length-1)qi=S.length-1;const step=S[qi];const title=typeof step.t==="function"?step.t():step.t;
  const pct=Math.max(8,Math.round(qi/S.length*100));const left=S.length-qi;const secs=S.slice(qi).reduce((a,x)=>a+(x.secs||6),0);
  const lbl=left<=1?'Last step':(qi>0&&qi===Math.floor(S.length/2))?'Halfway there':'About '+(Math.ceil(secs/5)*5)+' sec left';
- const fresh=(qi!==lastQi||funnel!==lastFunnel);lastQi=qi;lastFunnel=funnel;afhMaxQi[funnel]=Math.max(afhMaxQi[funnel]||0,qi);
+ const fresh=(qi!==lastQi||funnel!==lastFunnel);if(fresh)payPh=0;lastQi=qi;lastFunnel=funnel;afhMaxQi[funnel]=Math.max(afhMaxQi[funnel]||0,qi);
  let h=`<div class="card${fresh?(navDir<0?' back-anim':' anim'):''}">
   <div class="phead">${qi>0?`<button type="button" class="pback" onclick="prev()" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>`:''}<div class="pbar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div><span class="pleft${(left<=1||lbl==='Halfway there')?' last':''}">${lbl}</span></div>
   ${step.icon&&ICON[step.icon]?`<div class="qicon">${ICON[step.icon]}</div>`:''}<h2 class="qtitle">${title}</h2>${step.sub?`<p class="qsub">${step.sub}</p>`:''}${step.render()}`;
  if(triedNext){const miss=stepNeed(step);if(miss.length)h+=`<div class="reqerr">${ICON.help} <span>Please add ${miss.join(", ")} to continue.</span></div>`;}
  const answered=stepNeed(step).length===0;
- if(!step.auto||answered)h+=`<button type="button" class="cta" onclick="next()">${qi===S.length-1?'See my matches':'Continue'} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>`;
+ const gdp=GUIDED_DETAILS&&step.id==="pay";
+ if(gdp&&!payPh)h+=`<button type="button" class="cta" onclick="gdPayA()">Continue <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>`;
+ else if(gdp&&!st[funnel]._wf)h+=`<div class="tapnote">Tap an option to continue</div>`;
+ else if(!step.auto||answered)h+=`<button type="button" class="cta" onclick="next()">${qi===S.length-1?'See my matches':'Continue'} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>`;
  else h+=`<div class="tapnote">Tap an option to continue</div>`;
  h+=`<div class="trust">${ICON.shield} Won't affect your credit score · No obligation</div></div>`;
  navDir=1;return h;}
@@ -1353,12 +1440,12 @@ function missingFields(){const s=st[funnel];const m=[];
  return m;}
 function next(){clearTimeout(autoT);const miss=stepNeed(steps()[qi]);if(miss.length){triedNext=true;render();const e=document.querySelector(".reqerr");if(e&&e.scrollIntoView)e.scrollIntoView({block:"center",behavior:"smooth"});return;}
  if(lmShouldSwitch()){lmStart();return;}
- triedNext=false;const S=steps();afhStart();{const _t=typeof S[qi].t==="function"?S[qi].t():S[qi].t;afhOnce('step'+funnel+qi,'CalcStep'+(qi+1),{step:qi+1,of:S.length,step_name:_t});if(qi===S.length-1)afhOnce('done'+funnel,'CalcCompleted',{steps:S.length});}if(qi<S.length-1){qi++;window.scrollTo({top:0,behavior:'smooth'});render();}else{afhDone[funnel]=1;
+ triedNext=false;const S=steps();afhStart();{const _t=typeof S[qi].t==="function"?S[qi].t():S[qi].t;afhOnce('step'+funnel+qi,'CalcStep'+(qi+1),{step:qi+1,of:S.length,step_name:_t});if(qi===S.length-1)afhOnce('done'+funnel,'CalcCompleted',{steps:S.length});if(CALC_STEP_LOG&&!afhSeen['qlog'+funnel+qi]){afhSeen['qlog'+funnel+qi]=1;lmLog('q.'+funnel+'.'+String(S[qi].id||('s'+(qi+1))).replace(/[^a-z0-9_]/gi,''),qi+1);if(qi===S.length-1)lmLog('q.'+funnel+'.done',S.length);}}if(qi<S.length-1){qi++;window.scrollTo({top:0,behavior:'smooth'});render();}else{afhDone[funnel]=1;
    if(alcRoute()){alcStart();return;}
-   if(debtLow()&&!afhKeepsDebt()&&LM.on&&!lm.declined){lmStart();return;}
-   if(contact.name){view="results";}else{view="analysing";setTimeout(function(){if(view==="analysing"){view="ready";render();}},2700);}  // always capture name/mobile/email before showing matches
+   if((debtLow()||(SELL&&debtFunnel()))&&!afhKeepsDebt()&&LM.on&&!lm.declined){lmStart();return;}
+   if(contact.name&&gatePassed){view="results";}else{view="analysing";setTimeout(function(){if(view==="analysing"){view="ready";render();}},2700);}  // always capture name/mobile/email before showing matches
    window.scrollTo({top:0,behavior:'smooth'});render();}}
-function prev(){clearTimeout(autoT);if(qi>0){navDir=-1;qi--;triedNext=false;window.scrollTo({top:0,behavior:'smooth'});render();}}
+function prev(){clearTimeout(autoT);if(GUIDED_DETAILS&&payPh&&(steps()[qi]||{}).id==="pay"){clearTimeout(gdPT);payPh=0;triedNext=false;render();return;}if(qi>0){navDir=-1;qi--;triedNext=false;window.scrollTo({top:0,behavior:'smooth'});render();}}
 
 function results(){const s=st[funnel];const{list,fallback,capped,nearmiss}=match();
  signalParent("results");
@@ -1495,7 +1582,7 @@ async function aplGo(auto){if(apl.busy||apl.url||apl.msg)return;apl.busy=true;ap
  aplPaint();afhTrack('ApplyUnavailable',{reason:(j&&j.error)||'network'});}
 function setFreq(f){repayFreq=f;afhTrack('CalcFreqToggle',{freq:f});render();}
 
-function detailsGate(){const{list}=match();const n=list.length;
+function detailsGate(){if(GUIDED_DETAILS)return gdGate();const{list}=match();const n=list.length;
  return `<div class="card anim gate2">
   <div class="g2top"><span class="g2lock">${ICON.lock}</span><span>Last step · 20 seconds</span></div>
   <h2>Where should we send your ${n?n+' ':''}match${n!==1?'es':''}?</h2>
@@ -1507,20 +1594,247 @@ function detailsGate(){const{list}=match();const n=list.length;
    <button class="cta" type="submit">Unlock my matches <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
   </form>
   <div class="gtrust"><span>${ICON.lock} Secure · No credit check · No obligation</span></div>
+  ${GATE_BACK?`<button type="button" class="g2back" onclick="if(CALC_STEP_LOG)lmLog('g.back',0);goForm()">Change my answers</button>`:''}
  </div>`;}
 
+/* ── v11 GUIDED DETAILS ────────────────────────────────────────────────────────
+   The details screen, the Lead Market form and the ALC form ask one thing per step. They keep v10's <form>, input names,
+   element ids, consent rows and submit handlers (submitGate, lmSubmit, alcSubmit), so validation, the lead copy, the
+   relay and intake bodies and the pixel rules are v10's. This layer only decides which field is on screen.
+   Typed values wait in gdv until a submit. v10 copied them into contact as people typed, so typing a name and then
+   tapping "Change my answers" let the end of the questions skip the details screen (no consent, no lead copy). */
+const GD={
+ gate:{form:"gateForm",pre:"fl-",log:"g",bar:["Your answers","Your details","Your matches"],go:"Unlock my matches",fields:()=>["name","mobile","email","consent"]},
+ lm:{form:"lmForm",pre:"lmf-",log:"lmd",bar:["Your answers","Your details","Bank check"],go:"Continue",
+  fields:()=>["name","mobile","email","dob"].concat(st[funnel]&&st[funnel].emp==="centrelink"?["ben"]:[]).concat(["consent"])},
+ alc:{form:"alcForm",pre:"alcf-",log:"alc",bar:["Your answers","Your details","Specialist call"],go:"Connect me",fields:()=>["name","mobile","email","consent"]}};
+let GS={gate:0,lm:0,alc:0},gdv={},gdCur="",gdT={},payPh=0,gdPT=0;
+const GD_ARROW='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+const GD_BACK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>';
+const GD_LBL={name:"name",mobile:"mobile",email:"email",dob:"date of birth",ben:"Centrelink payment"};
+const GD_DOMAINS=["gmail.com","hotmail.com","outlook.com","yahoo.com","icloud.com","live.com","me.com","bigpond.com","outlook.com.au","hotmail.com.au","yahoo.com.au","live.com.au","bigpond.net.au","optusnet.com.au"];
+function gdMotion(){try{return !(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches);}catch(e){return true;}}
+function gdEsc(v){return String(v==null?"":v).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function gdVal(f){return gdv[f]!=null?gdv[f]:(contact[f]||"");}
+function gdFirst(){const n=String(gdVal("name")).trim().split(/\s+/)[0]||"";return n?n.charAt(0).toUpperCase()+n.slice(1):"";}
+/* The v10 rules, field by field (gateValid, lmValid, alcValid). */
+function gdMobOK(v){const m=GATE_FORGIVING?afhMob(v):String(v||"").replace(/[^0-9+]/g,'').replace(/^\+?61/,'0');return /^04\d{8}$/.test(m);}
+function gdRule(k,f,v){v=String(v==null?"":v);
+ if(f==="name")return k==="gate"?v.trim().length>=2:v.trim().split(/\s+/).filter(Boolean).length>=2;
+ if(f==="mobile")return gdMobOK(v);
+ if(f==="email")return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim());
+ if(f==="dob")return !!lmDobIso(v.trim());
+ if(f==="ben")return !!lm.benefit;
+ return true;}
+function gdMsg(k,f,v){v=String(v||"").trim();
+ if(f==="name")return k==="gate"?"Please enter your name.":(v&&v.split(/\s+/).length<2?"Please add your last name too.":"Please enter your first and last name.");
+ if(f==="mobile"){const d=v.replace(/\D/g,"");return d.length&&d.length<10&&!(d.length===9&&d.charAt(0)==="4")?"That's "+d.length+" digit"+(d.length>1?"s":"")+". Australian mobiles have 10, like 0412 345 678.":"Please enter an Australian mobile"+(d.length?", like 0412 345 678.":".");}
+ if(f==="email")return v&&v.indexOf("@")<0?"Please check your email. It needs an @.":"Please check your email.";
+ if(f==="dob"){const m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(v);if(!m)return "Please enter your date of birth as DD/MM/YYYY.";
+  const d=+m[1],mo=+m[2],y=+m[3],dt=new Date(y,mo-1,d);if(dt.getFullYear()!==y||dt.getMonth()!==mo-1||dt.getDate()!==d)return "Please check that date.";
+  const n=new Date();return dt>new Date(n.getFullYear()-18,n.getMonth(),n.getDate())?"You need to be 18 or over to continue.":"Please check the year.";}
+ if(f==="ben")return "Please choose one to continue.";
+ return "";}
+/* Postel: forgiving input, tidy output. Mobiles that start 04 are spaced 0412 345 678 as people type (+61 forms are left
+   as typed and read by afhMob). Dates take any separator (1 2 1990, 1-2-1990, 1/2/1990) and become DD/MM/YYYY. */
+function gdMobFmt(v){const t=String(v||"");if(!GATE_FORGIVING||/[^0-9\s]/.test(t))return t;const d=t.replace(/\D/g,"");
+ if(d.slice(0,2)!=="04"||d.length>10)return t;return d.length>7?d.slice(0,4)+" "+d.slice(4,7)+" "+d.slice(7):d.length>4?d.slice(0,4)+" "+d.slice(4):d;}
+function gdDobFmt(raw){raw=String(raw||"");const g=raw.match(/\d+/g)||[];const sepEnd=/\D$/.test(raw)&&g.length>0;let d="",m="",y="",slot=0;
+ for(let i=0;i<g.length;i++){for(const ch of g[i]){if(slot===0){if(d.length<2)d+=ch;else{slot=1;m+=ch;}}else if(slot===1){if(m.length<2)m+=ch;else{slot=2;y+=ch;}}else if(y.length<4)y+=ch;}
+  if(i<g.length-1||sepEnd){if(slot===0&&d){d=d.padStart(2,"0");slot=1;}else if(slot===1&&m){m=m.padStart(2,"0");slot=2;}}}
+ return d+(slot>=1?"/"+m:"")+(slot>=2?"/"+y:"");}
+/* On Continue: a two-digit year becomes the only century that gives an age of 18 to 100 (90 -> 1990, 04 -> 2004). */
+function gdDobFix(v){let t=gdDobFmt(v);const m=/^(\d{2})\/(\d{2})\/(\d{2})$/.exec(t);
+ if(m){const a=m[1]+"/"+m[2]+"/19"+m[3],b=m[1]+"/"+m[2]+"/20"+m[3];t=lmDobIso(b)?b:lmDobIso(a)?a:t;}return t;}
+function gdLev(a,b){const r=[];for(let i=0;i<=b.length;i++)r[i]=i;for(let i=1;i<=a.length;i++){let p=r[0];r[0]=i;
+ for(let j=1;j<=b.length;j++){const t=r[j];r[j]=Math.min(r[j]+1,r[j-1]+1,p+(a[i-1]===b[j-1]?0:1));p=t;}}return r[b.length];}
+function gdMailFix(v){const t=String(v||"").trim(),i=t.lastIndexOf("@");if(i<1)return "";const dom=t.slice(i+1).toLowerCase();
+ if(dom.length<5||GD_DOMAINS.indexOf(dom)>-1)return "";let best="",bd=3;GD_DOMAINS.forEach(function(x){const d=gdLev(dom,x);if(d<bd){bd=d;best=x;}});
+ return best?t.slice(0,i+1)+best:"";}
+function gdQ(k,f){const n=gdFirst();
+ if(f==="name")return k==="gate"?"First, what's your name?":"What's your first and last name?";
+ if(f==="mobile")return n?"Thanks "+n+", what's the best mobile?":"What's the best mobile?";
+ if(f==="email")return n?"And your email, "+n+"?":"And your email?";
+ if(f==="dob")return "What's your date of birth?";
+ if(f==="ben")return "Which Centrelink payment is your main one?";
+ const L="Last step"+(n?", "+n:"")+". ";
+ return L+(k==="gate"?"Are you happy for us to contact you?":k==="lm"?"Are you happy to share your details with Credit Sense?":"Can we connect you with Australian Lending Centre?");}
+function gdPart(k){return Math.round(15+85*GS[k]/GD[k].fields().length);}
+function gdPct(k){return Math.round((100+gdPart(k))/3);}
+function gdGoLbl(k){const F=GD[k].fields();return (GS[k]>=F.length-1?GD[k].go:"Continue")+" "+GD_ARROW;}
+function gdView(v){const k={details:"gate",lmhand:"lm",alchand:"alc"}[v]||"";if(k===gdCur)return;gdCur=k;if(!k)return;
+ if(gdT[k]){clearTimeout(gdT[k].t);gdT[k]=null;}GS[k]=gdStart(k);}
+function gdStart(k){const F=GD[k].fields();for(let j=0;j<F.length;j++){const f=F[j];if(f==="consent"||!gdRule(k,f,gdVal(f)))return j;}return F.length-1;}
+function gdSeen(k){if(!CALC_STEP_LOG)return;const F=GD[k].fields(),f=F[GS[k]],key="gdl"+k+f;if(f&&!afhSeen[key]){afhSeen[key]=1;lmLog(GD[k].log+".f."+f,GS[k]+1);}}
+function gdHead(k){const p=gdPart(k),L=GD[k].bar,hide=(k==="gate"&&GS[k]===0&&!GATE_BACK);
+ return `<div class="gdhead"><button type="button" class="pback" id="gdback-${k}" onclick="gdBack('${k}')" aria-label="Back"${hide?' hidden':''}>${GD_BACK}</button>
+  <div class="gdbar" id="gdbar-${k}" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${gdPct(k)}">
+   <div class="lmsegs"><i class="lmseg ok"></i><i class="lmseg" id="gdseg-${k}" style="background:linear-gradient(90deg,#4B2EDB ${p}%,#E4E0F7 ${p}%)"></i><i class="lmseg"></i></div>
+   <div class="lmlabs"><span class="ok">${L[0]} ✓</span><span class="cur">${L[1]}</span><span>${L[2]}</span></div></div></div>`;}
+function gdTrail(k,pop){const F=GD[k].fields(),i=GS[k];let h="";
+ for(let j=0;j<i;j++){const f=F[j];if(f==="consent")continue;
+  const t=f==="ben"?((LM_BENEFITS.find(b=>b[0]===lm.benefit)||["",""])[1]):f==="mobile"?gdMobFmt(gdVal(f)):gdVal(f);
+  h+=`<button type="button" class="gdchip${pop&&j===i-1?' pop':''}" onclick="gdGo('${k}',${j})"><span class="gdsr">Change your ${GD_LBL[f]}: </span>${TICK}<span class="gdcv">${gdEsc(String(t).trim())}</span></button>`;}
+ return h;}
+function gdStep(k,f,j){const G=GD[k],on=j===GS[k]?" on":"";
+ if(f==="consent"){const q=`<p class="gdq" id="gdq-${k}-consent" tabindex="-1">${gdEsc(gdQ(k,f))}</p>`;
+  if(k==="gate")return `<div class="gds gdcons${on}" id="gd-gate-consent" data-f="consent">${q}${consentBlock()}</div>`;
+  if(k==="lm")return `<div class="gds gdcons${on}" id="gd-lm-consent" data-f="consent">${q}<label class="afhc-row lmcons ${lm.consent?'on':''}" id="lmRow"><input type="checkbox" id="lmTickBox" ${lm.consent?'checked':''} onchange="window.lmTick(this)"><span class="afhc-txt">${LM_WORDING}</span></label>
+   <div class="lmerr" id="lmErr">Please tick the box to continue.</div>${LM.turnstile?'<div id="lmTs" class="lmts"></div>':''}</div>`;
+  return `<div class="gds gdcons${on}" id="gd-alc-consent" data-f="consent">${q}<label class="afhc-row lmcons ${alc.consent?'on':''}" id="alcRow"><input type="checkbox" id="alcTickBox" ${alc.consent?'checked':''} onchange="window.alcTick(this)"><span class="afhc-txt">${ALC_WORDING}</span></label>
+   <div class="lmerr" id="alcErr">Please tick the box to continue.</div></div>`;}
+ if(f==="ben")return `<div class="gds lmben2${on}${lm.benefit?' ok':''}" id="lmf-ben" data-f="ben"><p class="gdq" id="gdq-${k}-ben" tabindex="-1">${gdEsc(gdQ(k,f))}</p>
+  <div class="lmchips gdchips" role="group" aria-labelledby="gdq-${k}-ben">${LM_BENEFITS.map(([b,t])=>`<button type="button" class="lmchip ${lm.benefit===b?'on':''}" onclick="gdBen('${k}','${b}')">${t}</button>`).join('')}</div>
+  <em class="gderr" aria-live="polite">${gdMsg(k,f,"")}</em></div>`;
+ const v=f==="mobile"?gdMobFmt(gdVal(f)):gdVal(f),ok=gdRule(k,f,v)?" ok":"",gate=k==="gate",iid="gdin-"+k+"-"+f;
+ const A={name:`name="name" autocomplete="name" autocapitalize="words" autocorrect="off" spellcheck="false" placeholder="${gate?'Full name':'First and last name'}"`,
+  mobile:`name="mobile" type="tel" inputmode="tel" autocomplete="tel" placeholder="${gate?'Mobile (04xx xxx xxx)':'04xx xxx xxx'}"`,
+  email:`name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="${gate?'Email':'you@example.com'}"`,
+  dob:`name="dob" type="text" inputmode="numeric" autocomplete="bday" placeholder="DD/MM/YYYY"`}[f];
+ const ic={name:ICON.user,mobile:ICON.phone,email:ICON.mail,dob:ICON.calendar}[f]||"";
+ const hint=f==="dob"?"Lenders use this to confirm it's you":f==="mobile"?"Starts with 04. +61 works too.":"";
+ return `<div class="gds${on}${ok}" id="${G.pre}${f}" data-f="${f}"><label class="gdq" id="gdq-${k}-${f}" for="${iid}" tabindex="-1">${gdEsc(gdQ(k,f))}</label>
+  <span class="gdbox"><span class="gdi" aria-hidden="true">${ic}</span><input id="${iid}" ${A} enterkeyhint="next" value="${gdEsc(v)}" oninput="gdIn('${k}',this)" aria-describedby="gde-${k}-${f}${hint?' gdh-'+k+'-'+f:''}"><span class="gdok" aria-hidden="true">${TICK}</span></span>
+  <em class="gderr" id="gde-${k}-${f}" aria-live="polite">${gdEsc(gdMsg(k,f,""))}</em>${hint?`<small class="gdhint" id="gdh-${k}-${f}">${hint}</small>`:""}
+  ${f==="email"?`<button type="button" class="gdfix" hidden onclick="gdFix('${k}',this)">Did you mean <b></b>?</button>`:""}</div>`;}
+function gdForm(k){const G=GD[k],F=G.fields();GS[k]=Math.max(0,Math.min(GS[k],F.length-1));gdSeen(k);
+ return `<div class="gdtrail" id="gdtrail-${k}">${gdTrail(k)}</div>
+  <form id="${G.form}" data-gd="${k}" onsubmit="return gdSubmit(event,'${k}')" novalidate>
+   ${F.map((f,j)=>gdStep(k,f,j)).join("")}
+   <button type="submit" class="cta gdgo" id="gdgo-${k}">${gdGoLbl(k)}</button>
+  </form>`;}
+function gdShow(k,j,fwd){const G=GD[k],F=G.fields();j=Math.max(0,Math.min(j,F.length-1));GS[k]=j;
+ if(gdT[k]){clearTimeout(gdT[k].t);gdT[k]=null;}
+ const form=document.getElementById(G.form);if(!form)return;
+ form.querySelectorAll(".gds").forEach(function(el){const on=el.getAttribute("data-f")===F[j];el.classList.toggle("on",on);el.classList.remove("in","back");
+  if(on&&gdMotion()){void el.offsetWidth;el.classList.add(fwd?"in":"back");}});
+ const card=form.closest(".gdcard");if(card)card.classList.toggle("gdl",j>0);
+ const tr=document.getElementById("gdtrail-"+k);if(tr)tr.innerHTML=gdTrail(k,fwd&&gdMotion());
+ F.forEach(function(f){const q=document.getElementById("gdq-"+k+"-"+f);if(q)q.textContent=gdQ(k,f);});
+ const seg=document.getElementById("gdseg-"+k),p=gdPart(k);if(seg)seg.style.background="linear-gradient(90deg,#4B2EDB "+p+"%,#E4E0F7 "+p+"%)";
+ const bar=document.getElementById("gdbar-"+k);if(bar)bar.setAttribute("aria-valuenow",gdPct(k));
+ const go=document.getElementById("gdgo-"+k);if(go)go.innerHTML=gdGoLbl(k);
+ const bk=document.getElementById("gdback-"+k);if(bk)bk.hidden=(k==="gate"&&j===0&&!GATE_BACK);
+ gdSeen(k);
+ /* Focus moves in the same tap or keypress, so a phone keeps its keyboard open between typed steps. */
+ const cur=form.querySelector(".gds.on"),inp=cur&&cur.querySelector("input:not([type=checkbox])");
+ try{if(inp){inp.focus({preventScroll:true});if(inp.type!=="email"){const L=inp.value.length;inp.setSelectionRange(L,L);}}
+  else{const q=document.getElementById("gdq-"+k+"-"+F[j]);if(q)q.focus({preventScroll:true});}}catch(e){}}
+function gdBad(k,f,v){const el=document.getElementById(GD[k].pre+f);
+ if(el){el.classList.add("bad");el.classList.remove("ok");const m=el.querySelector(".gderr");if(m)m.textContent=gdMsg(k,f,v);
+  const i=el.querySelector("input");if(i)try{i.focus({preventScroll:true});}catch(e){}}
+ /* Same signals v10 sends when its submit finds this field wrong. */
+ if(k==="gate"){afhTrack('CalcGateError',{field:f});if(CALC_STEP_LOG)lmLog('g.err.'+f,0);}
+ else if(k==="lm"){if(CALC_STEP_LOG)lmLog('lm.err.'+f,0);}
+ else{afhTrack('HandoffFormError',{});if(CALC_STEP_LOG)lmLog('alc.err.'+f,0);}}
+function gdNext(k){const G=GD[k],F=G.fields(),i=GS[k],f=F[i];
+ if(gdT[k]){const to=gdT[k].to;clearTimeout(gdT[k].t);gdT[k]=null;gdShow(k,to,1);return true;}
+ if(f==="consent")return false;
+ const el=document.getElementById(G.pre+f),inp=el&&el.querySelector("input");let v=inp?inp.value:"";
+ if(f==="dob"&&inp){const n=gdDobFix(v);if(n!==v){inp.value=n;v=n;gdv.dob=n;}}
+ if(!gdRule(k,f,v)){gdBad(k,f,v);return false;}
+ if(el){el.classList.remove("bad");el.classList.add("ok");}
+ gdShow(k,i+1,1);return true;}
+function gdSubmit(ev,k){ev.preventDefault();const F=GD[k].fields();
+ if(GS[k]<F.length-1){gdNext(k);return false;}
+ (k==="gate"?submitGate:k==="lm"?lmSubmit:alcSubmit)(ev);   /* v10's own submit: full validation, then the lead */
+ if(({gate:"details",lm:"lmhand",alc:"alchand"})[k]===view){const b=document.querySelector("#"+GD[k].form+" .gds.bad");
+  if(b){const j=F.indexOf(b.getAttribute("data-f"));if(j>-1&&j!==GS[k])gdShow(k,j,0);}}
+ return false;}
+function gdIn(k,el){const f=el.name;let v=el.value;let end=false;try{end=el.selectionStart===v.length;}catch(e){}
+ if(f==="mobile"&&end){const n=gdMobFmt(v);if(n!==v){el.value=n;v=n;}}
+ if(f==="dob"&&end){const n=gdDobFmt(v);if(n!==v){el.value=n;v=n;}}
+ gdv[f]=v;const box=el.closest(".gds");if(!box)return;const ok=gdRule(k,f,v);box.classList.toggle("ok",ok);
+ if(box.classList.contains("bad")){if(ok)box.classList.remove("bad");else{const m=box.querySelector(".gderr");if(m)m.textContent=gdMsg(k,f,v);}}
+ if(f==="email"){const fx=gdMailFix(v),b=box.querySelector(".gdfix");if(b){b.hidden=!fx;b.setAttribute("data-v",fx);const t=b.querySelector("b");if(t)t.textContent=fx;}}}
+function gdFix(k,b){const el=document.querySelector("#"+GD[k].form+" input[name=email]");if(!el)return;el.value=b.getAttribute("data-v")||el.value;gdIn(k,el);b.hidden=true;try{el.focus();}catch(e){}}
+function gdBen(k,key){lmSetBenefit(key);const F=GD[k].fields(),i=GS[k];if(F[i]!=="ben")return;
+ const box=document.getElementById("lmf-ben");if(box){box.classList.remove("bad");box.classList.add("ok");}
+ if(gdT[k])clearTimeout(gdT[k].t);
+ if(!gdMotion()){gdT[k]=null;gdShow(k,i+1,1);return;}
+ gdT[k]={to:i+1,t:setTimeout(function(){gdT[k]=null;if(GS[k]===i&&gdCur===k)gdShow(k,i+1,1);},200)};}
+function gdBack(k){if(gdT[k]){clearTimeout(gdT[k].t);gdT[k]=null;}const i=GS[k];
+ if(i>0){gdShow(k,i-1,0);return;}
+ if(k==="gate"){if(GATE_BACK){if(CALC_STEP_LOG)lmLog('g.back',0);goForm();}}else if(k==="lm")lmBack();else alcBack();}
+function gdGo(k,j){if(j<GS[k])gdShow(k,j,0);}
+function gdGate(){const{list}=match();const n=list.length;const k="gate";
+ return `<div class="card anim gate2 gdcard${GS[k]>0?' gdl':''}" id="gdc-gate">
+  ${gdHead(k)}
+  <div class="g2top"><span class="g2lock">${ICON.lock}</span><span>Last step · 20 seconds</span></div>
+  <h2>Where should we send your ${n?n+' ':''}match${n!==1?'es':''}?</h2>
+  ${gdForm(k)}
+  <div class="gtrust"><span>${ICON.lock} Secure · No credit check · No obligation</span></div>
+  ${GATE_BACK?`<button type="button" class="g2back" onclick="if(CALC_STEP_LOG)lmLog('g.back',0);goForm()">Change my answers</button>`:''}
+ </div>`;}
+function gdLm(){const k="lm",cl=st[funnel].emp==='centrelink';
+ const ben=(i,b,t)=>`<div class="lmben"><span class="lmbi">${lmIcon(i)}</span><span><b>${b}</b><small>${t}</small></span></div>`;
+ return `<div class="card anim lmc gdcard${GS[k]>0?' gdl':''}" id="gdc-lm">
+  ${gdHead(k)}
+  <span class="lmpill">${lmIcon('<path d="M5 12.5l4.5 4.5L19 7.5"/>')} Specialist lenders available</span>
+  <h2 class="lmh">Good news, there's a way forward for you</h2>
+  <div class="gdintro"><p class="lmp">${debtLow()?'Our partner Credit Sense works with lenders who handle smaller debt consolidation loans.':'Our partner Credit Sense works with lenders who look past the usual boxes.'} Your answers carry over, so there's nothing to repeat.</p>
+  <div class="lmbens">${ben('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>','Lenders matched to you','Specialists in your situation')}${ben('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/>','No payslips or paperwork','A secure bank check does the work')}${ben('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>','About 3 minutes','Finish now while it\'s fresh')}</div>
+  <hr class="lmhr"></div>
+  ${gdForm(k)}
+  <div class="lmsafe">${lmIcon('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>')} Encrypted. Only shared with Credit Sense and the lenders who use it</div>
+  ${cl?`<div class="lmnils">On Centrelink? You may also qualify for a <a href="${NILS_URL}" target="_blank" rel="noopener" onclick="afhTrack('ReferAltClick',{})">no interest loan (NILS)</a> for essentials.</div>`:''}
+  <button type="button" class="lmskip" onclick="lmDecline()">Not now, show my results</button>
+  <button type="button" class="lmback" onclick="lmBack()">Tapped the wrong answer? Go back</button>
+ </div>`;}
+function gdAlc(){const k="alc",amt=+st.personal.amount||0;
+ const ben=(i,b,t)=>`<div class="lmben"><span class="lmbi">${lmIcon(i)}</span><span><b>${b}</b><small>${t}</small></span></div>`;
+ return `<div class="card anim lmc gdcard${GS[k]>0?' gdl':''}" id="gdc-alc">
+  ${gdHead(k)}
+  <span class="lmpill alcpill">${lmIcon('<path d="M5 12.5l4.5 4.5L19 7.5"/>')} Debt consolidation specialist</span>
+  <h2 class="lmh">We've matched you with a specialist</h2>
+  <div class="gdintro"><p class="lmp">For ${amt?fmt(amt)+' of ':''}debt consolidation, we work with our lending partner Australian Lending Centre. Your answers carry over, so there's nothing to repeat.</p></div>
+  <div class="alcco"><img src="${ALC.logo}" alt="Australian Lending Centre" width="116" height="30" onerror="this.style.display='none'"><span><b>Australian Lending Centre</b>Australian Credit Licence 389119</span></div>
+  <div class="gdintro"><div class="lmbens">${ben('<path d="M4 7h16M4 12h16M4 17h10"/>','Focused on debt consolidation','Rolling debts into one loan is what they do')}${ben('<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/>','A real person calls you','To talk through your options')}${ben('<circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/>','No obligation','You decide if it\'s right for you')}</div>
+  <hr class="lmhr"></div>
+  ${gdForm(k)}
+  <div class="lmsafe">${lmIcon('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>')} Encrypted. Only shared with Australian Lending Centre</div>
+  <p class="alcfine">AFH Finance Pty Ltd, ABN 30 633 575 005, Authorised Credit Representative 548852 of Access Lending Group Pty Ltd, Australian Credit Licence 531308. <a href="${PRIVACY_URL}" target="_blank" rel="noopener">Privacy Policy</a></p>
+  <button type="button" class="lmskip" onclick="alcDecline()">No thanks, show my AFH matches</button>
+  <button type="button" class="lmback" onclick="alcBack()">Tapped the wrong answer? Go back</button>
+ </div>`;}
+/* Pay: the amount first (Enter or Continue), then how often as one tap with each option's yearly figure, so a fortnightly
+   pay isn't left on the weekly default. wageHelperText() still runs on every render: it keeps st.income as v10 does. */
+function gdPay(){const s=st[funnel];const help=wageHelperText();
+ if(!payPh)return `<div class="wagebox gdwage"><span class="pre">$</span><input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="next" placeholder="1,200" value="${s.wage?Number(s.wage).toLocaleString('en-AU'):''}" oninput="wageIn(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();gdPayA();}" aria-label="Take-home pay"></div>
+  <div class="helper" id="wageHelper" hidden>${help}</div>`;
+ const opts=[["weekly","Weekly"],["fortnightly","Fortnightly"],["monthly","Monthly"]];
+ return `<div class="gdtrail gdpaytrail"><button type="button" class="gdchip${gdMotion()?' pop':''}" onclick="gdPayEdit()"><span class="gdsr">Change your pay: </span>${TICK}<span class="gdcv">${fmt(s.wage)} take-home</span></button></div>
+  <p class="gdq" id="gdpayq" tabindex="-1">Is that weekly, fortnightly or monthly?</p>
+  <div class="rows gdfreq${gdMotion()?' gdin':''}" role="group" aria-labelledby="gdpayq">${opts.map(([v,l])=>{const on=s._wf&&s.wageFreq===v;
+   return `<button type="button" class="ro ${on?'on':''}" onclick="gdPayPick('${v}')" aria-pressed="${!!on}"><span class="rt"><b>${l}</b><small>${fmt(annualWage(s.wage,v))} a year after tax</small></span><span class="rc">${TICK}</span></button>`;}).join('')}</div>
+  <div class="helper" id="wageHelper"${s._wf?'':' hidden'}>${help}</div>`;}
+function gdPayA(){const s=st[funnel];
+ if(!s.wage){triedNext=true;render();const e=document.querySelector(".reqerr");if(e&&e.scrollIntoView)e.scrollIntoView({block:"center",behavior:"smooth"});return;}
+ triedNext=false;payPh=1;
+ if(CALC_STEP_LOG&&!afhSeen["qlogpf"+funnel]){afhSeen["qlogpf"+funnel]=1;lmLog("q."+funnel+".payfreq",qi+1);}
+ render();try{const q=document.getElementById("gdpayq");if(q)q.focus({preventScroll:true});}catch(e){}}
+function gdPayEdit(){clearTimeout(gdPT);payPh=0;render();try{const i=document.querySelector(".gdwage input");if(i){i.focus({preventScroll:true});const L=i.value.length;i.setSelectionRange(L,L);}}catch(e){}}
+function gdPayPick(v){const s=st[funnel];s._wf=1;clearTimeout(gdPT);setA("wageFreq",v);if(view!=="form")return;
+ const go=function(){if(view==="form"&&(steps()[qi]||{}).id==="pay"&&payPh)next();};
+ if(gdMotion())gdPT=setTimeout(go,200);else go();}
+
+/* v10: one forgiving reading of an Australian mobile. 0412 345 678, +61 412 345 678, +61 0412 345 678, 61412345678 and
+   412345678 all become 0412345678. Anything else returns "". */
+function afhMob(v){let d=String(v||"").replace(/[^0-9+]/g,"").replace(/^\+/,"");
+ if(d.indexOf("0061")===0)d=d.slice(4);else if(d.indexOf("61")===0&&d.length>=11)d=d.slice(2);
+ if(d.length===9&&d.charAt(0)==="4")d="0"+d;return /^04\d{8}$/.test(d)?d:"";}
 function gateValid(f){const g=k=>((f.elements&&f.elements[k])||f[k]||{}).value||"";let ok=true,first=null;
  const bad=(id)=>{const el=document.getElementById(id);if(el){el.classList.add('bad');if(!first)first=el;}ok=false;};
  if(g('name').trim().length<2)bad('fl-name');
- const mob=g('mobile').replace(/[^0-9+]/g,'').replace(/^\+?61/,'0');if(!/^04\d{8}$/.test(mob))bad('fl-mobile');
+ const mob=GATE_FORGIVING?afhMob(g('mobile')):g('mobile').replace(/[^0-9+]/g,'').replace(/^\+?61/,'0');if(!/^04\d{8}$/.test(mob))bad('fl-mobile');
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(g('email').trim()))bad('fl-email');
- if(first){const i=first.querySelector('input');if(i)i.focus();afhTrack('CalcGateError',{field:first.id.replace('fl-','')});}
+ if(first){const i=first.querySelector('input');if(i)i.focus();afhTrack('CalcGateError',{field:first.id.replace('fl-','')});if(CALC_STEP_LOG)lmLog('g.err.'+first.id.replace('fl-',''),0);}
  return ok;}
 function submitGate(ev){ev.preventDefault();const f=ev.target;
  if(!gateValid(f))return false;
- if(!afhConsentOK())return false;   // no consent, no lead
+ if(!afhConsentOK()){if(GATE_FORGIVING)afhTrack('CalcGateError',{field:'consent'});if(CALC_STEP_LOG)lmLog('g.err.consent',0);return false;}   // no consent, no lead
  const gv=k=>{const el=(f.elements&&f.elements[k])||f[k];return(el&&el.value!=null)?el.value:"";};
- contact.name=gv('name');contact.mobile=gv('mobile');contact.email=gv('email');
+ contact.name=gv('name');contact.mobile=(GATE_FORGIVING&&afhMob(gv('mobile')))||gv('mobile');contact.email=gv('email');if(CALC_STEP_LOG)lmLog('g.submit',0);gatePassed=true;
  view="unlocking";setTimeout(function(){if(view==="unlocking"){view="results";render();window.scrollTo(0,0);}},1400);
  try{render();}catch(err){console.error("render error",err);}
  window.scrollTo({top:0,behavior:'smooth'});
@@ -1564,14 +1878,20 @@ const LM_WORDING="I agree AFH Finance and Lead Market (operated by Credit Sense)
  +"can contact me. I understand I may be offered a different loan type, amount or lender to what I asked for. "
  +"I'll be asked to share my bank statements. AFH Finance may receive a fee for this referral.";
 let lm={benefit:"",consent:false,ts:"",declined:false,sent:false,err:"",tok:"",leadId:"",relay:null};let lmT=0;
+/* v9: step log for the Lead Market hand-off (our opaque reference, a step name and a number only; no personal details).
+   Shows where people stop between the offer and Lead Market's bank check. Sent as text/plain so there is no CORS preflight. */
+const LM_LOG="https://gqgykllxzotrqfiyzkax.supabase.co/functions/v1/lm-funnel";
+const LM_SELL_VALUE=4;  /* expected net per Lead Market referral (Oct 2026: non-Centrelink debt referrals) */
+function lmLog(step,code){try{const b=JSON.stringify({ref:afhLeadEid(),step:String(step).slice(0,40),code:Math.round(+code||0),sell:SELL?1:0});
+ if(navigator.sendBeacon&&navigator.sendBeacon(LM_LOG,b))return;fetch(LM_LOG,{method:"POST",body:b,keepalive:true,credentials:"omit",mode:"no-cors"});}catch(e){}}
 function lmIcon(p){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;}
 function lmBar(done,part){const seg=i=>i<done?'<i class="lmseg on"></i>':i===done?`<i class="lmseg" style="background:linear-gradient(90deg,#4B2EDB ${part}%,#E4E0F7 ${part}%)"></i>`:'<i class="lmseg"></i>';
  const lab=(i,t)=>`<span class="${i<done?'ok':i===done?'cur':''}">${t}${i<done?' ✓':''}</span>`;
  return `<div class="lmbar"><div class="lmsegs">${seg(0)}${seg(1)}${seg(2)}</div><div class="lmlabs">${lab(0,'Your answers')}${lab(1,'Your details')}${lab(2,'Bank check')}</div></div>`;}
 /* Called from next(): switch the moment the answer that disqualifies them is confirmed. */
 function lmShouldSwitch(){return LM.on&&!lm.declined&&funnel!=='business'&&!alcEligible()&&subparCheck().sub;}
-function lmStart(){afhTrack('ReferRouted',{});view="lmswitch";render();window.scrollTo(0,0);lmTsLoad();
- setTimeout(function(){if(view==="lmswitch"){view="lmhand";render();lmTsMount();afhTrack('ReferOffer',{});}},1700);}
+function lmStart(){afhTrack('ReferRouted',{});lmLog('routed',qi+1);view="lmswitch";render();window.scrollTo(0,0);lmTsLoad();
+ setTimeout(function(){if(view==="lmswitch"){view="lmhand";render();lmTsMount();afhTrack('ReferOffer',{});lmLog('offer');}},1700);}
 function lmTsLoad(){if(!LM.turnstile||window.turnstile||document.getElementById('lmTsJs'))return;const sc=document.createElement('script');sc.id='lmTsJs';sc.async=true;
  sc.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';sc.onload=lmTsMount;document.head.appendChild(sc);}
 function lmTsMount(){try{const el=document.getElementById('lmTs');if(LM.turnstile&&window.turnstile&&el&&!el.childNodes.length)turnstile.render(el,{sitekey:LM.turnstile,appearance:'interaction-only',callback:function(t){lm.tsTok=t;}});}catch(e){}}
@@ -1579,12 +1899,12 @@ function lmSwitch(){const row=(t,done)=>`<div class="lmchk ${done?'ok':''}">${do
  return `<div class="card anim lmc lmsw"><div class="anring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" fill="none" stroke="#EEEBFA" stroke-width="9"/><circle class="anarc" cx="60" cy="60" r="50" fill="none" stroke="#4B2EDB" stroke-width="9" stroke-linecap="round"/></svg><span class="anicon">${ICON.search||''}</span></div>
   <h2 class="lmh">Finding lenders that fit you</h2><p class="lmp">Some lenders specialise in situations like yours. We're lining them up now.</p>
   <div class="lmchks">${row('Your answers are saved',1)}${row('Specialist lenders found',1)}${row('Preparing your next step',0)}</div></div>`;}
-function lmHand(){const cl=st[funnel].emp==='centrelink';const v=k=>(contact[k]||"").replace(/"/g,'&quot;');
+function lmHand(){if(GUIDED_DETAILS)return gdLm();const cl=st[funnel].emp==='centrelink';const v=k=>(contact[k]||"").replace(/"/g,'&quot;');
  const ben=(i,b,t)=>`<div class="lmben"><span class="lmbi">${lmIcon(i)}</span><span><b>${b}</b><small>${t}</small></span></div>`;
  return `${lmBar(1,30)}<div class="card anim lmc">
   <span class="lmpill">${lmIcon('<path d="M5 12.5l4.5 4.5L19 7.5"/>')} Specialist lenders available</span>
   <h2 class="lmh">Good news, there's a way forward for you</h2>
-  <p class="lmp">${debtLow()?'Our partner Lead Market works with lenders who handle smaller debt consolidation loans.':'Our partner Lead Market works with lenders who look past the usual boxes.'} Your answers carry over, so there's nothing to repeat.</p>
+  <p class="lmp">${debtLow()?'Our partner Credit Sense works with lenders who handle smaller debt consolidation loans.':'Our partner Credit Sense works with lenders who look past the usual boxes.'} Your answers carry over, so there's nothing to repeat.</p>
   <div class="lmbens">${ben('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>','Lenders matched to you','Specialists in your situation')}${ben('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/>','No payslips or paperwork','A secure bank check does the work')}${ben('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>','About 3 minutes','Finish now while it\'s fresh')}</div>
   <hr class="lmhr">
   <form id="lmForm" onsubmit="return lmSubmit(event)" novalidate>
@@ -1598,7 +1918,7 @@ function lmHand(){const cl=st[funnel].emp==='centrelink';const v=k=>(contact[k]|
    ${LM.turnstile?'<div id="lmTs" class="lmts"></div>':''}
    <button type="submit" class="cta lmcta">Continue ${lmIcon('<path d="M5 12h14M13 6l6 6-6 6"/>')}</button>
   </form>
-  <div class="lmsafe">${lmIcon('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>')} Encrypted. Only shared with Lead Market and its lenders</div>
+  <div class="lmsafe">${lmIcon('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>')} Encrypted. Only shared with Credit Sense and the lenders who use it</div>
   ${cl?`<div class="lmnils">On Centrelink? You may also qualify for a <a href="${NILS_URL}" target="_blank" rel="noopener" onclick="afhTrack('ReferAltClick',{})">no interest loan (NILS)</a> for essentials.</div>`:''}
   <button type="button" class="lmskip" onclick="lmDecline()">Not now, show my results</button>
   <button type="button" class="lmback" onclick="lmBack()">Tapped the wrong answer? Go back</button>
@@ -1607,26 +1927,26 @@ function lmTick(el){lm.consent=!!el.checked;lm.ts=el.checked?new Date().toISOStr
  const r=document.getElementById('lmRow');if(r)r.classList.toggle('on',el.checked);
  const e=document.getElementById('lmErr');if(e)e.classList.remove('is-shown');}
 function lmValid(f){let ok=true;const g=k=>(f.elements[k]&&f.elements[k].value||"").trim();
- const bad=id=>{const el=document.getElementById(id);if(el)el.classList.add('bad');ok=false;};
+ const bad=id=>{const el=document.getElementById(id);if(el)el.classList.add('bad');if(ok&&CALC_STEP_LOG)lmLog('lm.err.'+id.replace('lmf-',''),0);ok=false;};
  if(g('name').split(/\s+/).filter(Boolean).length<2)bad('lmf-name');
- const m=g('mobile').replace(/[^0-9+]/g,'').replace(/^\+?61/,'0');if(!/^04\d{8}$/.test(m))bad('lmf-mobile');
+ const m=GATE_FORGIVING?afhMob(g('mobile')):g('mobile').replace(/[^0-9+]/g,'').replace(/^\+?61/,'0');if(!/^04\d{8}$/.test(m))bad('lmf-mobile');
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(g('email')))bad('lmf-email');
  if(!lmDobIso(g('dob')))bad('lmf-dob');
  if(st[funnel].emp==='centrelink'&&!lm.benefit)bad('lmf-ben');
- if(!lm.consent){const r=document.getElementById('lmRow'),e=document.getElementById('lmErr');if(r)r.classList.add('is-error');if(e)e.classList.add('is-shown');ok=false;}
+ if(!lm.consent){const r=document.getElementById('lmRow'),e=document.getElementById('lmErr');if(r)r.classList.add('is-error');if(e)e.classList.add('is-shown');if(ok&&CALC_STEP_LOG)lmLog('lm.err.consent',0);ok=false;}
  return ok;}
 function lmSubmit(ev){ev.preventDefault();const f=ev.target;if(!lmValid(f))return false;
- contact.name=f.elements.name.value.trim();contact.mobile=f.elements.mobile.value.trim();contact.email=f.elements.email.value.trim();contact.dob=f.elements.dob.value.trim();
+ contact.name=f.elements.name.value.trim();contact.mobile=(GATE_FORGIVING&&afhMob(f.elements.mobile.value))||f.elements.mobile.value.trim();contact.email=f.elements.email.value.trim();contact.dob=f.elements.dob.value.trim();
  consent.contact=true;consent.ts=lm.ts;
- afhTrack('ReferConsent',{});
+ afhTrack('ReferConsent',{});lmLog('submit');
  /* AFH keeps its own copy of the lead, tagged as referred, before anything leaves for Lead Market. */
  try{sendLead("referred to lead market",{consent_wording:LM_WORDING,lm_consent:"yes",lm_consent_wording:LM_WORDING,lm_consent_timestamp:lm.ts,lm_route:"lead market",date_of_birth:lmDobIso(contact.dob),centrelink_payment:(LM_BENEFITS.find(b=>b[0]===lm.benefit)||["",""])[1]},debtFunnel());}catch(e){}
  lmRelay();
  if(debtFunnel())debtPixelOther('lead_market');
- view="lmbank";render();window.scrollTo(0,0);return false;}
+ view="lmbank";render();window.scrollTo(0,0);lmLog('bank_screen');return false;}
 /* Declining returns them to the question they were on and carries on the normal AFH flow,
    so every remaining question is still asked. */
-function lmDecline(){lm.declined=true;clearTimeout(lmT);afhTrack('ReferDecline',{});view="form";render();next();}
+function lmDecline(){lm.declined=true;clearTimeout(lmT);afhTrack('ReferDecline',{});lmLog('decline');view="form";render();next();}
 function lmBank(){const first=(contact.name||"").trim().split(/\s+/)[0]||"";
  const need=(i,t)=>`<div class="lmneed">${lmIcon(i)}<span>${t}</span></div>`;
  return `${lmBar(2,15)}<div class="card anim lmc">
@@ -1663,7 +1983,7 @@ function debtCentrelink(){return debtFunnel()&&(st.personal.emp==='centrelink'||
 function alcEligible(){return ALC.on&&debtFunnel()&&alc.open===true&&!alc.declined&&!debtCentrelink()&&(+st.personal.amount||0)>=alc.min;}
 /* v8: debt leads AFH can write itself stay with AFH: employed (not Centrelink), Average credit or better,
    no more than 1 payday loan, and nothing else that makes them subpar. Everyone else goes to ALC. */
-function afhKeepsDebt(){if(!debtFunnel())return false;const s=st.personal;
+function afhKeepsDebt(){if(!debtFunnel()||SELL)return false;const s=st.personal;
  const employed=["fulltime","parttime","casual","self"].indexOf(s.emp)>-1;
  const credit=(+s.credit||0)>=2;
  const payday=s.payday!=="yes"||s.paydayN==="1";
@@ -1676,7 +1996,7 @@ function alcMatch(){const row=(t,done)=>`<div class="lmchk ${done?'ok':''}">${do
  return `<div class="card anim lmc lmsw"><div class="anring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" fill="none" stroke="#EEEBFA" stroke-width="9"/><circle class="anarc" cx="60" cy="60" r="50" fill="none" stroke="#4B2EDB" stroke-width="9" stroke-linecap="round"/></svg><span class="anicon">${ICON.search||''}</span></div>
   <h2 class="lmh">Finding the right specialist</h2><p class="lmp">Debt consolidation works best with a specialist who does it every day.</p>
   <div class="lmchks">${row('Your answers are saved',1)}${row('Debt consolidation specialist found',1)}${row('Preparing your next step',0)}</div></div>`;}
-function alcHand(){const v=k=>(contact[k]||"").replace(/"/g,'&quot;');const amt=+st.personal.amount||0;
+function alcHand(){if(GUIDED_DETAILS)return gdAlc();const v=k=>(contact[k]||"").replace(/"/g,'&quot;');const amt=+st.personal.amount||0;
  const ben=(i,b,t)=>`<div class="lmben"><span class="lmbi">${lmIcon(i)}</span><span><b>${b}</b><small>${t}</small></span></div>`;
  return `<div class="card anim lmc">
   <span class="lmpill alcpill">${lmIcon('<path d="M5 12.5l4.5 4.5L19 7.5"/>')} Debt consolidation specialist</span>
@@ -1704,10 +2024,10 @@ function alcTick(el){alc.consent=!!el.checked;alc.ts=el.checked?new Date().toISO
 function alcValid(f){let ok=true,first=null;const g=k=>(f.elements[k]&&f.elements[k].value||"").trim();
  const bad=id=>{const el=document.getElementById(id);if(el){el.classList.add('bad');if(!first)first=el;}ok=false;};
  if(g('name').split(/\s+/).filter(Boolean).length<2)bad('alcf-name');
- const m=g('mobile').replace(/[^0-9+]/g,'').replace(/^\+?61/,'0');if(!/^04\d{8}$/.test(m))bad('alcf-mobile');
+ const m=GATE_FORGIVING?afhMob(g('mobile')):g('mobile').replace(/[^0-9+]/g,'').replace(/^\+?61/,'0');if(!/^04\d{8}$/.test(m))bad('alcf-mobile');
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(g('email')))bad('alcf-email');
  if(!alc.consent){const r=document.getElementById('alcRow'),e=document.getElementById('alcErr');if(r)r.classList.add('is-error');if(e)e.classList.add('is-shown');if(!first)first=r;ok=false;}
- if(first){const i=first.querySelector('input');if(i&&i.type!=='checkbox')i.focus();else if(first.scrollIntoView)first.scrollIntoView({block:'center',behavior:'smooth'});afhTrack('HandoffFormError',{});}
+ if(first){const i=first.querySelector('input');if(i&&i.type!=='checkbox')i.focus();else if(first.scrollIntoView)first.scrollIntoView({block:'center',behavior:'smooth'});afhTrack('HandoffFormError',{});if(CALC_STEP_LOG)lmLog('alc.err.'+String(first.id||'').replace('alcf-','').replace('alcRow','consent'),0);}
  return ok;}
 function alcPayload(){const s=st.personal;const L=buildLeadDetails();const net=annualWage(s.wage,s.wageFreq);
  const pd=s.payday==="yes"?(s.paydayN||""):(s.payday==="no"?"0":"");
@@ -1719,7 +2039,7 @@ function alcPayload(){const s=st.personal;const L=buildLeadDetails();const net=a
 /* intake.php answers that mean ALC won't take this person, as opposed to a technical failure. */
 const ALC_REFUSED={closed:1,not_eligible:1,with_partner:1,amount:1,purpose:1};
 function alcSubmit(ev){ev.preventDefault();const f=ev.target;if(!alcValid(f))return false;
- contact.name=f.elements.name.value.trim();contact.mobile=f.elements.mobile.value.trim();contact.email=f.elements.email.value.trim();
+ contact.name=f.elements.name.value.trim();contact.mobile=(GATE_FORGIVING&&afhMob(f.elements.mobile.value))||f.elements.mobile.value.trim();contact.email=f.elements.email.value.trim();
  consent.contact=true;consent.ts=alc.ts;try{consent.page=location.href.split('#')[0];}catch(e){}
  afhTrack('HandoffConsent',{});view="alcsend";render();window.scrollTo(0,0);
  const body=alcPayload();const ctl=typeof AbortController!=="undefined"?new AbortController():null;const tm=setTimeout(function(){if(ctl)ctl.abort();},15000);
@@ -1756,8 +2076,10 @@ function alcDone(){const first=(contact.name||"").trim().split(/\s+/)[0]||"";
    nothing to Meta (the CRM records the outcome). */
 function debtPixelUD(){try{const nm=(contact.name||"").trim().toLowerCase().split(/\s+/);let ph=(contact.mobile||"").replace(/[^0-9]/g,"");if(ph.indexOf("0")===0)ph="61"+ph.slice(1);
  const ud={em:(contact.email||"").trim().toLowerCase(),ph:ph,fn:nm[0]||"",ln:nm.length>1?nm[nm.length-1]:"",country:"au"};const pc=st.personal.postcode||"";if(pc)ud.zp=pc;fbq('init','1029171376262400',ud);}catch(e){}}
+/* v9: on the sell page (sell=lm) partner referrals go to Meta as CompleteRegistration, never Lead, so the AFH campaigns'
+   Lead optimisation never learns from Lead Market referrals. The sell campaign optimises for CompleteRegistration. */
 function debtPixelLead(route,val){if(typeof fbq!=="function")return;debtPixelUD();
- try{fbq('track','Lead',{content_name:'Debt consolidation loan',content_category:'Personal',value:(val||15),currency:'AUD',lead_route:route||'alc',funnel:'personal',loan_purpose:'debt',loan_amount:+st.personal.amount||0},{eventID:afhLeadEid()});}catch(e){}}
+ try{fbq('track',SELL?'CompleteRegistration':'Lead',{content_name:'Debt consolidation loan',content_category:'Personal',value:(val||15),currency:'AUD',lead_route:route||'alc',funnel:'personal',loan_purpose:'debt',loan_amount:+st.personal.amount||0},{eventID:afhLeadEid()});}catch(e){}}
 function debtPixelOther(why){
  /* v7: debt enquiries ALC doesn't pay for send nothing to Meta. A new custom event would be blocked by Meta
     and raise a warning, and the CRM already records the outcome. */
@@ -1779,7 +2101,7 @@ function lmDobIso(t){const m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec((t||"").trim());
  const d=+m[1],mo=+m[2],y=+m[3],dt=new Date(y,mo-1,d);if(dt.getFullYear()!==y||dt.getMonth()!==mo-1||dt.getDate()!==d)return "";
  const n=new Date(),min=new Date(n.getFullYear()-18,n.getMonth(),n.getDate()),max=new Date(n.getFullYear()-100,n.getMonth(),n.getDate());if(dt>min||dt<max)return "";
  return y+"-"+String(mo).padStart(2,'0')+"-"+String(d).padStart(2,'0');}
-function lmBack(){clearTimeout(lmT);afhTrack('ReferBack',{});view="form";render();window.scrollTo(0,0);}
+function lmBack(){clearTimeout(lmT);afhTrack('ReferBack',{});lmLog('back');view="form";render();window.scrollTo(0,0);}
 /* Centrelink payment type: Lead Market buyers bid on unemployment vs other benefits separately. */
 const LM_BENEFITS=[["jobseeker","JobSeeker / Youth Allowance"],["pension","Age or Disability Pension"],["carer","Carer Payment"],["family","Family / Parenting Payment"],["other","Something else"]];
 function lmSetBenefit(k){lm.benefit=k;document.querySelectorAll('.lmchip').forEach(b=>b.classList.toggle('on',b.getAttribute('onclick').indexOf("'"+k+"'")>-1));
@@ -1802,9 +2124,9 @@ function lmPayload(){const s=st[funnel];const nm=(contact.name||"").trim().split
   lead_reference:afhLeadEid(),
   consent:{customer_authority:lm.consent===true,authority_type:"Explicit",anti_hawking:lm.consent===true,wording:LM_WORDING,timestamp:lm.ts,page:location.href.split("?")[0]},
   application:{date:new Date().toISOString().slice(0,10),type:"Loan",
-   repayment_cycle:LM_MAP.per[repayFreq]?repayFreq:"",repayment_count:(LM_MAP.per[repayFreq]&&+s.term)?String(Math.round(+s.term*LM_MAP.per[repayFreq])):"",
+   repayment_cycle:LM_MAP.per[repayFreq]?repayFreq:"",repayment_count:((s._term||!SELL)&&LM_MAP.per[repayFreq]&&+s.term)?String(Math.round(+s.term*LM_MAP.per[repayFreq])):"",
    amount:String(Math.round(+s.amount||0)),reason:isCar?(ASSET==="caravan"?"other_vehicle_purchase":"car_purchase"):(LM_MAP.reason[s.purpose]||""),
-   description:(+s.term||0)+" year term requested"+(s.purpose==="investing"?". Purpose: investing":""),
+   description:((s._term||!SELL)?(+s.term||0)+" year term requested":"")+(s.purpose==="investing"?". Purpose: investing":""),
    security_asset:isCar?"vehicle":""},
   person:{first_name:nm[0]||"",last_name:nm.slice(1).join(" "),dob:lmDobIso(contact.dob),mobile:mob,email:(contact.email||"").trim(),
    citizenship:s._visa?lmCitizenship(s):"",can_provide_security:isCar?"true":"",
@@ -1819,15 +2141,16 @@ function lmPayload(){const s=st[funnel];const nm=(contact.name||"").trim().split
    Fires on Continue, so it finishes while they read the bank-prep screen. */
 function lmRelay(){if(lm.relay)return lm.relay;
  lm.relay=fetch(LM.relay,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(lmPayload()),credentials:"omit"})
-  .then(function(r){return r.json();}).then(function(j){if(j&&j.ok){lm.tok=j.tok||"";lm.leadId=j.lead_id||"";lm.env=(j.env==="dev"?"dev":"prod");afhTrack('ReferCreated',{});}
-   else{lm.err=(j&&j.error)||"relay";lm.relay=null;afhTrack('ReferError',{});}return j;})
-  .catch(function(){lm.err="network";lm.relay=null;afhTrack('ReferError',{});return null;});
+  .then(function(r){return r.json();}).then(function(j){if(j&&j.ok){lm.tok=j.tok||"";lm.leadId=j.lead_id||"";lm.env=(j.env==="dev"?"dev":"prod");afhTrack('ReferCreated',{});lmLog('relay_ok');
+    if(SELL&&debtFunnel()&&!debtCentrelink())debtPixelLead('lead_market',LM_SELL_VALUE);}
+   else{lm.err=(j&&j.error)||"relay";lm.relay=null;afhTrack('ReferError',{});lmLog('relay_err');}return j;})
+  .catch(function(){lm.err="network";lm.relay=null;afhTrack('ReferError',{});lmLog('relay_net');return null;});
  return lm.relay;}
 /* The iframe only gets our opaque reference and Lead Market's token, no personal details. */
 function lmFrameUrl(){return LM.url+"&ref="+encodeURIComponent(afhLeadEid())+(lm.tok?"&tok="+encodeURIComponent(lm.tok):"")+(lm.env?"&env="+lm.env:"");}
-function lmGoBank(b){afhTrack('ReferStep2',{});if(b)b.classList.add('busy');
+function lmGoBank(b){afhTrack('ReferStep2',{});lmLog('bank_click',lm.tok?1:0);if(b)b.classList.add('busy');
  Promise.race([lmRelay(),new Promise(function(r){setTimeout(r,6000);})]).then(function(){view='lmframe';render();window.scrollTo(0,0);});}
-function lmFrameLoaded(f){try{f.contentWindow.postMessage({afhLmRef:afhLeadEid(),afhLmTok:lm.tok||""},LM.origin);}catch(e){}afhTrack('ReferFrameLoaded',{});}
+function lmFrameLoaded(f){try{f.contentWindow.postMessage({afhLmRef:afhLeadEid(),afhLmTok:lm.tok||""},LM.origin);}catch(e){}afhTrack('ReferFrameLoaded',{});lmLog('frame_load',lm.tok?1:0);}
 function lmFrame(){return `${lmBar(2,60)}<div class="card anim lmc lmfr"><div class="lmfh"><span>${lmIcon('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>')} Secure connection</span><small>by Credit Sense</small></div>
   <iframe src="${lmFrameUrl()}" title="Secure bank check" onload="lmFrameLoaded(this)" class="lmif"></iframe>
   <div class="lmhelp">${lmIcon('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>')} Stuck on a step? Call us on 03 7031 6881 and we'll walk you through it.</div></div>`;}
@@ -1839,10 +2162,13 @@ function lmDone(){const first=(contact.name||"").trim().split(/\s+/)[0]||"";cons
   <p class="lmp">Your details are with specialist lenders now. Stay on this page for your result.</p>
   <div class="lmtls">${step(1,'Lenders review your details','This usually takes just moments.',1)}${step(2,'A lender gets in touch','Keep your phone nearby. They may call from a number you don\'t know.',0)}${step(3,'You decide','Compare what they offer. There\'s no obligation to accept.',0,1)}</div>
   ${cl?`<div class="lmnils">On Centrelink? You may also qualify for a <a href="${NILS_URL}" target="_blank" rel="noopener">no interest loan (NILS)</a> for essentials.</div>`:''}
-  <div class="lmfine">AFH Finance referred you to Lead Market and may receive a fee. Questions? Call 03 7031 6881.</div></div>`;}
+  <div class="lmfine">AFH Finance referred you to Lead Market, operated by Credit Sense, and may receive a fee. Questions? Call 03 7031 6881.</div></div>`;}
 /* The partner page tells us when the bank step is finished or the lead is accepted. */
 window.addEventListener("message",function(e){if(e.origin!==LM.origin)return;const d=e.data;if(!d||typeof d!=="object")return;
- if(d.afhLmDone&&view==="lmframe"){afhTrack('ReferCompleted',{});view="lmdone";render();window.scrollTo(0,0);}
+ if(d.afhLmReady)lmLog('lm_ready');
+ if(d.afhLmError)lmLog('lm_error');
+ if(typeof d.afhLmEvt==="string"&&/^[a-z0-9_.]{1,36}$/i.test(d.afhLmEvt))lmLog('lm.'+d.afhLmEvt,d.afhLmCode);
+ if(d.afhLmDone&&view==="lmframe"){afhTrack('ReferCompleted',{});lmLog('done');view="lmdone";render();window.scrollTo(0,0);}
  if(d.afhLmHeight){const f=document.querySelector('.lmif');if(f)f.style.height=Math.max(320,Math.min(3000,+d.afhLmHeight||0))+'px';}});
 function buildLeadDetails(){const s=st[funnel];const out={};
  const money=v=>"$"+(+v).toLocaleString();
@@ -2015,12 +2341,13 @@ window.addEventListener("message",function(e){const d=e.data;if(!d||typeof d!=="
    afhTrack('CalcAnswer',{step:1,answer:String(a.k)+':'+String(a.v),source:'landing'});
  }catch(err){console.error(err);}}
 });
-function render(){tabs();document.getElementById("screen").innerHTML=view==="chooser"?chooser():view==="quick"?quickCalc():view==="form"?form():view==="details"?detailsGate():view==="analysing"?analysing():view==="ready"?readyScreen():view==="unlocking"?unlocking():view==="lmswitch"?lmSwitch():view==="lmhand"?lmHand():view==="lmbank"?lmBank():view==="lmframe"?lmFrame():view==="lmdone"?lmDone():view==="alcmatch"?alcMatch():view==="alchand"?alcHand():view==="alcsend"?alcSending():view==="alcdone"?alcDone():results();applyView();paintRanges();
+function render(){if(GUIDED_DETAILS)gdView(view);tabs();document.getElementById("screen").innerHTML=view==="chooser"?chooser():view==="quick"?quickCalc():view==="form"?form():view==="details"?detailsGate():view==="analysing"?analysing():view==="ready"?readyScreen():view==="unlocking"?unlocking():view==="lmswitch"?lmSwitch():view==="lmhand"?lmHand():view==="lmbank"?lmBank():view==="lmframe"?lmFrame():view==="lmdone"?lmDone():view==="alcmatch"?alcMatch():view==="alchand"?alcHand():view==="alcsend"?alcSending():view==="alcdone"?alcDone():results();applyView();paintRanges();
  afhPost({afhCalcView:{view:view,qi:qi,funnel:funnel}});
  if(view==="details")afhOnce('details','CalcDetailsForm',{});
  if(view==="results")afhOnce('results','CalcViewedMatches',{});
  if(view==="results"&&!subparCheck().sub){try{const q=leadQuality();if(q.qualified)afhOnce('qresults','CalcGoodFit',{});}catch(e){}}
  if(view==="ready"){afhOnce('ready','CalcResultsReady',{});countUp();}
+ if(CALC_STEP_LOG){const gk={ready:'g.ready',details:'g.details',results:'g.results',alcmatch:'g.alc'}[view];if(gk&&!afhSeen['glog'+gk]){afhSeen['glog'+gk]=1;lmLog(gk,0);}}
 }
 
 function signalParent(mode){try{if(window.parent&&window.parent!==window){window.parent.postMessage({afhCalc:true,mode:mode},"*");}}catch(e){/* ignore */}}
