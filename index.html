@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AFH Finance - Loan Calculator</title>
-<!-- AFH-CALC-VERSION: 2026-10-29-v11-guided -->
+<!-- AFH-CALC-VERSION: 2026-10-30-v13-page -->
 <!-- Meta Pixel Code: standalone loads its own pixel; embedded relays every event to the host page's pixel (one pixel, no duplicate PageView) -->
 <script>
 (function(){
@@ -11,10 +11,11 @@
  if(EMB){
   /* Hold events until the host page confirms it relays them (new AFH landing pages).
      Any other host (old pages, homepage embeds) gets this frame's own pixel after 3s, so nothing is lost. */
-  var q=[],mode=null;
-  function post(a){try{parent.postMessage({afhPixel:true,args:a},"*");}catch(e){}}
+  var q=[],mode=null,target="",HOME=["https://afhfinance.com.au","https://www.afhfinance.com.au"];
+  /* v12: the relay carries advanced matching (email, phone, name), so it only ever goes to a verified AFH parent */
+  function post(a){if(!target)return;try{parent.postMessage({afhPixel:true,args:a},target);}catch(e){}}
   window.fbq=function(){var a=[].slice.call(arguments);if(mode==="relay")post(a);else q.push(a);};
-  window.__afhRelay=function(){if(mode)return;mode="relay";q.forEach(post);q=[];};
+  window.__afhRelay=function(o){if(mode||HOME.indexOf(o)<0)return;target=o;mode="relay";q.forEach(post);q=[];};
   setTimeout(function(){if(mode)return;mode="own";var held=q;q=[];try{delete window.fbq;}catch(e){window.fbq=undefined;}own();held.forEach(function(a){fbq.apply(null,a);});},3000);
   return;
  }
@@ -480,7 +481,11 @@ input[type=range]{height:6px;margin:14px 0 6px}
 footer{margin-top:14px}footer p{font-size:11.5px}
 @media(max-width:360px){.qtitle,.gate h2{font-size:21px}.slideval{font-size:30px}.terms .chip{font-size:13.5px}}
 </style>
-<style>.pcbox input{width:132px;font:inherit;font-size:20px;font-weight:800;letter-spacing:.08em;padding:12px 14px;border:1.5px solid var(--line);border-radius:14px;background:#fff;color:#14171c}.pcbox input:focus{outline:none;border-color:#4B2EDB;box-shadow:0 0 0 4px #F1EEFD}#wageHelper:empty{display:none}.qsub:empty{display:none}</style>
+<style>.pcbox input{width:132px;font:inherit;font-size:20px;font-weight:800;letter-spacing:.08em;padding:12px 14px;border:1.5px solid var(--line);border-radius:14px;background:#fff;color:#14171c}.pcbox input:focus{outline:none;border-color:#4B2EDB;box-shadow:0 0 0 4px #F1EEFD}#wageHelper:empty{display:none}.qsub:empty{display:none}
+.estnote{display:flex;align-items:center;gap:10px;margin:2px 0 14px;padding:10px 12px;border-radius:12px;background:#F1EEFD;color:#2A2F3A;font-size:14px;line-height:1.4}
+.estnote svg{width:18px;height:18px;flex:none;color:#4B2EDB}.estnote span{flex:1}
+.estchg{flex:none;min-height:36px;padding:4px 10px;border:1.5px solid #4B2EDB;border-radius:10px;background:#fff;color:#3A20C2;font:inherit;font-weight:700;cursor:pointer}
+.estchg:focus-visible{outline:3px solid #6D54E8;outline-offset:2px}</style>
 <style>.amts{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 8px;margin-top:18px}.amt{position:relative;font:inherit;background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:18px 6px 14px;cursor:pointer;color:#14171c;-webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:.15s}.amt b{font-size:17px;font-weight:800;letter-spacing:-.01em}.amt.pop{border-color:#C9BEF6;background:linear-gradient(180deg,#FBFAFF,#fff)}.amt.on{border-color:#4B2EDB;background:#F6F4FE;box-shadow:0 0 0 3px #E8E3FC}.amt:active,.trm:active{transform:scale(.97)}.popb{position:absolute;top:-9px;left:50%;transform:translateX(-50%);display:inline-flex;align-items:center;gap:3px;white-space:nowrap;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,#FF8A3D,#F24E6B);padding:3px 8px 3px 6px;border-radius:99px;box-shadow:0 4px 10px -3px rgba(242,78,107,.6)}.popb svg{width:11px;height:11px}.gbrand{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:650;color:var(--mute);margin:-4px 0 12px}.gbrand img{height:18px;width:auto}.orline{display:flex;align-items:center;gap:10px;margin:18px 0 12px;color:var(--muteSoft);font-size:12.5px;font-weight:650}.orline:before,.orline:after{content:"";flex:1;height:1px;background:var(--line)}.terms2{display:grid;gap:8px;margin-top:4px}.trm{position:relative;display:flex;align-items:center;gap:10px;width:100%;font:inherit;text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:13px 14px;cursor:pointer;color:#14171c;min-height:54px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:.15s}.trm .ty{flex:none;font-size:15.5px;font-weight:600}.trm .ty b{font-size:17px;font-weight:800}.trm .tw{margin-left:auto;font-size:16px;font-weight:800}.trm .tw small{font-size:12px;font-weight:600;color:var(--mute)}.trm .popb{position:static;transform:none}.trm.pop{border-color:#C9BEF6}.trm.on{border-color:#4B2EDB;background:#F6F4FE}.balpanel{margin-top:12px;background:#F8F7FD;border:1px solid #ECE9F8;border-radius:16px;padding:14px;animation:cardin .25s}.balpanel .balloonslide{margin:0;padding:0;border:0}.qicon{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,#6D54E8,#29ABE2);box-shadow:0 8px 18px -6px rgba(75,46,219,.55);margin:2px 0 12px;animation:qpop .35s cubic-bezier(.3,1.4,.5,1) both}.qicon svg{width:24px;height:24px}@keyframes qpop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}.pcbox.big{position:relative;margin-top:16px;max-width:240px}.pcbox.big .pci{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:#4B2EDB;transition:.2s}.pcbox.big .pci svg{width:22px;height:22px;display:block}.pcbox.big input{width:100%;font-size:30px;letter-spacing:.18em;padding:14px 16px 14px 50px;border-radius:16px}.pcbox.big.ok input{border-color:#0F9F6E;background:#F3FBF7}.pcbox.big.ok .pci{color:#0F9F6E}.ro .rt small:empty{display:none}</style>
 <style>
 /* ===== v6 results journey ===== */
@@ -1411,7 +1416,7 @@ function form(){const S=steps();if(qi>S.length-1)qi=S.length-1;const step=S[qi];
  const fresh=(qi!==lastQi||funnel!==lastFunnel);if(fresh)payPh=0;lastQi=qi;lastFunnel=funnel;afhMaxQi[funnel]=Math.max(afhMaxQi[funnel]||0,qi);
  let h=`<div class="card${fresh?(navDir<0?' back-anim':' anim'):''}">
   <div class="phead">${qi>0?`<button type="button" class="pback" onclick="prev()" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>`:''}<div class="pbar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div><span class="pleft${(left<=1||lbl==='Halfway there')?' last':''}">${lbl}</span></div>
-  ${step.icon&&ICON[step.icon]?`<div class="qicon">${ICON[step.icon]}</div>`:''}<h2 class="qtitle">${title}</h2>${step.sub?`<p class="qsub">${step.sub}</p>`:''}${step.render()}`;
+  ${estNote()}${step.icon&&ICON[step.icon]?`<div class="qicon">${ICON[step.icon]}</div>`:''}<h2 class="qtitle">${title}</h2>${step.sub?`<p class="qsub">${step.sub}</p>`:''}${step.render()}`;
  if(triedNext){const miss=stepNeed(step);if(miss.length)h+=`<div class="reqerr">${ICON.help} <span>Please add ${miss.join(", ")} to continue.</span></div>`;}
  const answered=stepNeed(step).length===0;
  const gdp=GUIDED_DETAILS&&step.id==="pay";
@@ -1440,12 +1445,12 @@ function missingFields(){const s=st[funnel];const m=[];
  return m;}
 function next(){clearTimeout(autoT);const miss=stepNeed(steps()[qi]);if(miss.length){triedNext=true;render();const e=document.querySelector(".reqerr");if(e&&e.scrollIntoView)e.scrollIntoView({block:"center",behavior:"smooth"});return;}
  if(lmShouldSwitch()){lmStart();return;}
- triedNext=false;const S=steps();afhStart();{const _t=typeof S[qi].t==="function"?S[qi].t():S[qi].t;afhOnce('step'+funnel+qi,'CalcStep'+(qi+1),{step:qi+1,of:S.length,step_name:_t});if(qi===S.length-1)afhOnce('done'+funnel,'CalcCompleted',{steps:S.length});if(CALC_STEP_LOG&&!afhSeen['qlog'+funnel+qi]){afhSeen['qlog'+funnel+qi]=1;lmLog('q.'+funnel+'.'+String(S[qi].id||('s'+(qi+1))).replace(/[^a-z0-9_]/gi,''),qi+1);if(qi===S.length-1)lmLog('q.'+funnel+'.done',S.length);}}if(qi<S.length-1){qi++;window.scrollTo({top:0,behavior:'smooth'});render();}else{afhDone[funnel]=1;
+ triedNext=false;const S=steps();afhStart();{const _t=typeof S[qi].t==="function"?S[qi].t():S[qi].t;afhOnce('step'+funnel+qi,'CalcStep'+(qi+1),{step:qi+1,of:S.length,step_name:_t});if(qi===S.length-1)afhOnce('done'+funnel,'CalcCompleted',{steps:S.length});if(CALC_STEP_LOG&&!afhSeen['qlog'+funnel+qi]){afhSeen['qlog'+funnel+qi]=1;lmLog('q.'+funnel+'.'+String(S[qi].id||('s'+(qi+1))).replace(/[^a-z0-9_]/gi,''),qi+1);if(qi===S.length-1)lmLog('q.'+funnel+'.done',S.length);}}if(qi<S.length-1){qi++;while(qi<S.length-1&&estSkip(S[qi])){estEv(S,qi);qi++;}window.scrollTo({top:0,behavior:'smooth'});render();}else{afhDone[funnel]=1;
    if(alcRoute()){alcStart();return;}
    if((debtLow()||(SELL&&debtFunnel()))&&!afhKeepsDebt()&&LM.on&&!lm.declined){lmStart();return;}
    if(contact.name&&gatePassed){view="results";}else{view="analysing";setTimeout(function(){if(view==="analysing"){view="ready";render();}},2700);}  // always capture name/mobile/email before showing matches
    window.scrollTo({top:0,behavior:'smooth'});render();}}
-function prev(){clearTimeout(autoT);if(GUIDED_DETAILS&&payPh&&(steps()[qi]||{}).id==="pay"){clearTimeout(gdPT);payPh=0;triedNext=false;render();return;}if(qi>0){navDir=-1;qi--;triedNext=false;window.scrollTo({top:0,behavior:'smooth'});render();}}
+function prev(){clearTimeout(autoT);if(GUIDED_DETAILS&&payPh&&(steps()[qi]||{}).id==="pay"){clearTimeout(gdPT);payPh=0;triedNext=false;render();return;}if(qi>0){navDir=-1;qi--;if(HOME_EST&&HOME_EST.skip&&HOME_EST.ids[(steps()[qi]||{}).id]===1)HOME_EST.skip=false;triedNext=false;window.scrollTo({top:0,behavior:'smooth'});render();}}
 
 function results(){const s=st[funnel];const{list,fallback,capped,nearmiss}=match();
  signalParent("results");
@@ -2329,10 +2334,15 @@ function afhOnce(key,name,params,std){if(afhSeen[key])return;afhSeen[key]=1;afhT
 function afhStart(){if(afhStarted)return;afhStarted=true;afhTrack('CalculatorStart');}
 function afhCookie(n){const m=document.cookie.match(new RegExp('(?:^|; )'+n+'=([^;]*)'));return m?decodeURIComponent(m[1]):"";}
 function afhPost(o){try{if(window.parent&&window.parent!==window)window.parent.postMessage(o,"*");}catch(e){}}
+const AFH_HOME=["https://afhfinance.com.au","https://www.afhfinance.com.au"];
+function afhCleanCtx(c){const o={};if(!c||typeof c!=="object")return o;Object.keys(c).slice(0,30).forEach(function(k){const v=c[k];
+ if(/^[a-z_]{1,32}$/.test(k)&&(typeof v==="string"||typeof v==="number"))o[k]=String(v).slice(0,2000);});return o;}
 window.addEventListener("message",function(e){const d=e.data;if(!d||typeof d!=="object")return;
- if(d.afhParent){afhCtx=Object.assign(afhCtx,d.ctx||{});if(window.__afhRelay)window.__afhRelay();}
+ if((d.afhParent||d.afhAnswer||d.afhNav)&&(AFH_HOME.indexOf(e.origin)<0||e.source!==window.parent))return;  /* v12: only AFH pages that framed us */
+ if(d.afhNav==="back"){try{if(view==="form"){if(qi>0||payPh)prev();}else if(view==="analysing"||view==="ready"||view==="details"){goForm();}else if(view==="lmswitch"||view==="lmhand"){lmBack();}else if(view==="alcmatch"||view==="alchand"){alcBack();}}catch(err){}return;}  /* v13: the AFH page's browser Back = back to the questions */
+ if(d.afhParent){afhCtx=Object.assign(afhCtx,afhCleanCtx(d.ctx));if(window.__afhRelay)window.__afhRelay(e.origin);if(d.est)homeEst(d.est);}
  if(d.afhAnswer){const a=d.afhAnswer;try{
-   if(a.ctx)afhCtx=Object.assign(afhCtx,a.ctx);
+   if(a.ctx)afhCtx=Object.assign(afhCtx,afhCleanCtx(a.ctx));
    afhStart();
    if(typeof funnel==="undefined"||!st[funnel])return;
    st[funnel][a.k]=(typeof a.v==="number")?+a.v:a.v;
@@ -2341,8 +2351,31 @@ window.addEventListener("message",function(e){const d=e.data;if(!d||typeof d!=="
    afhTrack('CalcAnswer',{step:1,answer:String(a.k)+':'+String(a.v),source:'landing'});
  }catch(err){console.error(err);}}
 });
+/* ── v12: estimate from the homepage ───────────────────────────────────────────── */
+let HOME_EST=null;
+function homeEst(e){try{
+ if(!e||typeof e!=="object"||afhStarted||view!=="form")return;               // never overwrite answers given here
+ if(["car","personal","business"].indexOf(e.t)<0||e.t!==funnel)return;
+ const s=st[funnel],b=amtBounds(),ok=(v,lo,hi)=>Number.isInteger(v)&&v>=lo&&v<=hi;
+ if(!ok(e.amt,b.min,b.max)||!ok(e.term,1,7)||!ok(e.cr,0,4)||[52,26,12].indexOf(e.f)<0||!ok(e.bal,0,Math.floor(e.amt/2)))return;
+ s.amount=e.amt;s._amt=1;s.term=e.term;s._term=1;
+ if(funnel!=="business"){const cp=[4,3,2,1,0][e.cr];s._cp=cp;s.credit=cp===0?2:cp;}       // homepage order: Excellent, Good, Average, Rebuilding, Not sure
+ if(funnel==="car"){if(e.bal>0){s._bal="yes";s.balloon=Math.min(e.bal,balloonMaxDollar()||0);if(!s.balloon){s._bal="no";s._balNo=1;}}else{s._bal="no";s.balloon=0;s._balNo=1;}}
+ else if(funnel==="business"){s.balloon=e.bal;}
+ repayFreq={52:"weekly",26:"fortnightly",12:"monthly"}[e.f];
+ HOME_EST={t:funnel,skip:true,ids:{amount:1,term:1,balloon:funnel==="car"?1:0,credit:funnel==="business"?0:1}};
+ const S=steps();while(qi<S.length-1&&estSkip(S[qi])){estEv(S,qi);qi++;}
+ render();
+}catch(err){}}
+function estSkip(step){return !!(HOME_EST&&HOME_EST.skip&&HOME_EST.t===funnel&&step&&step.id&&HOME_EST.ids[step.id]===1&&stepNeed(step).length===0);}
+function estEv(S,i){const t=typeof S[i].t==="function"?S[i].t():S[i].t;afhOnce('step'+funnel+i,'CalcStep'+(i+1),{step:i+1,of:S.length,step_name:t});
+ if(CALC_STEP_LOG&&!afhSeen['qlog'+funnel+i]){afhSeen['qlog'+funnel+i]=1;lmLog('q.'+funnel+'.'+String(S[i].id||('s'+(i+1))).replace(/[^a-z0-9_]/gi,''),i+1);}}
+function estNote(){if(!HOME_EST||!HOME_EST.skip||HOME_EST.t!==funnel)return "";const s=st[funnel];
+ const cr={4:"Excellent",3:"Good",2:"Average",1:"Rebuilding",0:"Not sure"}[s._cp];
+ return `<div class="estnote">${ICON.check}<span>Using your estimate: <b>${fmt(s.amount)}</b> over <b>${s.term} year${s.term>1?'s':''}</b>${funnel==="car"&&s.balloon>0?`, <b>${fmt(s.balloon)}</b> balloon`:''}${cr!==undefined&&funnel!=="business"?`, ${cr} credit`:''}</span><button type="button" class="estchg" onclick="estChange()">Change</button></div>`;}
+function estChange(){if(!HOME_EST)return;HOME_EST.skip=false;const S=steps();const i=S.findIndex(x=>x.id&&HOME_EST.ids[x.id]===1);if(i>=0){navDir=-1;qi=i;}triedNext=false;render();}
 function render(){if(GUIDED_DETAILS)gdView(view);tabs();document.getElementById("screen").innerHTML=view==="chooser"?chooser():view==="quick"?quickCalc():view==="form"?form():view==="details"?detailsGate():view==="analysing"?analysing():view==="ready"?readyScreen():view==="unlocking"?unlocking():view==="lmswitch"?lmSwitch():view==="lmhand"?lmHand():view==="lmbank"?lmBank():view==="lmframe"?lmFrame():view==="lmdone"?lmDone():view==="alcmatch"?alcMatch():view==="alchand"?alcHand():view==="alcsend"?alcSending():view==="alcdone"?alcDone():results();applyView();paintRanges();
- afhPost({afhCalcView:{view:view,qi:qi,funnel:funnel}});
+ afhPost({afhCalcView:{view:view,qi:qi,funnel:funnel,pp:(typeof payPh!=="undefined"&&payPh)?1:0}});
  if(view==="details")afhOnce('details','CalcDetailsForm',{});
  if(view==="results")afhOnce('results','CalcViewedMatches',{});
  if(view==="results"&&!subparCheck().sub){try{const q=leadQuality();if(q.qualified)afhOnce('qresults','CalcGoodFit',{});}catch(e){}}
