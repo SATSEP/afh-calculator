@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AFH Finance - Loan Calculator</title>
-<!-- AFH-CALC-VERSION: 2026-10-30-v14-design -->
+<!-- AFH-CALC-VERSION: 2026-10-30-v16-prefill -->
 <!-- Meta Pixel Code: standalone loads its own pixel; embedded relays every event to the host page's pixel (one pixel, no duplicate PageView) -->
 <script>
 (function(){
@@ -1151,6 +1151,8 @@ html.afh-framed body.embed footer p+p{display:none}   /* framed in an AFH page: 
  .anrow{opacity:1}.anarc:not(.fast){stroke-dashoffset:0}
 }
 </style>
+<style id="afh-v15">.r2fine.r2warn{margin-top:8px;color:var(--ink-2);font-weight:600}</style>
+<style id="afh-v16">.prechips{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 14px}.prechips .pcl{display:inline-flex;align-items:center;gap:5px;margin-right:2px;font-size:12px;font-weight:750;letter-spacing:.05em;text-transform:uppercase;color:var(--mute)}.prechips .pcl svg{width:14px;height:14px;color:var(--ok,#0B7552)}.pch{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:6px 10px 6px 12px;border:1.5px solid var(--line-2);border-radius:999px;background:#fff;color:var(--ink);font:inherit;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;cursor:pointer;transition:border-color .15s,background-color .15s,transform .12s var(--ease)}.pch svg{width:14px;height:14px;color:var(--brand)}.pch.on{border-color:var(--brand);background:var(--sel);box-shadow:inset 0 0 0 1px var(--brand)}.pch:active{transform:scale(.96)}.pch:focus-visible{outline:3px solid var(--brand-2);outline-offset:2px}@media (hover:hover){.pch:hover{border-color:var(--brand)}}@media (prefers-reduced-motion:reduce){.pch{transition:none}}</style>
 </head>
 <body>
 <div class="wrap" role="main">
@@ -1440,7 +1442,7 @@ let contact={name:"",mobile:"",email:""},leadSent=false,triedNext=false;
 /* v9: remember how far the form got, so a lead routed out mid-form (e.g. 3+ payday loans at question 4)
    is not recorded with default answers to questions it never saw. */
 let afhMaxQi={},afhDone={};
-function afhAsked(id){try{if(afhDone[funnel]||afhMaxQi[funnel]===undefined)return true;const i=steps().findIndex(x=>x.id===id);return i<0||i<=afhMaxQi[funnel];}catch(e){return true;}}
+function afhAsked(id){try{if(afhDone[funnel]||afhMaxQi[funnel]===undefined)return true;if(HOME_EST&&HOME_EST.pre&&HOME_EST.ids[id]===1)return true;const i=steps().findIndex(x=>x.id===id);return i<0||i<=afhMaxQi[funnel];}catch(e){return true;}}
 let view0=QUICK?"quick":"form";
 let st={
  car:{found:null,cond:null,ev:null,use:"personal",knowType:null,carType:"",amount:35000,term:5,balloon:0,credit:3,res:"owner",resLen:"",visa:"citizen",visaSub:"",visaExpiry:"",emp:"fulltime",wage:0,wageFreq:"weekly",income:65000,payday:"no"},
@@ -1575,7 +1577,7 @@ function businessSteps(){const s=st[funnel];return[
    ${rowtile('sub','asset','blue','truck','Vehicle or equipment','Cars, trucks, machinery')}
    ${rowtile('sub','cashflow','green','cash','Working capital','Cash flow, stock, expenses')}
    ${rowtile('sub','any','slate','help','Not sure','Show me all options')}`},
- {t:"Your finance",render:()=>amountTerm()+(st.business.sub!=="cashflow"?`<div class="qlabel">${ICON.lock} Secured or unsecured?</div>${securedInfo('secinfoB')}${rowtile("bizSecured","secured","green","lock","Secured","Against the asset - lower rate")}${rowtile("bizSecured","unsecured","blue","doc","Unsecured","No asset security")}`:"")+((st.business.sub!=="cashflow"&&st.business.bizSecured==="secured")?balloonBox():"")+livePreview()},
+ {t:"Your finance",pre:"fin",render:()=>(preBizHide()?"":amountTerm())+(st.business.sub!=="cashflow"?`<div class="qlabel">${ICON.lock} Secured or unsecured?</div>${securedInfo('secinfoB')}${rowtile("bizSecured","secured","green","lock","Secured","Against the asset - lower rate")}${rowtile("bizSecured","unsecured","blue","doc","Unsecured","No asset security")}`:"")+((st.business.sub!=="cashflow"&&st.business.bizSecured==="secured"&&!preBizBalHide())?balloonBox():"")+livePreview()},
  {t:"About your business",render:()=>`
    <div class="qlabel">${ICON.building} Business structure</div>
    <select class="field" onchange="setA('structure',this.value)">${['Sole trader|sole','Company|company','Partnership|partnership','Trust|trust'].map(o=>{const[l,v]=o.split('|');return `<option value="${v}" ${s.structure===v?'selected':''}>${l}</option>`}).join('')}</select>
@@ -1634,7 +1636,7 @@ function loanSteps(){const s=st[funnel];const L=[];const debt=funnel==="personal
  }else{s.secured="unsecured";}
  return L;}
 function balChoice(c){afhStart();const s=st[funnel];s._bal=c;if(c==='no'){s.balloon=0;s._balNo=1;render();maybeAuto("_balNo");}else{s.balloon=s.balloon||balloonMaxDollar();render();}}
-function creditStep(){const s=st[funnel];return {id:"credit",icon:"gauge",secs:4,t:"How would you rate your credit?",sub:"Best guess. No credit check.",auto:"_cp",need:()=>[],
+function creditStep(){const s=st[funnel];return {id:"credit",icon:"gauge",secs:4,t:"How would you rate your credit?",sub:"Best guess. Checking your options won't affect your credit score.",auto:"_cp",need:()=>[],
  render:()=>{const sel=(v)=>(s._cp!==undefined&&String(s._cp)===String(v));
   const o=[[4,'star','Excellent',''],[3,'thumb','Good',''],[2,'minus','Average',''],[1,'thumbdown','Rebuilding','Past defaults or issues'],[0,'help',"Not sure",'']];
   return `<div class="rows">${o.map(([v,i,t,sb])=>`<button type="button" class="ro ${sel(v)?'on':''}" onclick="setCredit(${v})"><span class="ri">${ICON[i]}</span><span class="rt"><b>${t}</b><small>${sb}</small></span><span class="rc">${TICK}</span></button>`).join('')}</div>`;}};}
@@ -1811,11 +1813,11 @@ function livePreview(){const s=st[funnel];let{list}=match();
    let pool=funnel==="car"?carPool():funnel==="personal"?DATA.personal:(s.sub==="cashflow"?DATA.bizC:s.sub==="asset"?DATA.bizA:DATA.bizA.concat(DATA.bizC));
    let alt=pool.filter(l=>s.amount>=l.min&&s.amount<=l.max).sort((a,b)=>a.lo-b.lo);
    if(alt.length){const c=alt[0];const[rl,rh]=disp(c.lo,c.hi);const ef=Math.min(s.term,c.term);const w=weekly(s.amount,rl,ef,s.balloon||0),w2=weekly(s.amount,rh,ef,s.balloon||0);
-     return `<div class="preview"><div class="pvtop"><div><div class="pvlabel">Estimated repayment range</div><div class="pvval rng">${fmt(w)}<i>–</i>${fmt(w2).replace('$','')}<span>/week</span></div></div><div class="pvbadge">from ${rl.toFixed(2)}% p.a.</div></div><div class="pvsub">Indicative only · adjust term to ${c.term} yr or less for these lenders</div></div>`;}
+     return `<div class="preview"><div class="pvtop"><div><div class="pvlabel">Estimated repayment range</div><div class="pvval rng">${fmt(w)}<i>–</i>${fmt(w2).replace('$','')}<span>/week</span></div></div></div><div class="pvsub">Indicative only · adjust term to ${c.term} yr or less for these lenders</div></div>`;}
    return `<div class="preview"><div class="pvlabel">Estimated repayment</div><div class="pvval" style="font-size:22px">Adjust your amount</div><div class="pvsub">to see your estimate</div></div>`;}
  const cheapest=list[0];const[rlo,rhi]=disp(cheapest.lo,cheapest.hi);const w=weekly(s.amount,rlo,s.term,s.balloon||0),w2=weekly(s.amount,rhi,s.term,s.balloon||0);
- return `<div class="preview"><div class="pvtop"><div><div class="pvlabel">Estimated repayment range</div><div class="pvval rng" id="pvval">${fmt(w)}<i>–</i>${fmt(w2).replace('$','')}<span>/week</span></div></div><div class="pvbadge">from ${rlo.toFixed(2)}% p.a.</div></div>
-  <div class="pvsub">Indicative only · ${list.length} matching lender${list.length>1?'s':''} · ${s.term} yr on ${fmt(s.amount)}${s.balloon>0?' · balloon '+fmt(s.balloon):''}. Your final repayment depends on the rate you're approved for.</div></div>`;}
+ return `<div class="preview"><div class="pvtop"><div><div class="pvlabel">Estimated repayment range</div><div class="pvval rng" id="pvval">${fmt(w)}<i>–</i>${fmt(w2).replace('$','')}<span>/week</span></div></div></div>
+  <div class="pvsub">Indicative only · ${list.length} lender${list.length>1?'s':''} to compare · ${s.term} yr on ${fmt(s.amount)}${s.balloon>0?' · balloon '+fmt(s.balloon):''}. Your final repayment depends on the rate the lender offers you.</div></div>`;}
 
 function steps(){return funnel==="car"?carSteps():funnel==="personal"?personalSteps():businessSteps();}
 function tabs(){const tb=document.getElementById("tabs");if(LOCKTAB||view==="chooser"){tb.style.display="none";return;}tb.style.display="";tb.innerHTML=[["car","car","Car"],["caravan","truck","Caravan"],["personal","card","Personal"],["business","briefcase","Business"]].map(([f,ic,lbl])=>{
@@ -1823,7 +1825,7 @@ function tabs(){const tb=document.getElementById("tabs");if(LOCKTAB||view==="cho
  return `<button class="tab ${on?'on':''}" onclick="setFunnel('${f}')">${ICON[ic]}<span class="tx">${lbl}</span></button>`;}).join("");}
 function chooser(){return `<div class="card anim chooser">
    <div class="qtitle" style="text-align:center">What kind of finance do you need?</div>
-   <div class="qsub" style="text-align:center">Pick one to see your indicative repayments and matched lenders.</div>
+   <div class="qsub" style="text-align:center">Pick one to see your indicative repayments and lenders to compare.</div>
    <div class="grid choosergrid">
      ${chooserTile('car','car','Car & Asset','New, used, EV or equipment')}
      ${chooserTile('caravan','truck','Caravan','Pop-top, full van or camper')}
@@ -1837,18 +1839,18 @@ function setFunnel(f){if(f==="caravan"){ASSET="caravan";f="car";}else if(f==="ca
 
 function stepNeed(step){return step&&step.need?step.need():missingFields();}
 function form(){const S=steps();if(qi>S.length-1)qi=S.length-1;const step=S[qi];const title=typeof step.t==="function"?step.t():step.t;
- const pct=Math.max(8,Math.round(qi/S.length*100));const left=S.length-qi;const secs=S.slice(qi).reduce((a,x)=>a+(x.secs||6),0);
- const lbl=left<=1?'Last step':(qi>0&&qi===Math.floor(S.length/2))?'Halfway there':'About '+(Math.ceil(secs/5)*5)+' sec left';
+ const PG=preProg(S);const pct=Math.max(8,Math.round(PG.done/S.length*100));const left=PG.left;const secs=PG.secs;
+ const lbl=left<=1?'Last step':(PG.q0>0&&PG.done===Math.floor(S.length/2))?'Halfway there':'About '+(Math.ceil(secs/5)*5)+' sec left';
  const fresh=(qi!==lastQi||funnel!==lastFunnel);if(fresh)payPh=0;lastQi=qi;lastFunnel=funnel;afhMaxQi[funnel]=Math.max(afhMaxQi[funnel]||0,qi);
  let h=`<div class="card${fresh?(navDir<0?' back-anim':' anim'):''}">
   <div class="phead">${qi>0?`<button type="button" class="pback" onclick="prev()" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>`:''}<div class="pbar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div><span class="pleft${(left<=1||lbl==='Halfway there')?' last':''}">${lbl}</span></div>
-  ${estNote()}${step.icon&&ICON[step.icon]?`<div class="qicon">${ICON[step.icon]}</div>`:''}<h2 class="qtitle">${title}</h2>${step.sub?`<p class="qsub">${step.sub}</p>`:''}${step.render()}`;
+  ${HOME_EST&&HOME_EST.pre?preChips():estNote()}${step.icon&&ICON[step.icon]?`<div class="qicon">${ICON[step.icon]}</div>`:''}<h2 class="qtitle">${title}</h2>${step.sub?`<p class="qsub">${step.sub}</p>`:''}${step.render()}`;
  if(triedNext){const miss=stepNeed(step);if(miss.length)h+=`<div class="reqerr">${ICON.help} <span>Please add ${miss.join(", ")} to continue.</span></div>`;}
  const answered=stepNeed(step).length===0;
  const gdp=GUIDED_DETAILS&&step.id==="pay";
  if(gdp&&!payPh)h+=`<button type="button" class="cta" onclick="gdPayA()">Continue <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>`;
  else if(gdp&&!st[funnel]._wf)h+=`<div class="tapnote">Tap an option to continue</div>`;
- else if(!step.auto||answered)h+=`<button type="button" class="cta" onclick="next()">${qi===S.length-1?'See my matches':'Continue'} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>`;
+ else if(!step.auto||answered)h+=`<button type="button" class="cta" onclick="next()">${qi===S.length-1?'See my options':'Continue'} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>`;
  else h+=`<div class="tapnote">Tap an option to continue</div>`;
  h+=`<div class="trust">${ICON.shield} Won't affect your credit score · No obligation</div></div>`;
  navDir=1;return h;}
@@ -1870,40 +1872,42 @@ function missingFields(){const s=st[funnel];const m=[];
  }
  return m;}
 function next(){clearTimeout(autoT);const miss=stepNeed(steps()[qi]);if(miss.length){triedNext=true;render();const e=document.querySelector(".reqerr");if(e&&e.scrollIntoView)e.scrollIntoView({block:"center",behavior:"smooth"});return;}
+ if(PRE_EDIT){preDone();return;}
  if(lmShouldSwitch()){lmStart();return;}
- triedNext=false;const S=steps();afhStart();{const _t=typeof S[qi].t==="function"?S[qi].t():S[qi].t;afhOnce('step'+funnel+qi,'CalcStep'+(qi+1),{step:qi+1,of:S.length,step_name:_t});if(qi===S.length-1)afhOnce('done'+funnel,'CalcCompleted',{steps:S.length});if(CALC_STEP_LOG&&!afhSeen['qlog'+funnel+qi]){afhSeen['qlog'+funnel+qi]=1;lmLog('q.'+funnel+'.'+String(S[qi].id||('s'+(qi+1))).replace(/[^a-z0-9_]/gi,''),qi+1);if(qi===S.length-1)lmLog('q.'+funnel+'.done',S.length);}}if(qi<S.length-1){qi++;while(qi<S.length-1&&estSkip(S[qi])){estEv(S,qi);qi++;}window.scrollTo({top:0,behavior:'smooth'});render();}else{afhDone[funnel]=1;
+ triedNext=false;const S=steps();afhStart();{const _t=typeof S[qi].t==="function"?S[qi].t():S[qi].t;afhOnce('step'+funnel+qi,'CalcStep'+(qi+1),{step:qi+1,of:S.length,step_name:_t});if(qi===S.length-1)afhOnce('done'+funnel,'CalcCompleted',{steps:S.length});if(CALC_STEP_LOG&&!afhSeen['qlog'+funnel+qi]){afhSeen['qlog'+funnel+qi]=1;lmLog('q.'+funnel+'.'+String(S[qi].id||('s'+(qi+1))).replace(/[^a-z0-9_]/gi,''),qi+1);if(qi===S.length-1)lmLog('q.'+funnel+'.done',S.length);}}if(qi<S.length-1){qi++;preClamp();while(qi<S.length-1&&estSkip(S[qi])){estEv(S,qi);qi++;}window.scrollTo({top:0,behavior:'smooth'});render();}else{afhDone[funnel]=1;
    if(alcRoute()){alcStart();return;}
    if((debtLow()||(SELL&&debtFunnel()))&&!afhKeepsDebt()&&LM.on&&!lm.declined){lmStart();return;}
    if(contact.name&&gatePassed){view="results";}else{view="analysing";setTimeout(function(){if(view==="analysing"){view="ready";render();}},2700);}  // always capture name/mobile/email before showing matches
    window.scrollTo({top:0,behavior:'smooth'});render();}}
-function prev(){clearTimeout(autoT);if(GUIDED_DETAILS&&payPh&&(steps()[qi]||{}).id==="pay"){clearTimeout(gdPT);payPh=0;triedNext=false;render();return;}if(qi>0){navDir=-1;qi--;if(HOME_EST&&HOME_EST.skip&&HOME_EST.ids[(steps()[qi]||{}).id]===1)HOME_EST.skip=false;triedNext=false;window.scrollTo({top:0,behavior:'smooth'});render();}}
+function prev(){clearTimeout(autoT);if(PRE_EDIT){preDone();return;}if(GUIDED_DETAILS&&payPh&&(steps()[qi]||{}).id==="pay"){clearTimeout(gdPT);payPh=0;triedNext=false;render();return;}if(qi>0){navDir=-1;qi--;if(HOME_EST&&HOME_EST.pre){const S2=steps();while(qi>0&&estSkip(S2[qi]))qi--;}else if(HOME_EST&&HOME_EST.skip&&HOME_EST.ids[(steps()[qi]||{}).id]===1)HOME_EST.skip=false;triedNext=false;window.scrollTo({top:0,behavior:'smooth'});render();}}
 
 function results(){const s=st[funnel];const{list,fallback,capped,nearmiss}=match();
  signalParent("results");
  const badge=funnel==="car"?A('badge'):{personal:"Personal",business:"Business"}[funnel];
  const first=(contact.name||"").trim().split(/\s+/)[0]||"you";const F=FREQ[repayFreq];
  const pay=l=>{const[rlo,rhi]=disp(l.lo,l.hi);return{rlo,rhi,lo:perF(weekly(s.amount,rlo,s.term,s.balloon||0)),hi:perF(weekly(s.amount,rhi,s.term,s.balloon||0)),clo:rlo+0.9};};
- let h=`<div class="r2hero"><div class="r2top"><span class="r2eb">${TICK} Matched for ${first}</span><button type="button" class="r2edit" onclick="goForm()">Edit answers</button></div>
-  <h2>${list.length?`${list.length} lender${list.length===1?'':'s'} can help`:'Your broker will find your options'}</h2>
+ let h=`<div class="r2hero"><div class="r2top"><span class="r2eb">${TICK} Options for ${first}</span><button type="button" class="r2edit" onclick="goForm()">Edit answers</button></div>
+  <h2>${list.length?`${list.length} lender${list.length===1?'':'s'} to compare`:'Your broker will find your options'}</h2>
   <div class="r2pills"><span>${badge}</span><span>${fmt(s.amount)}</span><span>${s.term} years</span>${s.balloon>0?`<span>Balloon ${fmt(s.balloon)}</span>`:''}</div></div>
   <div class="r2freq" role="tablist">${Object.keys(FREQ).map(k=>`<button type="button" role="tab" class="${repayFreq===k?'on':''}" onclick="setFreq('${k}')">${k[0].toUpperCase()+k.slice(1)}</button>`).join('')}</div>`;
  if(fallback)h+=`<div class="r2note">${ICON.help} These are the closest options. Your broker will confirm the best fit.</div>`;
- if(list.length){const l=list[0],p=pay(l);const fits=fitBadges(l,funnel,s);const tags=fits.concat(l.tags).slice(0,3);
-  h+=`<div class="r2best"><div class="r2rib">${ICON.star} Best match</div>
-   <div class="r2lh"><span class="r2logo${LG(l)?' img':''}">${LG(l)||l.name[0]}</span><div class="r2nm"><h3>${l.name}</h3><span class="r2ok">${TICK} Matched to you</span></div></div>
-   <div class="r2pay"><span class="r2l">Estimated repayment range</span><div class="r2v">${fmt(p.lo)}<i class="r2dash">–</i>${fmt(p.hi).replace('$','')}<small>/${F[1]}</small></div><span class="r2r">Indicative estimate. Where you land in this range depends on the rate the lender approves.</span></div>
+ if(list.length){const l=list[0],p=pay(l);const fits=fitBadges(l,funnel,s);const tags=fits.concat(l.tags.filter(tagOK)).slice(0,3);
+  h+=`<div class="r2best"><div class="r2rib">${ICON.star} Top of your list</div>
+   <div class="r2lh"><span class="r2logo${LG(l)?' img':''}">${LG(l)||l.name[0]}</span><div class="r2nm"><h3>${l.name}</h3><span class="r2ok">${TICK} Based on your answers</span></div></div>
+   <div class="r2pay"><span class="r2l">Estimated repayment range</span><div class="r2v">${fmt(p.lo)}<i class="r2dash">–</i>${fmt(p.hi).replace('$','')}<small>/${F[1]}</small></div><span class="r2r">Indicative estimate. Where you land in this range depends on the rate the lender offers you.</span></div>
    <div class="r2rates"><div><span>Interest rate p.a.</span><b>from ${p.rlo.toFixed(2)}%</b></div><div><span>Comparison rate p.a.*</span><b>from ${p.clo.toFixed(2)}%</b></div></div>
    <div class="r2tags">${tags.map((t,i)=>`<span class="${i<fits.length?'fit':''}">${i<fits.length?TICK:''}${t}</span>`).join('')}</div></div>`;}
  aplCheck();h+=`<div id="aplSlot">${applyCard()}</div>`+bookingCard();
- if(list.length>1){h+=`<div class="r2sec">More matches <span>${list.length-1}</span></div><div class="r2list">`;
-  list.slice(1,showAll?99:6).forEach((l,i)=>{const p=pay(l);const fit=fitBadges(l,funnel,s)[0]||l.tags[0]||"";
+ if(list.length>1){h+=`<div class="r2sec">More options <span>${list.length-1}</span></div><div class="r2list">`;
+  list.slice(1,showAll?99:6).forEach((l,i)=>{const p=pay(l);const fit=fitBadges(l,funnel,s)[0]||l.tags.filter(tagOK)[0]||"";
    h+=`<div class="r2item" style="animation-delay:${Math.min(i,8)*50}ms"><span class="r2logo sm${LG(l)?' img':''}">${LG(l)||l.name[0]}</span><div class="r2in"><b>${l.name}</b><small>${fit}</small><em>from ${p.rlo.toFixed(2)}% p.a. · comp. ${p.clo.toFixed(2)}%*</em></div><div class="r2ip"><b>${fmt(p.lo)}–${fmt(p.hi).replace('$','')}</b><small>/${F[2]}</small></div></div>`;});
-  h+=`</div>`;if(!showAll&&list.length>6)h+=`<button type="button" class="r2more" onclick="showAll=true;render()">Show ${list.length-6} more matches</button>`;}
+  h+=`</div>`;if(!showAll&&list.length>6)h+=`<button type="button" class="r2more" onclick="showAll=true;render()">Show ${list.length-6} more options</button>`;}
  if(capped&&capped.length){h+=`<div class="r2sec">Also on our panel</div><div class="r2list">`;
   capped.slice(0,6).forEach(l=>{h+=`<div class="r2item"><span class="r2logo sm mute${LG(l)?' img':''}">${LG(l)||l.name[0]}</span><div class="r2in"><b>${l.name}</b><small>Lends up to ${fmt(l.max)}</small></div></div>`;});h+=`</div>`;}
  if(nearmiss&&nearmiss.length){h+=`<div class="r2sec">Might still qualify</div><div class="r2list">`;
   nearmiss.slice(0,5).forEach(o=>{h+=`<div class="r2item"><span class="r2logo sm mute${LG(o.l)?' img':''}">${LG(o.l)||o.l.name[0]}</span><div class="r2in"><b>${o.l.name}</b><small>${o.reasons.length?'Usually wants '+o.reasons.join(' & '):'Close fit'}</small></div></div>`;});h+=`</div>`;}
  h+=`<p class="r2fine">Repayments are indicative estimates shown as a range, based on the details you entered and each lender's typical rate range. They are not a quote or an offer of finance. Your actual rate, fees and repayments are set by the lender after a full assessment, and your broker will confirm them before you commit. *Comparison rates include estimated fees.</p>`;
+ if(list.length)h+=`<p class="r2fine r2warn">WARNING: This comparison rate is true only for the examples given and may not include all fees and charges. Different terms, fees or other loan amounts might result in a different comparison rate.</p>`;
  return h;}
 
 // ⬇️ PASTE YOUR FORMSPREE FORM ID HERE (e.g. "xeoqwabc") - from formspree.io
@@ -1913,10 +1917,10 @@ const FORMSPREE_ID="xkoljnnb";
 
 /* ── RESULTS JOURNEY v6 ─────────────────────────────────────────────────────── */
 function analysing(){const{list}=match();const n=list.length||'our';
- const lines=[`Checking ${n} lenders on our panel`,"Matching your credit and income","Working out your repayments"];
+ const lines=[`Checking ${n} lenders on our panel`,"Comparing your credit and income","Working out your repayments"];
  return `<div class="card anim an">
   <div class="anring"><svg viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="ang" x1="0" x2="1"><stop offset="0" stop-color="#6D54E8"/><stop offset="1" stop-color="#29ABE2"/></linearGradient></defs><circle cx="60" cy="60" r="50" fill="none" stroke="#EEEBFA" stroke-width="8"/><circle class="anarc" cx="60" cy="60" r="50" fill="none" stroke="url(#ang)" stroke-width="8" stroke-linecap="round"/></svg><span class="anicon">${ICON.search}</span></div>
-  <h2 class="antitle">Finding your matches</h2>
+  <h2 class="antitle">Finding your options</h2>
   <div class="anlist">${lines.map((t,i)=>`<div class="anrow" style="animation-delay:${.25+i*.75}s"><span class="anck">${TICK}</span>${t}</div>`).join('')}</div>
  </div>`;}
 function readyScreen(){const{list}=match();const n=list.length;
@@ -1926,19 +1930,21 @@ function readyScreen(){const{list}=match();const n=list.length;
  return `<div class="card anim rd"><div class="confetti" aria-hidden="true">${conf}</div>
   <div class="rdbadge">${TICK}</div>
   <div class="rdeb">Your results are ready</div>
-  <h2 class="rdtitle">${n?`<span id="cnt" data-n="${n}">0</span> lender match${n!==1?'es':''} found`:'Your options are ready'}</h2>
+  <h2 class="rdtitle">${n?`<span id="cnt" data-n="${n}">0</span> lender${n!==1?'s':''} to compare`:'Your options are ready'}</h2>
   <p class="rdsub">Personalised to your loan, credit and income.</p>
-  <div class="rdpills"><span>${ICON.dollar} ${fmt(st[funnel].amount)}</span><span>${ICON.calendar} ${st[funnel].term} years</span><span>${ICON.shield} No credit check</span></div>
-  <button type="button" class="cta rdcta" onclick="afhTrack('CalcUnlockClick',{});view='details';render();">See my personalised matches now <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+  <div class="rdpills"><span>${ICON.dollar} ${fmt(st[funnel].amount)}</span><span>${ICON.calendar} ${st[funnel].term} years</span><span>${ICON.shield} No credit score impact</span></div>
+  <button type="button" class="cta rdcta" onclick="afhTrack('CalcUnlockClick',{});view='details';render();">See my personalised options now <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
   <div class="rdnote">Free · No obligation · Takes 20 seconds</div>
  </div>`;}
 function countUp(){const el=document.getElementById('cnt');if(!el)return;const n=+el.dataset.n;const t0=performance.now();
  (function f(t){const p=Math.min(1,(t-t0)/900);el.textContent=Math.round(n*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f);})(t0);}
 function unlocking(){return `<div class="card anim an"><div class="anring sm"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" fill="none" stroke="#EEEBFA" stroke-width="9"/><circle class="anarc fast" cx="60" cy="60" r="50" fill="none" stroke="#4B2EDB" stroke-width="9" stroke-linecap="round"/></svg><span class="anicon">${ICON.lock}</span></div>
- <h2 class="antitle">Unlocking your matches</h2><p class="rdsub" style="margin:0">Preparing your repayments…</p></div>`;}
+ <h2 class="antitle">Unlocking your options</h2><p class="rdsub" style="margin:0">Preparing your repayments…</p></div>`;}
 
 /* ── results ── */
 /* lender logos: loaded from afhfinance.com.au/lp-assets only on the results screen (lazy), initial letter if missing */
+/* v15: lender tags quoting a rate, an approval, "instant" or an approval time stay off screen (data unchanged) */
+const TAG_HIDE=/approv|instant|guarant|%|p\.a\.|within \d+ hours?|same.day/i;function tagOK(t){return !TAG_HIDE.test(t);}
 const LOGO_BASE="https://afhfinance.com.au/lp-assets/";
 const LOGO_MAP={"Plenti":"plenti-auto","Plenti (auto)":"plenti-auto","MONEYME":"moneyme-autopay","MONEYME (Autopay)":"moneyme-autopay","Azora (commercial)":"azora","Metro Commercial":"metro-consumer","Affordable Car Loans":"affordable-car-loans"};
 function LG(l){if(!l||!l.name)return "";const slug=LOGO_MAP[l.name]||l.name.toLowerCase().replace(/\(.*?\)/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
@@ -1988,7 +1994,7 @@ function applyCard(){
  else if(apl.busy)act=`<button type="button" class="cta" disabled aria-busy="true"><span class="spin" aria-hidden="true"></span> Opening your application</button>`;
  else act=`<button type="button" class="cta" onclick="aplGo()">Continue my application ${arrow}</button>`;
  return `<div class="r2apply" id="apply"><div class="r2ah"><span class="r2bi">${ICON.doc}</span><div><b>Finish your application now</b><small>About 5 minutes. What you've told us is already filled in, so your broker can start on your options straight away.</small></div></div>
-  <ol class="r2steps" aria-label="Your progress"><li class="done"><i>${TICK}</i><span>Matches found</span></li><li class="now" aria-current="step"><i>2</i><span>Finish your application</span></li><li><i>3</i><span>Broker compares 40+ lenders</span></li></ol>
+  <ol class="r2steps" aria-label="Your progress"><li class="done"><i>${TICK}</i><span>Options found</span></li><li class="now" aria-current="step"><i>2</i><span>Finish your application</span></li><li><i>3</i><span>Broker compares 40+ lenders</span></li></ol>
   ${act}
   ${apl.msg?'':`<div class="r2afoot">${ICON.lock} Secure. We'll send you a code to confirm it's you.</div>`}</div>`;}
 async function aplGo(auto){if(apl.busy||apl.url||apl.msg)return;apl.busy=true;aplPaint();afhTrack('ApplyStart',{via:auto?'auto':'tap'});
@@ -2016,15 +2022,15 @@ function setFreq(f){repayFreq=f;afhTrack('CalcFreqToggle',{freq:f});render();}
 function detailsGate(){if(GUIDED_DETAILS)return gdGate();const{list}=match();const n=list.length;
  return `<div class="card anim gate2">
   <div class="g2top"><span class="g2lock">${ICON.lock}</span><span>Last step · 20 seconds</span></div>
-  <h2>Where should we send your ${n?n+' ':''}match${n!==1?'es':''}?</h2>
+  <h2>Where should we send your ${n?n+' ':''}option${n!==1?'s':''}?</h2>
   <form onsubmit="return submitGate(event)" novalidate>
    <label class="fl g2f" id="fl-name"><span class="g2i">${ICON.user}</span><input name="name" placeholder="Full name" aria-label="Full name" autocomplete="name" autocapitalize="words" enterkeyhint="next" value="${contact.name}" oninput="contact.name=this.value;this.parentNode.classList.remove('bad')"><em>Please enter your name.</em></label>
    <label class="fl g2f" id="fl-email"><span class="g2i">${ICON.mail}</span><input name="email" type="email" inputmode="email" placeholder="Email" aria-label="Email" autocomplete="email" autocapitalize="off" enterkeyhint="next" value="${contact.email}" oninput="contact.email=this.value;this.parentNode.classList.remove('bad')"><em>Please check your email.</em></label>
    <label class="fl g2f" id="fl-mobile"><span class="g2i">${ICON.phone}</span><input name="mobile" type="tel" inputmode="tel" placeholder="Mobile (04xx xxx xxx)" aria-label="Mobile" autocomplete="tel" enterkeyhint="done" value="${contact.mobile}" oninput="contact.mobile=this.value;this.parentNode.classList.remove('bad')"><em>Please enter an Australian mobile.</em></label>
    ${consentBlock()}
-   <button class="cta" type="submit">Unlock my matches <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+   <button class="cta" type="submit">Unlock my options <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
   </form>
-  <div class="gtrust"><span>${ICON.lock} Secure · No credit check · No obligation</span></div>
+  <div class="gtrust"><span>${ICON.lock} Secure · No credit score impact · No obligation</span></div>
   ${GATE_BACK?`<button type="button" class="g2back" onclick="if(CALC_STEP_LOG)lmLog('g.back',0);goForm()">Change my answers</button>`:''}
  </div>`;}
 
@@ -2035,7 +2041,7 @@ function detailsGate(){if(GUIDED_DETAILS)return gdGate();const{list}=match();con
    Typed values wait in gdv until a submit. v10 copied them into contact as people typed, so typing a name and then
    tapping "Change my answers" let the end of the questions skip the details screen (no consent, no lead copy). */
 const GD={
- gate:{form:"gateForm",pre:"fl-",log:"g",bar:["Your answers","Your details","Your matches"],go:"Unlock my matches",fields:()=>["name","mobile","email","consent"]},
+ gate:{form:"gateForm",pre:"fl-",log:"g",bar:["Your answers","Your details","Your options"],go:"Unlock my options",fields:()=>["name","mobile","email","consent"]},
  lm:{form:"lmForm",pre:"lmf-",log:"lmd",bar:["Your answers","Your details","Bank check"],go:"Continue",
   fields:()=>["name","mobile","email","dob"].concat(st[funnel]&&st[funnel].emp==="centrelink"?["ben"]:[]).concat(["consent"])},
  alc:{form:"alcForm",pre:"alcf-",log:"alc",bar:["Your answers","Your details","Specialist call"],go:"Connect me",fields:()=>["name","mobile","email","consent"]}};
@@ -2192,9 +2198,9 @@ function gdGate(){const{list}=match();const n=list.length;const k="gate";
  return `<div class="card anim gate2 gdcard${GS[k]>0?' gdl':''}" id="gdc-gate">
   ${gdHead(k)}
   <div class="g2top"><span class="g2lock">${ICON.lock}</span><span>Last step · 20 seconds</span></div>
-  <h2>Where should we send your ${n?n+' ':''}match${n!==1?'es':''}?</h2>
+  <h2>Where should we send your ${n?n+' ':''}option${n!==1?'s':''}?</h2>
   ${gdForm(k)}
-  <div class="gtrust"><span>${ICON.lock} Secure · No credit check · No obligation</span></div>
+  <div class="gtrust"><span>${ICON.lock} Secure · No credit score impact · No obligation</span></div>
   ${GATE_BACK?`<button type="button" class="g2back" onclick="if(CALC_STEP_LOG)lmLog('g.back',0);goForm()">Change my answers</button>`:''}
  </div>`;}
 function gdLm(){const k="lm",cl=st[funnel].emp==='centrelink';
@@ -2204,7 +2210,7 @@ function gdLm(){const k="lm",cl=st[funnel].emp==='centrelink';
   <span class="lmpill">${lmIcon('<path d="M5 12.5l4.5 4.5L19 7.5"/>')} Specialist lenders available</span>
   <h2 class="lmh">Good news, there's a way forward for you</h2>
   <div class="gdintro"><p class="lmp">${debtLow()?'Our partner Credit Sense works with lenders who handle smaller debt consolidation loans.':'Our partner Credit Sense works with lenders who look past the usual boxes.'} Your answers carry over, so there's nothing to repeat.</p>
-  <div class="lmbens">${ben('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>','Lenders matched to you','Specialists in your situation')}${ben('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/>','No payslips or paperwork','A secure bank check does the work')}${ben('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>','About 3 minutes','Finish now while it\'s fresh')}</div>
+  <div class="lmbens">${ben('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>','Lenders based on your answers','Specialists in your situation')}${ben('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/>','No payslips or paperwork','A secure bank check does the work')}${ben('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>','About 3 minutes','Finish now while it\'s fresh')}</div>
   <hr class="lmhr"></div>
   ${gdForm(k)}
   <div class="lmsafe">${lmIcon('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>')} Encrypted. Only shared with Credit Sense and the lenders who use it</div>
@@ -2217,7 +2223,7 @@ function gdAlc(){const k="alc",amt=+st.personal.amount||0;
  return `<div class="card anim lmc gdcard${GS[k]>0?' gdl':''}" id="gdc-alc">
   ${gdHead(k)}
   <span class="lmpill alcpill">${lmIcon('<path d="M5 12.5l4.5 4.5L19 7.5"/>')} Debt consolidation specialist</span>
-  <h2 class="lmh">We've matched you with a specialist</h2>
+  <h2 class="lmh">Here's a specialist to talk to</h2>
   <div class="gdintro"><p class="lmp">For ${amt?fmt(amt)+' of ':''}debt consolidation, we work with our lending partner Australian Lending Centre. Your answers carry over, so there's nothing to repeat.</p></div>
   <div class="alcco"><img src="${ALC.logo}" alt="Australian Lending Centre" width="116" height="30" onerror="this.style.display='none'"><span><b>Australian Lending Centre</b>Australian Credit Licence 389119</span></div>
   <div class="gdintro"><div class="lmbens">${ben('<path d="M4 7h16M4 12h16M4 17h10"/>','Focused on debt consolidation','Rolling debts into one loan is what they do')}${ben('<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/>','A real person calls you','To talk through your options')}${ben('<circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/>','No obligation','You decide if it\'s right for you')}</div>
@@ -2225,7 +2231,7 @@ function gdAlc(){const k="alc",amt=+st.personal.amount||0;
   ${gdForm(k)}
   <div class="lmsafe">${lmIcon('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>')} Encrypted. Only shared with Australian Lending Centre</div>
   <p class="alcfine">AFH Finance Pty Ltd, ABN 30 633 575 005, Authorised Credit Representative 548852 of Access Lending Group Pty Ltd, Australian Credit Licence 531308. <a href="${PRIVACY_URL}" target="_blank" rel="noopener">Privacy Policy</a></p>
-  <button type="button" class="lmskip" onclick="alcDecline()">No thanks, show my AFH matches</button>
+  <button type="button" class="lmskip" onclick="alcDecline()">No thanks, show my AFH options</button>
   <button type="button" class="lmback" onclick="alcBack()">Tapped the wrong answer? Go back</button>
  </div>`;}
 /* Pay: the amount first (Enter or Continue), then how often as one tap with each option's yearly figure, so a fortnightly
@@ -2336,7 +2342,7 @@ function lmHand(){if(GUIDED_DETAILS)return gdLm();const cl=st[funnel].emp==='cen
   <span class="lmpill">${lmIcon('<path d="M5 12.5l4.5 4.5L19 7.5"/>')} Specialist lenders available</span>
   <h2 class="lmh">Good news, there's a way forward for you</h2>
   <p class="lmp">${debtLow()?'Our partner Credit Sense works with lenders who handle smaller debt consolidation loans.':'Our partner Credit Sense works with lenders who look past the usual boxes.'} Your answers carry over, so there's nothing to repeat.</p>
-  <div class="lmbens">${ben('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>','Lenders matched to you','Specialists in your situation')}${ben('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/>','No payslips or paperwork','A secure bank check does the work')}${ben('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>','About 3 minutes','Finish now while it\'s fresh')}</div>
+  <div class="lmbens">${ben('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>','Lenders based on your answers','Specialists in your situation')}${ben('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/>','No payslips or paperwork','A secure bank check does the work')}${ben('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>','About 3 minutes','Finish now while it\'s fresh')}</div>
   <hr class="lmhr">
   <form id="lmForm" onsubmit="return lmSubmit(event)" novalidate>
    <label class="lmf" id="lmf-name">First and last name<input name="name" autocomplete="name" autocapitalize="words" value="${v('name')}" oninput="contact.name=this.value;this.parentNode.classList.remove('bad')"></label>
@@ -2431,7 +2437,7 @@ function alcHand(){if(GUIDED_DETAILS)return gdAlc();const v=k=>(contact[k]||"").
  const ben=(i,b,t)=>`<div class="lmben"><span class="lmbi">${lmIcon(i)}</span><span><b>${b}</b><small>${t}</small></span></div>`;
  return `<div class="card anim lmc">
   <span class="lmpill alcpill">${lmIcon('<path d="M5 12.5l4.5 4.5L19 7.5"/>')} Debt consolidation specialist</span>
-  <h2 class="lmh">We've matched you with a specialist</h2>
+  <h2 class="lmh">Here's a specialist to talk to</h2>
   <p class="lmp">For ${amt?fmt(amt)+' of ':''}debt consolidation, we work with our lending partner Australian Lending Centre. Your answers carry over, so there's nothing to repeat.</p>
   <div class="alcco"><img src="${ALC.logo}" alt="Australian Lending Centre" width="116" height="30" onerror="this.style.display='none'"><span><b>Australian Lending Centre</b>Australian Credit Licence 389119</span></div>
   <div class="lmbens">${ben('<path d="M4 7h16M4 12h16M4 17h10"/>','Focused on debt consolidation','Rolling debts into one loan is what they do')}${ben('<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/>','A real person calls you','To talk through your options')}${ben('<circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/>','No obligation','You decide if it\'s right for you')}</div>
@@ -2446,7 +2452,7 @@ function alcHand(){if(GUIDED_DETAILS)return gdAlc();const v=k=>(contact[k]||"").
   </form>
   <div class="lmsafe">${lmIcon('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>')} Encrypted. Only shared with Australian Lending Centre</div>
   <p class="alcfine">AFH Finance Pty Ltd, ABN 30 633 575 005, Authorised Credit Representative 548852 of Access Lending Group Pty Ltd, Australian Credit Licence 531308. <a href="${PRIVACY_URL}" target="_blank" rel="noopener">Privacy Policy</a></p>
-  <button type="button" class="lmskip" onclick="alcDecline()">No thanks, show my AFH matches</button>
+  <button type="button" class="lmskip" onclick="alcDecline()">No thanks, show my AFH options</button>
   <button type="button" class="lmback" onclick="alcBack()">Tapped the wrong answer? Go back</button>
  </div>`;}
 function alcTick(el){alc.consent=!!el.checked;alc.ts=el.checked?new Date().toISOString():"";
@@ -2736,13 +2742,13 @@ function quickCalc(){const s=st[funnel];const amax={car:250000,personal:100000,b
    <div class="qclabel" style="margin-top:20px">Repayment frequency</div>
    <div class="qcfreq">${["weekly","fortnightly","monthly"].map(f=>`<button class="qcfreqbtn ${repayFreq===f?'on':''}" onclick="setFreq('${f}')">${f[0].toUpperCase()+f.slice(1)}</button>`).join('')}</div>
 
-   <div class="qcpreview" id="qcPreview">${q?`<div class="qcpl">Estimated repayment</div><div class="qcpv">${fmt(q.per)}<span>/${freqWord}</span></div><div class="qcps">from ${q.rate.toFixed(2)}% p.a.</div>`:`<div class="qcpl">Set your amount to see an estimate</div>`}</div>
+   <div class="qcpreview" id="qcPreview">${q?`<div class="qcpl">Estimated repayment</div><div class="qcpv">${fmt(q.per)}<span>/${freqWord}</span></div>`:`<div class="qcpl">Set your amount to see an estimate</div>`}</div>
 
    ${q?`<div class="qcready"><span class="qcdot"></span><span id="qcReady">${q.n} lenders ready to compare your rate</span></div>`:''}
-   <button class="qccta pulse-cta" onclick="goFullFunnel()">See my ${q?q.n+' ':''}lender matches <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-   <div class="qctrust">${ICON.shield} No credit impact · 2 minutes · No upfront cost</div>
+   <button class="qccta pulse-cta" onclick="goFullFunnel()">See my ${q?q.n+' ':''}lender options <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+   <div class="qctrust">${ICON.shield} No credit score impact · 2 minutes · No upfront cost</div>
  </div>`;}
-function refreshQuick(){const p=document.getElementById('qcPreview');if(!p)return;const q=quickRepay();const fw={weekly:"week",fortnightly:"fortnight",monthly:"month"}[repayFreq];p.innerHTML=q?`<div class="qcpl">Estimated repayment</div><div class="qcpv">${fmt(q.per)}<span>/${fw}</span></div><div class="qcps">from ${q.rate.toFixed(2)}% p.a.</div>`:`<div class="qcpl">Set your amount to see an estimate</div>`;const rd=document.getElementById('qcReady');if(rd&&q)rd.textContent=q.n+" lenders ready to compare your rate";const ct=document.querySelector('.qccta');if(ct&&q)ct.firstChild.textContent="See my "+q.n+" lender matches ";}
+function refreshQuick(){const p=document.getElementById('qcPreview');if(!p)return;const q=quickRepay();const fw={weekly:"week",fortnightly:"fortnight",monthly:"month"}[repayFreq];p.innerHTML=q?`<div class="qcpl">Estimated repayment</div><div class="qcpv">${fmt(q.per)}<span>/${fw}</span></div>`:`<div class="qcpl">Set your amount to see an estimate</div>`;const rd=document.getElementById('qcReady');if(rd&&q)rd.textContent=q.n+" lenders ready to compare your rate";const ct=document.querySelector('.qccta');if(ct&&q)ct.firstChild.textContent="See my "+q.n+" lender options ";}
 function quickTerm(v){st[funnel].term=+v;render();}
 function quickBalloon(v){st[funnel].balloon=+v;render();}
 function setFreq(f){repayFreq=f;render();}
@@ -2766,7 +2772,7 @@ function afhCleanCtx(c){const o={};if(!c||typeof c!=="object")return o;Object.ke
 window.addEventListener("message",function(e){const d=e.data;if(!d||typeof d!=="object")return;
  if((d.afhParent||d.afhAnswer||d.afhNav)&&(AFH_HOME.indexOf(e.origin)<0||e.source!==window.parent))return;  /* v12: only AFH pages that framed us */
  if(d.afhNav==="back"){try{if(view==="form"){if(qi>0||payPh)prev();}else if(view==="analysing"||view==="ready"||view==="details"){goForm();}else if(view==="lmswitch"||view==="lmhand"){lmBack();}else if(view==="alcmatch"||view==="alchand"){alcBack();}}catch(err){}return;}  /* v13: the AFH page's browser Back = back to the questions */
- if(d.afhParent){afhCtx=Object.assign(afhCtx,afhCleanCtx(d.ctx));if(window.__afhRelay)window.__afhRelay(e.origin);if(d.est)homeEst(d.est);}
+ if(d.afhParent){afhCtx=Object.assign(afhCtx,afhCleanCtx(d.ctx));if(window.__afhRelay)window.__afhRelay(e.origin);if(d.pre)preEst(d.pre);else if(d.est)homeEst(d.est);}
  if(d.afhAnswer){const a=d.afhAnswer;try{
    if(a.ctx)afhCtx=Object.assign(afhCtx,afhCleanCtx(a.ctx));
    afhStart();
@@ -2793,12 +2799,77 @@ function homeEst(e){try{
  const S=steps();while(qi<S.length-1&&estSkip(S[qi])){estEv(S,qi);qi++;}
  render();
 }catch(err){}}
-function estSkip(step){return !!(HOME_EST&&HOME_EST.skip&&HOME_EST.t===funnel&&step&&step.id&&HOME_EST.ids[step.id]===1&&stepNeed(step).length===0);}
+function estSkip(step){if(!(HOME_EST&&HOME_EST.skip&&HOME_EST.t===funnel&&step))return false;
+ if(HOME_EST.pre){if(PRE_EDIT&&preKey(step)===PRE_EDIT.k)return false;
+  if(step.pre==="fin")return st.business.sub==="cashflow"&&HOME_EST.ids.amount===1&&HOME_EST.ids.term===1;
+  if(step.id==="balloon"&&funnel==="car"&&st.car._bal==="yes"&&st.car.balloon>preBalMax())return false;}
+ return !!(step.id&&HOME_EST.ids[step.id]===1&&stepNeed(step).length===0);}
 function estEv(S,i){const t=typeof S[i].t==="function"?S[i].t():S[i].t;afhOnce('step'+funnel+i,'CalcStep'+(i+1),{step:i+1,of:S.length,step_name:t});
  if(CALC_STEP_LOG&&!afhSeen['qlog'+funnel+i]){afhSeen['qlog'+funnel+i]=1;lmLog('q.'+funnel+'.'+String(S[i].id||('s'+(i+1))).replace(/[^a-z0-9_]/gi,''),i+1);}}
 function estNote(){if(!HOME_EST||!HOME_EST.skip||HOME_EST.t!==funnel)return "";const s=st[funnel];
  const cr={4:"Excellent",3:"Good",2:"Average",1:"Rebuilding",0:"Not sure"}[s._cp];
  return `<div class="estnote">${ICON.check}<span>Using your estimate: <b>${fmt(s.amount)}</b> over <b>${s.term} year${s.term>1?'s':''}</b>${funnel==="car"&&s.balloon>0?`, <b>${fmt(s.balloon)}</b> balloon`:''}${cr!==undefined&&funnel!=="business"?`, ${cr} credit`:''}</span><button type="button" class="estchg" onclick="estChange()">Change</button></div>`;}
+
+/* ── v16: answers from the website estimator (`pre`) ─────────────────────────────── */
+let PRE_EDIT=null,PRE_BIZ=0;
+const PRE_CR=["Excellent","Good","Average","Rebuilding"];
+function preEst(p){try{
+ if(!p||typeof p!=="object"||afhStarted||view!=="form"||HOME_EST)return;      // never overwrite answers given here
+ if(["car","personal","business"].indexOf(p.t)<0||p.t!==funnel)return;
+ const s=st[funnel],b=amtBounds(),ok=(v,lo,hi)=>Number.isInteger(v)&&v>=lo&&v<=hi,has=k=>p[k]!==undefined&&p[k]!==null;
+ if(has("amt")&&!ok(p.amt,b.min,b.max))return;
+ if(has("term")&&!ok(p.term,1,7))return;
+ if(has("f")&&[52,26,12].indexOf(p.f)<0)return;
+ if(has("cr")&&!ok(p.cr,0,4))return;
+ const A=has("amt")?p.amt:s.amount;
+ if(has("bal")&&(!ok(p.bal,0,Math.floor(A/2))||(funnel==="personal"&&p.bal>0)))return;
+ const ids={};let n=0;
+ if(has("amt")){s.amount=p.amt;s._amt=1;ids.amount=1;n++;}
+ if(has("term")){s.term=p.term;s._term=1;ids.term=1;n++;}
+ if(has("cr")&&p.cr<4&&funnel!=="business"){const cp=[4,3,2,1][p.cr];s._cp=cp;s.credit=cp;ids.credit=1;n++;}   // "Not sure" is asked here
+ if(has("bal")&&funnel==="car"){if(p.bal>0){s._bal="yes";s.balloon=Math.min(p.bal,preBalMax());}if(!(p.bal>0)||!s.balloon){s._bal="no";s.balloon=0;s._balNo=1;}ids.balloon=1;n++;}
+ else if(has("bal")&&funnel==="business"){s.balloon=p.bal;ids.balloon=1;n++;}
+ if(!n)return;                                                                   // nothing carried: exactly v15
+ if(has("f"))repayFreq={52:"weekly",26:"fortnightly",12:"monthly"}[p.f];
+ HOME_EST={t:funnel,skip:true,pre:true,ids:ids};
+ if(CALC_STEP_LOG)lmLog('pre.'+funnel,n);
+ const S=steps();while(qi<S.length-1&&estSkip(S[qi])){estEv(S,qi);qi++;}
+ render();
+}catch(err){}}
+/* the website works in whole percentages of the amount; the calculator in $500 steps. Either way, never above the lender limit */
+function preBalMax(){const s=st.car;return Math.max(balloonMaxDollar()||0,Math.floor((+s.amount||0)*balloonMaxPct()/100));}
+function preKey(step){return step&&step.pre==="fin"?"fin":(step&&step.id)||"";}
+/* a carried car balloon above what lenders allow once the condition is known (used: 15% less) is brought down and shown again */
+function preClamp(){if(!(HOME_EST&&HOME_EST.pre&&funnel==="car"&&HOME_EST.ids.balloon===1))return;const s=st.car;if(s._bal!=="yes")return;
+ const mx=preBalMax();if(s.balloon>mx){s.balloon=mx;HOME_EST.ids.balloon=2;if(!mx){s._bal="no";s._balNo=1;}}}
+function preProg(S){const q0=PRE_EDIT?Math.min(PRE_EDIT.ret,S.length-1):qi;
+ if(!(HOME_EST&&HOME_EST.pre&&HOME_EST.skip&&HOME_EST.t===funnel))return{q0:qi,done:qi,left:S.length-qi,secs:S.slice(qi).reduce((a,x)=>a+(x.secs||6),0)};
+ let ahead=0,secs=0;for(let j=q0;j<S.length;j++){if(j>q0&&j<S.length-1&&estSkip(S[j]))ahead++;else secs+=(S[j].secs||6);}
+ return{q0:q0,done:q0+ahead,left:S.length-q0-ahead,secs:secs};}
+function preItems(){if(!(HOME_EST&&HOME_EST.pre&&HOME_EST.t===funnel))return[];const s=st[funnel],I=HOME_EST.ids,L=[],S=steps(),has=id=>S.some(x=>x.id===id);
+ if(I.amount===1)L.push(["amount","loan amount",fmt(s.amount)]);
+ if(I.term===1)L.push(["term","loan term",s.term+" year"+(s.term>1?"s":"")]);
+ if(I.balloon===1){if(funnel==="car"&&has("balloon"))L.push(["balloon","balloon",s.balloon>0?fmt(s.balloon)+" balloon":"No balloon"]);
+  else if(funnel==="business"&&st.business.sub!=="cashflow"&&st.business.bizSecured==="secured")L.push(["balloon","balloon",s.balloon>0?fmt(s.balloon)+" balloon":"No balloon"]);}
+ if(I.credit===1&&funnel!=="business"&&s._cp>=1&&s._cp<=4)L.push(["credit","credit history",PRE_CR[4-s._cp]+" credit"]);
+ return L;}
+const PEN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>';
+function preChips(){const L=preItems();if(!L.length)return "";const ek=PRE_EDIT?PRE_EDIT.k:"";
+ return `<div class="prechips" role="group" aria-label="Your answers from the estimate. Choose one to change it."><span class="pcl">${ICON.check}Your answers</span>${L.map(([k,w,l])=>{const on=ek===k||(ek==="fin"&&funnel==="business");
+  return `<button type="button" class="pch${on?' on':''}" onclick="preEdit('${k}')" aria-label="Change ${w}, ${l}"${on?' aria-current="true"':''}><span>${l}</span>${PEN}</button>`;}).join('')}</div>`;}
+function preEdit(k){if(!(HOME_EST&&HOME_EST.pre)||view!=="form")return;clearTimeout(autoT);const S=steps();
+ let i=funnel==="business"?S.findIndex(x=>x.pre==="fin"):S.findIndex(x=>x.id===k);if(i<0)return;
+ if(funnel==="business"){PRE_BIZ=1;if(i===qi&&!PRE_EDIT){triedNext=false;render();return;}k="fin";}
+ if(i===qi&&PRE_EDIT&&PRE_EDIT.k===k)return;
+ const ret=PRE_EDIT?PRE_EDIT.ret:qi,retId=PRE_EDIT?PRE_EDIT.retId:((S[qi]||{}).id||""),max=PRE_EDIT?PRE_EDIT.max:afhMaxQi[funnel];
+ PRE_EDIT={k:k,ret:ret,retId:retId,max:max};navDir=i<qi?-1:1;qi=i;triedNext=false;window.scrollTo({top:0,behavior:'smooth'});render();}
+/* answered (or Back): straight back to the question they were on; nothing is logged early, the step is logged when passed in order */
+function preDone(){const r=PRE_EDIT;if(!r)return;PRE_EDIT=null;PRE_BIZ=0;const from=qi;preClamp();const S=steps();
+ let j=r.retId?S.findIndex(x=>x.id===r.retId):-1;if(j<0)j=Math.min(r.ret,S.length-1);
+ if(r.max!==undefined&&from>j)afhMaxQi[funnel]=r.max;
+ navDir=j<from?-1:1;qi=j;triedNext=false;window.scrollTo({top:0,behavior:'smooth'});render();}
+function preBizHide(){return !!(HOME_EST&&HOME_EST.pre&&HOME_EST.t==="business"&&HOME_EST.ids.amount===1&&HOME_EST.ids.term===1&&!PRE_BIZ);}
+function preBizBalHide(){return !!(HOME_EST&&HOME_EST.pre&&HOME_EST.t==="business"&&HOME_EST.ids.balloon===1&&!PRE_BIZ);}
 function estChange(){if(!HOME_EST)return;HOME_EST.skip=false;const S=steps();const i=S.findIndex(x=>x.id&&HOME_EST.ids[x.id]===1);if(i>=0){navDir=-1;qi=i;}triedNext=false;render();}
 function render(){if(GUIDED_DETAILS)gdView(view);tabs();document.getElementById("screen").innerHTML=view==="chooser"?chooser():view==="quick"?quickCalc():view==="form"?form():view==="details"?detailsGate():view==="analysing"?analysing():view==="ready"?readyScreen():view==="unlocking"?unlocking():view==="lmswitch"?lmSwitch():view==="lmhand"?lmHand():view==="lmbank"?lmBank():view==="lmframe"?lmFrame():view==="lmdone"?lmDone():view==="alcmatch"?alcMatch():view==="alchand"?alcHand():view==="alcsend"?alcSending():view==="alcdone"?alcDone():results();applyView();paintRanges();
  afhPost({afhCalcView:{view:view,qi:qi,funnel:funnel,pp:(typeof payPh!=="undefined"&&payPh)?1:0}});
@@ -2815,7 +2886,7 @@ function goForm(){view="form";signalParent("form");render();window.scrollTo(0,0)
 function applyView(){document.body.classList.toggle("embed",!!EMBED);document.body.classList.toggle("fullresults",view==="results");}
 render();
 // Fire Meta top-of-funnel signal once the calculator has loaded
-afhPost({afhCalcReady:true});
+afhPost({afhCalcReady:true,v:16});
 </script>
 <script>
 /* Embedded auto-height: tell the parent page how tall we are so the iframe never clips a step. */
