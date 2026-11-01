@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AFH Finance - Loan Calculator</title>
-<!-- AFH-CALC-VERSION: 2026-10-30-v16-prefill -->
+<!-- AFH-CALC-VERSION: 2026-11-01-v16.1-cl -->
 <!-- Meta Pixel Code: standalone loads its own pixel; embedded relays every event to the host page's pixel (one pixel, no duplicate PageView) -->
 <script>
 (function(){
@@ -2215,7 +2215,7 @@ function gdLm(){const k="lm",cl=st[funnel].emp==='centrelink';
   ${gdForm(k)}
   <div class="lmsafe">${lmIcon('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>')} Encrypted. Only shared with Credit Sense and the lenders who use it</div>
   ${cl?`<div class="lmnils">On Centrelink? You may also qualify for a <a href="${NILS_URL}" target="_blank" rel="noopener" onclick="afhTrack('ReferAltClick',{})">no interest loan (NILS)</a> for essentials.</div>`:''}
-  <button type="button" class="lmskip" onclick="lmDecline()">Not now, show my results</button>
+  <button type="button" class="lmskip" onclick="lmDecline()">${clOnly()?'No thanks':'Not now, show my results'}</button>
   <button type="button" class="lmback" onclick="lmBack()">Tapped the wrong answer? Go back</button>
  </div>`;}
 function gdAlc(){const k="alc",amt=+st.personal.amount||0;
@@ -2326,6 +2326,8 @@ function lmBar(done,part){const seg=i=>i<done?'<i class="lmseg on"></i>':i===don
  const lab=(i,t)=>`<span class="${i<done?'ok':i===done?'cur':''}">${t}${i<done?' ✓':''}</span>`;
  return `<div class="lmbar"><div class="lmsegs">${seg(0)}${seg(1)}${seg(2)}</div><div class="lmlabs">${lab(0,'Your answers')}${lab(1,'Your details')}${lab(2,'Bank check')}</div></div>`;}
 /* Called from next(): switch the moment the answer that disqualifies them is confirmed. */
+/* Owner, 1 Nov 2026: every Centrelink lead goes to Lead Market for now. */
+function clOnly(){return funnel!=='business'&&st[funnel]&&st[funnel].emp==='centrelink';}
 function lmShouldSwitch(){return LM.on&&!lm.declined&&funnel!=='business'&&!alcEligible()&&subparCheck().sub;}
 function lmStart(){afhTrack('ReferRouted',{});lmLog('routed',qi+1);view="lmswitch";render();window.scrollTo(0,0);lmTsLoad();
  setTimeout(function(){if(view==="lmswitch"){view="lmhand";render();lmTsMount();afhTrack('ReferOffer',{});lmLog('offer');}},1700);}
@@ -2357,7 +2359,7 @@ function lmHand(){if(GUIDED_DETAILS)return gdLm();const cl=st[funnel].emp==='cen
   </form>
   <div class="lmsafe">${lmIcon('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>')} Encrypted. Only shared with Credit Sense and the lenders who use it</div>
   ${cl?`<div class="lmnils">On Centrelink? You may also qualify for a <a href="${NILS_URL}" target="_blank" rel="noopener" onclick="afhTrack('ReferAltClick',{})">no interest loan (NILS)</a> for essentials.</div>`:''}
-  <button type="button" class="lmskip" onclick="lmDecline()">Not now, show my results</button>
+  <button type="button" class="lmskip" onclick="lmDecline()">${clOnly()?'No thanks':'Not now, show my results'}</button>
   <button type="button" class="lmback" onclick="lmBack()">Tapped the wrong answer? Go back</button>
  </div>`;}
 function lmTick(el){lm.consent=!!el.checked;lm.ts=el.checked?new Date().toISOString():"";
@@ -2383,7 +2385,16 @@ function lmSubmit(ev){ev.preventDefault();const f=ev.target;if(!lmValid(f))retur
  view="lmbank";render();window.scrollTo(0,0);lmLog('bank_screen');return false;}
 /* Declining returns them to the question they were on and carries on the normal AFH flow,
    so every remaining question is still asked. */
-function lmDecline(){lm.declined=true;clearTimeout(lmT);afhTrack('ReferDecline',{});lmLog('decline');view="form";render();next();}
+function lmDecline(){if(clOnly()){clearTimeout(lmT);afhTrack('ReferDecline',{});lmLog('decline_cl');view="lmclno";render();window.scrollTo(0,0);return;}
+ lm.declined=true;clearTimeout(lmT);afhTrack('ReferDecline',{});lmLog('decline');view="form";render();next();}
+function lmClNo(){return `<div class="card anim lmc lmdn" id="lmClNo">
+  <h2 class="lmh">No problem</h2>
+  <p class="lmp">With Centrelink income, the way we can help right now is through our specialist lender partner. Your answers are saved if you change your mind.</p>
+  <button type="button" class="cta lmcta" onclick="lmOfferAgain()">See specialist lenders ${lmIcon('<path d="M5 12h14M13 6l6 6-6 6"/>')}</button>
+  <button type="button" class="lmskip" onclick="lmBack()">Change my answers</button>
+  <div class="lmnils">On Centrelink? You may also qualify for a <a href="${NILS_URL}" target="_blank" rel="noopener" onclick="afhTrack('ReferAltClick',{})">no interest loan (NILS)</a> for essentials.</div>
+  <div class="lmfine">Questions? Call 03 7031 6881.</div></div>`;}
+function lmOfferAgain(){lmLog('offer_again');view="lmhand";render();window.scrollTo(0,0);lmTsMount();}
 function lmBank(){const first=(contact.name||"").trim().split(/\s+/)[0]||"";
  const need=(i,t)=>`<div class="lmneed">${lmIcon(i)}<span>${t}</span></div>`;
  return `${lmBar(2,15)}<div class="card anim lmc">
@@ -2771,7 +2782,7 @@ function afhCleanCtx(c){const o={};if(!c||typeof c!=="object")return o;Object.ke
  if(/^[a-z_]{1,32}$/.test(k)&&(typeof v==="string"||typeof v==="number"))o[k]=String(v).slice(0,2000);});return o;}
 window.addEventListener("message",function(e){const d=e.data;if(!d||typeof d!=="object")return;
  if((d.afhParent||d.afhAnswer||d.afhNav)&&(AFH_HOME.indexOf(e.origin)<0||e.source!==window.parent))return;  /* v12: only AFH pages that framed us */
- if(d.afhNav==="back"){try{if(view==="form"){if(qi>0||payPh)prev();}else if(view==="analysing"||view==="ready"||view==="details"){goForm();}else if(view==="lmswitch"||view==="lmhand"){lmBack();}else if(view==="alcmatch"||view==="alchand"){alcBack();}}catch(err){}return;}  /* v13: the AFH page's browser Back = back to the questions */
+ if(d.afhNav==="back"){try{if(view==="form"){if(qi>0||payPh)prev();}else if(view==="analysing"||view==="ready"||view==="details"){goForm();}else if(view==="lmswitch"||view==="lmhand"||view==="lmclno"){lmBack();}else if(view==="alcmatch"||view==="alchand"){alcBack();}}catch(err){}return;}  /* v13: the AFH page's browser Back = back to the questions */
  if(d.afhParent){afhCtx=Object.assign(afhCtx,afhCleanCtx(d.ctx));if(window.__afhRelay)window.__afhRelay(e.origin);if(d.pre)preEst(d.pre);else if(d.est)homeEst(d.est);}
  if(d.afhAnswer){const a=d.afhAnswer;try{
    if(a.ctx)afhCtx=Object.assign(afhCtx,afhCleanCtx(a.ctx));
@@ -2871,7 +2882,7 @@ function preDone(){const r=PRE_EDIT;if(!r)return;PRE_EDIT=null;PRE_BIZ=0;const f
 function preBizHide(){return !!(HOME_EST&&HOME_EST.pre&&HOME_EST.t==="business"&&HOME_EST.ids.amount===1&&HOME_EST.ids.term===1&&!PRE_BIZ);}
 function preBizBalHide(){return !!(HOME_EST&&HOME_EST.pre&&HOME_EST.t==="business"&&HOME_EST.ids.balloon===1&&!PRE_BIZ);}
 function estChange(){if(!HOME_EST)return;HOME_EST.skip=false;const S=steps();const i=S.findIndex(x=>x.id&&HOME_EST.ids[x.id]===1);if(i>=0){navDir=-1;qi=i;}triedNext=false;render();}
-function render(){if(GUIDED_DETAILS)gdView(view);tabs();document.getElementById("screen").innerHTML=view==="chooser"?chooser():view==="quick"?quickCalc():view==="form"?form():view==="details"?detailsGate():view==="analysing"?analysing():view==="ready"?readyScreen():view==="unlocking"?unlocking():view==="lmswitch"?lmSwitch():view==="lmhand"?lmHand():view==="lmbank"?lmBank():view==="lmframe"?lmFrame():view==="lmdone"?lmDone():view==="alcmatch"?alcMatch():view==="alchand"?alcHand():view==="alcsend"?alcSending():view==="alcdone"?alcDone():results();applyView();paintRanges();
+function render(){if(GUIDED_DETAILS)gdView(view);tabs();document.getElementById("screen").innerHTML=view==="chooser"?chooser():view==="quick"?quickCalc():view==="form"?form():view==="details"?detailsGate():view==="analysing"?analysing():view==="ready"?readyScreen():view==="unlocking"?unlocking():view==="lmswitch"?lmSwitch():view==="lmhand"?lmHand():view==="lmbank"?lmBank():view==="lmframe"?lmFrame():view==="lmdone"?lmDone():view==="lmclno"?lmClNo():view==="alcmatch"?alcMatch():view==="alchand"?alcHand():view==="alcsend"?alcSending():view==="alcdone"?alcDone():results();applyView();paintRanges();
  afhPost({afhCalcView:{view:view,qi:qi,funnel:funnel,pp:(typeof payPh!=="undefined"&&payPh)?1:0}});
  if(view==="details")afhOnce('details','CalcDetailsForm',{});
  if(view==="results")afhOnce('results','CalcViewedMatches',{});
