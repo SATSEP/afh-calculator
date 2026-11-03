@@ -2390,8 +2390,9 @@ function lmBar(done,part){const seg=i=>i<done?'<i class="lmseg on"></i>':i===don
 /* Called from next(): switch the moment the answer that disqualifies them is confirmed. */
 /* Owner, 1 Nov 2026: every Centrelink lead goes to Lead Market for now. */
 function clOnly(){return funnel!=='business'&&st[funnel]&&st[funnel].emp==='centrelink';}
-function lmCarOut(){try{const s=st.car;const bad=(+s.credit||0)<=1;const gross=s.wage?(+s.income||0):0;return s.emp==='centrelink'||(s.payday==='yes'&&(s.paydayN==='3'||s.paydayN==='3+'))||(bad&&gross>0&&gross<60000);}catch(e){return false;}}
-function lmShouldSwitch(){return LM.on&&!lm.declined&&funnel!=='business'&&!alcEligible()&&(funnel==='car'?lmCarOut():subparCheck().sub);}
+/* v18 (3 Nov 2026): car AND non-debt personal sell only Centrelink, 3+ payday loans, or Rebuilding credit with income under $60k. */
+function lmCarOut(){try{const s=st[funnel];const bad=(+s.credit||0)<=1;const gross=s.wage?(+s.income||0):0;return s.emp==='centrelink'||(s.payday==='yes'&&(s.paydayN==='3'||s.paydayN==='3+'))||(bad&&gross>0&&gross<60000);}catch(e){return false;}}
+function lmShouldSwitch(){return LM.on&&!lm.declined&&funnel!=='business'&&!alcEligible()&&((funnel==='car'||!debtFunnel())?lmCarOut():subparCheck().sub);}
 function lmStart(){afhTrack('ReferRouted',{});lmLog('routed',qi+1);view="lmswitch";render();window.scrollTo(0,0);lmTsLoad();
  setTimeout(function(){if(view==="lmswitch"){view="lmhand";render();lmTsMount();afhTrack('ReferOffer',{});lmLog('offer');}},1700);}
 function lmTsLoad(){if(!LM.turnstile||window.turnstile||document.getElementById('lmTsJs'))return;const sc=document.createElement('script');sc.id='lmTsJs';sc.async=true;
@@ -2442,7 +2443,7 @@ function lmSubmit(ev){ev.preventDefault();const f=ev.target;if(!lmValid(f))retur
  consent.contact=true;consent.ts=lm.ts;
  afhTrack('ReferConsent',{});lmLog('submit');
  /* AFH keeps its own copy of the lead, tagged as referred, before anything leaves for Lead Market. */
- try{sendLead("referred to lead market",{consent_wording:LM_WORDING,lm_consent:"yes",lm_consent_wording:LM_WORDING,lm_consent_timestamp:lm.ts,lm_route:"lead market",date_of_birth:lmDobIso(contact.dob),centrelink_payment:(LM_BENEFITS.find(b=>b[0]===lm.benefit)||["",""])[1]},debtFunnel());}catch(e){}
+ try{sendLead("referred to lead market",{consent_wording:LM_WORDING,lm_consent:"yes",lm_consent_wording:LM_WORDING,lm_consent_timestamp:lm.ts,lm_route:"lead market",date_of_birth:lmDobIso(contact.dob),centrelink_payment:(LM_BENEFITS.find(b=>b[0]===lm.benefit)||["",""])[1]},true);  /* v18: no Lead for Lead Market referrals (Meta or Google) */}catch(e){}
  lmRelay();
  if(debtFunnel())debtPixelOther('lead_market');
  view="lmbank";render();window.scrollTo(0,0);lmLog('bank_screen');return false;}
