@@ -2492,13 +2492,9 @@ function debtFunnel(){return funnel==="personal"&&st.personal.purpose==="debt";}
 /* ALC doesn't take Centrelink-only income (Oct 2026): those debt leads go to Lead Market instead. */
 function debtCentrelink(){return debtFunnel()&&(st.personal.emp==='centrelink'||st.personal.emp==='benefits');}
 function alcEligible(){return ALC.on&&debtFunnel()&&alc.open===true&&!alc.declined&&!debtCentrelink()&&(+st.personal.amount||0)>=alc.min;}
-/* v8: debt leads AFH can write itself stay with AFH: employed (not Centrelink), Average credit or better,
-   no more than 1 payday loan, and nothing else that makes them subpar. Everyone else goes to ALC. */
-function afhKeepsDebt(){if(!debtFunnel()||SELL)return false;const s=st.personal;
- const employed=["fulltime","parttime","casual","self"].indexOf(s.emp)>-1;
- const credit=(+s.credit||0)>=2;
- const payday=s.payday!=="yes"||s.paydayN==="1";
- return employed&&credit&&payday&&!subparCheck().sub;}
+/* v17 (3 Nov 2026): AFH keeps no debt leads. Every debt lead at or over ALC's minimum (not Centrelink) goes to ALC,
+   good credit included; under the minimum or Centrelink goes to Lead Market. */
+function afhKeepsDebt(){return false;}
 function alcRoute(){return alcEligible()&&!afhKeepsDebt();}
 function debtLow(){return debtFunnel()&&(+st.personal.amount||0)<alc.min;}
 function alcStart(){afhTrack('HandoffRouted',{});view="alcmatch";render();window.scrollTo(0,0);
@@ -2852,6 +2848,7 @@ window.addEventListener("message",function(e){const d=e.data;if(!d||typeof d!=="
    afhStart();
    if(typeof funnel==="undefined"||!st[funnel])return;
    st[funnel][a.k]=(typeof a.v==="number")?+a.v:a.v;
+   if(a.k==="purpose"&&a.v==="debt")alcCheck();  /* v17: purpose picked on the landing page, not via setA */
    view="form";qi=0;
    if(a.adv){next();}else{render();}
    afhTrack('CalcAnswer',{step:1,answer:String(a.k)+':'+String(a.v),source:'landing'});
