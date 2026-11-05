@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AFH Finance - Loan Calculator</title>
-<!-- AFH-CALC-VERSION: 2026-11-02-v16.6-sms-early-a1 -->
+<!-- AFH-CALC-VERSION: 2026-11-05-v16.7-sms-badnum -->
 <!-- Meta Pixel Code: standalone loads its own pixel; embedded relays every event to the host page's pixel (one pixel, no duplicate PageView) -->
 <script>
 (function(){
@@ -2119,14 +2119,14 @@ function gdFirst(){const n=String(gdVal("name")).trim().split(/\s+/)[0]||"";retu
 function gdMobOK(v){const m=GATE_FORGIVING?afhMob(v):String(v||"").replace(/[^0-9+]/g,'').replace(/^\+?61/,'0');return /^04\d{8}$/.test(m);}
 function gdRule(k,f,v){v=String(v==null?"":v);
  if(f==="name")return k==="gate"?v.trim().length>=2:v.trim().split(/\s+/).filter(Boolean).length>=2;
- if(f==="mobile")return gdMobOK(v);
+ if(f==="mobile")return gdMobOK(v)&&!(k==="gate"&&smsvIsBad(afhMob(v)));
  if(f==="email")return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim());
  if(f==="dob")return !!lmDobIso(v.trim());
  if(f==="ben")return !!lm.benefit;
  return true;}
 function gdMsg(k,f,v){v=String(v||"").trim();
  if(f==="name")return k==="gate"?"Please enter your name.":(v&&v.split(/\s+/).length<2?"Please add your last name too.":"Please enter your first and last name.");
- if(f==="mobile"){const d=v.replace(/\D/g,"");return d.length&&d.length<10&&!(d.length===9&&d.charAt(0)==="4")?"That's "+d.length+" digit"+(d.length>1?"s":"")+". Australian mobiles have 10, like 0412 345 678.":"Please enter an Australian mobile"+(d.length?", like 0412 345 678.":".");}
+ if(f==="mobile"){if(k==="gate"&&smsvIsBad(afhMob(v)))return smsvBadMsg();const d=v.replace(/\D/g,"");return d.length&&d.length<10&&!(d.length===9&&d.charAt(0)==="4")?"That's "+d.length+" digit"+(d.length>1?"s":"")+". Australian mobiles have 10, like 0412 345 678.":"Please enter an Australian mobile"+(d.length?", like 0412 345 678.":".");}
  if(f==="email")return v&&v.indexOf("@")<0?"Please check your email. It needs an @.":"Please check your email.";
  if(f==="dob"){const m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(v);if(!m)return "Please enter your date of birth as DD/MM/YYYY.";
   const d=+m[1],mo=+m[2],y=+m[3],dt=new Date(y,mo-1,d);if(dt.getFullYear()!==y||dt.getMonth()!==mo-1||dt.getDate()!==d)return "Please check that date.";
@@ -2220,7 +2220,7 @@ function gdShow(k,j,fwd){const G=GD[k],F=G.fields();j=Math.max(0,Math.min(j,F.le
   else{const q=document.getElementById("gdq-"+k+"-"+F[j]);if(q)q.focus({preventScroll:true});}}catch(e){}}
 function gdBad(k,f,v){const el=document.getElementById(GD[k].pre+f);
  if(el){el.classList.add("bad");el.classList.remove("ok");const m=el.querySelector(".gderr");if(m)m.textContent=gdMsg(k,f,v);
-  const i=el.querySelector("input");if(i)try{i.focus({preventScroll:true});}catch(e){}}
+  const i=el.querySelector("input");if(i){i.setAttribute("aria-invalid","true");try{i.focus({preventScroll:true});}catch(e){}}}
  /* Same signals v10 sends when its submit finds this field wrong. */
  if(k==="gate"){afhTrack('CalcGateError',{field:f});if(CALC_STEP_LOG)lmLog('g.err.'+f,0);}
  else if(k==="lm"){if(CALC_STEP_LOG)lmLog('lm.err.'+f,0);}
@@ -2231,7 +2231,7 @@ function gdNext(k){const G=GD[k],F=G.fields(),i=GS[k],f=F[i];
  const el=document.getElementById(G.pre+f),inp=el&&el.querySelector("input");let v=inp?inp.value:"";
  if(f==="dob"&&inp){const n=gdDobFix(v);if(n!==v){inp.value=n;v=n;gdv.dob=n;}}
  if(!gdRule(k,f,v)){gdBad(k,f,v);return false;}
- if(el){el.classList.remove("bad");el.classList.add("ok");}
+ if(el){el.classList.remove("bad");el.classList.add("ok");if(inp)inp.removeAttribute("aria-invalid");}
  if(k==="gate"&&f==="mobile")try{smsvPre(v);}catch(e){}
  gdShow(k,i+1,1);return true;}
 function gdSubmit(ev,k){ev.preventDefault();const F=GD[k].fields();
@@ -2244,7 +2244,7 @@ function gdIn(k,el){const f=el.name;let v=el.value;let end=false;try{end=el.sele
  if(f==="mobile"&&end){const n=gdMobFmt(v);if(n!==v){el.value=n;v=n;}}
  if(f==="dob"&&end){const n=gdDobFmt(v);if(n!==v){el.value=n;v=n;}}
  gdv[f]=v;const box=el.closest(".gds");if(!box)return;const ok=gdRule(k,f,v);box.classList.toggle("ok",ok);
- if(box.classList.contains("bad")){if(ok)box.classList.remove("bad");else{const m=box.querySelector(".gderr");if(m)m.textContent=gdMsg(k,f,v);}}
+ if(box.classList.contains("bad")){if(ok){box.classList.remove("bad");el.removeAttribute("aria-invalid");}else{const m=box.querySelector(".gderr");if(m)m.textContent=gdMsg(k,f,v);}}
  if(f==="email"){const fx=gdMailFix(v),b=box.querySelector(".gdfix");if(b){b.hidden=!fx;b.setAttribute("data-v",fx);const t=b.querySelector("b");if(t)t.textContent=fx;}}}
 function gdFix(k,b){const el=document.querySelector("#"+GD[k].form+" input[name=email]");if(!el)return;el.value=b.getAttribute("data-v")||el.value;gdIn(k,el);b.hidden=true;try{el.focus();}catch(e){}}
 function gdBen(k,key){lmSetBenefit(key);const F=GD[k].fields(),i=GS[k];if(F[i]!=="ben")return;
@@ -2326,6 +2326,7 @@ function gateValid(f){const g=k=>((f.elements&&f.elements[k])||f[k]||{}).value||
  const bad=(id)=>{const el=document.getElementById(id);if(el){el.classList.add('bad');if(!first)first=el;}ok=false;};
  if(g('name').trim().length<2)bad('fl-name');
  const mob=GATE_FORGIVING?afhMob(g('mobile')):g('mobile').replace(/[^0-9+]/g,'').replace(/^\+?61/,'0');if(!/^04\d{8}$/.test(mob))bad('fl-mobile');
+ else if(smsvIsBad(afhMob(mob))){bad('fl-mobile');const w=document.getElementById('fl-mobile'),e=w&&w.querySelector('.gderr,em'),i=w&&w.querySelector('input');if(e)e.textContent=smsvBadMsg();if(i)i.setAttribute('aria-invalid','true');}
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(g('email').trim()))bad('fl-email');
  if(first){const i=first.querySelector('input');if(i)i.focus();afhTrack('CalcGateError',{field:first.id.replace('fl-','')});if(CALC_STEP_LOG)lmLog('g.err.'+first.id.replace('fl-',''),0);}
  return ok;}
@@ -2953,8 +2954,14 @@ function estChange(){if(!HOME_EST)return;HOME_EST.skip=false;const S=steps();con
    new text; the same number is never texted twice; max 3 numbers). On the code step it updates the same CRM lead (same
    event id, no second Meta Lead) and texts the new number, max 2. Only our own failure (send unavailable or test mode,
    or 2 system errors in a row) opens the options. The server marks the lead verified (market.verifications, event id +
-   mobile hash). ALC path: a card under the ALC steps. ?smstest=1 shows the step while SMS is in test mode (000000). */
-const SMSV={api:"https://gqgykllxzotrqfiyzkax.supabase.co/functions/v1/market-public",st:"idle",msg:"",until:0,eid:"",ph:"",val:"",timer:0,token:"",io:null,done:0,chg:0,chgErr:"",chgN:0,fails:0,seq:0,preN:0,want:0,preH:"",preTr:null,debug:/[?&]smstest=1/.test(location.search)};
+   mobile hash). ALC path: a card under the ALC steps. ?smstest=1 shows the step while SMS is in test mode (000000).
+   v16.7 (5 Nov): a first send the server refuses because the number is wrong (invalid_mobile: fake pattern, blocked
+   prefix, not an 04 mobile) no longer opens the options. Before submit it goes back to the mobile step; on the code step
+   it opens Change with the number. Refused numbers are remembered for the visit, so typing one again shows the same
+   message without a request. Fail open stays for our side only: send unavailable (outage, kill switch, budget,
+   breakers), test mode, rate limits, and 2 network or server errors in a row (a quick first one on the code step
+   retries once; a send that timed out after 8s still opens the options, as v16.6). */
+const SMSV={api:"https://gqgykllxzotrqfiyzkax.supabase.co/functions/v1/market-public",st:"idle",msg:"",until:0,eid:"",ph:"",val:"",timer:0,token:"",io:null,done:0,chg:0,chgErr:"",chgN:0,fails:0,seq:0,preN:0,want:0,preH:"",preTr:null,badN:[],rf:"",debug:/[?&]smstest=1/.test(location.search)};
 function smsvLog(s){try{if(CALC_STEP_LOG)lmLog("sms."+s,0);}catch(e){}}
 function smsvDev(){try{let d=localStorage.getItem("afh_dev");if(!d||!/^[A-Za-z0-9_-]{8,64}$/.test(d)){d="d"+Date.now().toString(36)+Math.random().toString(36).slice(2,12);localStorage.setItem("afh_dev",d);}return d;}catch(e){return "";}}
 function smsvMob(){try{return afhMob(contact.mobile)||"";}catch(e){return "";}}
@@ -2973,6 +2980,22 @@ const SMSV_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 const SMSV_TRUST="We confirm every mobile so your broker can reach you. The text comes from our verification service, so it won't show our name. Only enter the code on this page. We'll never call or text asking for it.";
 function smsvHint(){return smsvTouch()?"Your phone may offer the code above the keyboard.":"Check your phone for a text with the code.";}
 function smsvReset(){SMSV.seq++;clearTimeout(SMSV.timer);SMSV.st="idle";SMSV.msg="";SMSV.until=0;SMSV.val="";SMSV.ph="";SMSV.fails=0;SMSV.done=0;SMSV.token="";}
+/* v16.7: numbers the server refused as wrong (st "bad"). Kept in memory for the visit only, never stored or sent anywhere. */
+function smsvBadMsg(){return "That mobile number doesn't look right. Check it and try again.";}
+function smsvBadErr(e){return /^(invalid_mobile|invalid_phone|not_mobile|landline)$/.test(String(e||""));}   /* market-public sends invalid_mobile today */
+function smsvIsBad(m){try{return !!m&&SMSV.badN.indexOf(m)>-1;}catch(e){return false;}}
+function smsvMarkBad(m){if(m&&!smsvIsBad(m)){SMSV.badN.push(m);if(SMSV.badN.length>10)SMSV.badN.shift();}}
+/* Refused: no options. Details: back to the mobile step. Code step: Change, with the number, focused. ALC card: hidden (as v16.6). */
+function smsvBadShow(m){SMSV.st="bad";SMSV.until=0;SMSV.msg="";clearTimeout(SMSV.timer);
+ if(view==="details"){smsvBadGate(m);smsvPrePaint();return;}
+ if(view!=="verify"){smsvPaint();return;}
+ const i=document.getElementById("smsvNew"),sc=document.getElementById("screen");SMSV.chg=1;SMSV.chgErr=smsvBadMsg();SMSV.chgVal=i?i.value:smsvFmt(m);SMSV.want=0;SMSV.done=1;
+ if(!sc)return;sc.innerHTML=smsvView();const n=document.getElementById("smsvNew"),p=document.getElementById("smsvChgMsg");
+ if(p){p.textContent="";setTimeout(function(){if(p.isConnected&&SMSV.st==="bad")p.textContent=smsvBadMsg();},60);}   /* filled after insert so the alert is read out */
+ if(n){smsvFocus(n);try{const L=n.value.length;n.setSelectionRange(L,L);}catch(e){}}}
+function smsvBadGate(m){try{if(typeof GD==="undefined")return;const F=GD.gate.fields(),mi=F.indexOf("mobile");if(mi<0)return;
+ const v=gdVal("mobile");if(afhMob(v)!==m)return;              /* they have already changed it */
+ if(GS.gate!==mi)gdShow("gate",mi,0);gdBad("gate","mobile",v);}catch(e){}}
 /* ── one real field (autofill, paste, screen readers) drawn as six boxes. Never read only: iOS drops the keyboard. ── */
 function smsvBusyNow(){return ["idle","starting","sending","checking"].indexOf(SMSV.st)>-1;}
 function smsvBoxes(){const v=SMSV.val||"",bad=!!SMSV.msg&&SMSV.st==="sent";let b="";for(let i=0;i<6;i++)b+=`<i class="${i<v.length?"f":""}">${v.charAt(i)}</i>`;
@@ -2992,15 +3015,15 @@ function smsvIntro(){const S=SMSV,sending=["idle","starting","sending"].indexOf(
 /* ── the code step (AFH details path) ── */
 function smsvView(){const S=SMSV,num=smsvFmt(S.ph||smsvMob()),first=smsvFirst(),ok=S.st==="verified",head=smsvHead(ok);
  if(ok)return `<div class="card anim vfy vfok">${head}<div class="lmtick">${lmIcon('<path d="M5 12.5l4.5 4.5L19 7.5"/>')}</div><h2 class="vft">Mobile confirmed</h2><p class="vfp">Thanks${first?", "+first:""}. Opening your options…</p><p id="smsvLive" class="smsvsr" aria-live="polite"></p></div>`;
- if(S.chg){const capped=S.chgN>=2;
+ if(S.chg||S.st==="bad"){const bad=S.st==="bad",capped=S.chgN>=2&&!bad;
   return `<div class="card anim vfy">${head}<span class="vfi">${SMSV_ICON}</span>
   <h2 class="vft" id="vfT">Change your mobile</h2>
-  ${capped?`<p class="vfp">To change your number again, call us on ${smsvCall()}.</p>`:`<p class="vfp">We'll text a new code to this number and update your enquiry.</p>
+  ${capped?`<p class="vfp">To change your number again, call us on ${smsvCall()}.</p>`:`<p class="vfp">We'll text a ${bad?"":"new "}code to this number and update your enquiry.</p>
   <form class="vff vfchg gdin" novalidate onsubmit="smsvChangeSend(event)" aria-labelledby="vfT">
    <label class="gdbox vfbox${S.chgErr?" bad":""}" for="smsvNew"><span class="gdi" aria-hidden="true">${ICON.phone}</span><input id="smsvNew" type="tel" inputmode="tel" autocomplete="tel" enterkeyhint="send" placeholder="04xx xxx xxx" aria-label="Your mobile" aria-describedby="smsvChgMsg" value="${S.chgVal!=null?gdEsc(S.chgVal):num}"${S.chgErr?' aria-invalid="true"':""}></label>
    <p class="smsvm" id="smsvChgMsg" role="alert">${S.chgErr||""}</p>
-   <button class="cta vfcta" type="submit">Text a new code</button></form>`}
-  <button type="button" class="lmskip vfcancel" onclick="smsvChangeClose()">Keep ${num}</button>
+   <button class="cta vfcta" type="submit">${bad?"Text me a code":"Text a new code"}</button></form>`}
+  ${bad?"":`<button type="button" class="lmskip vfcancel" onclick="smsvChangeClose()">Keep ${num}</button>`}
   <p id="smsvLive" class="smsvsr" aria-live="polite"></p></div>`;}
  return `<div class="card anim vfy">${head}
   <span class="vfi">${SMSV_ICON}</span>
@@ -3014,15 +3037,16 @@ function smsvView(){const S=SMSV,num=smsvFmt(S.ph||smsvMob()),first=smsvFirst(),
   <p class="vftr">${ICON.lock} ${SMSV_TRUST}</p>
   <p id="smsvLive" class="smsvsr" aria-live="polite"></p></div>`;}
 /* Change number on the code step: same event id, so ingest_lead updates the same CRM lead (no duplicate, no second Meta Lead). Max 2. */
-function smsvChangeOpen(){if(view!=="verify"||SMSV.st==="verified"||SMSV.st==="checking")return;SMSV.chg=1;SMSV.chgErr="";SMSV.chgVal=null;smsvLog("chg.open");smsvPaint();const i=document.getElementById("smsvNew");if(i){smsvFocus(i);try{i.select();}catch(e){}}}
-function smsvChangeClose(){SMSV.chg=0;SMSV.chgErr="";SMSV.chgVal=null;SMSV.want=1;smsvPaint();}
+function smsvChangeOpen(){if(view!=="verify"||SMSV.st==="verified"||SMSV.st==="checking")return;if(SMSV.st==="bad"){const n=document.getElementById("smsvNew");if(n)smsvFocus(n);return;}SMSV.chg=1;SMSV.chgErr="";SMSV.chgVal=null;smsvLog("chg.open");smsvPaint();const i=document.getElementById("smsvNew");if(i){smsvFocus(i);try{i.select();}catch(e){}}}
+function smsvChangeClose(){if(SMSV.st==="bad")return;SMSV.chg=0;SMSV.chgErr="";SMSV.chgVal=null;SMSV.want=1;smsvPaint();}
 function smsvChangeSend(ev){if(ev)ev.preventDefault();if(SMSV.chgN>=2)return;const i=document.getElementById("smsvNew");const raw=i&&i.value||"";const m=afhMob(raw);
- const fail=function(t){SMSV.chgErr=t;SMSV.chgVal=raw;const p=document.getElementById("smsvChgMsg");if(p)p.textContent=t;if(i){i.setAttribute("aria-invalid","true");const b=i.closest(".vfbox");if(b)b.classList.add("bad");smsvFocus(i);}};
+ const fail=function(t){SMSV.chgErr=t;SMSV.chgVal=raw;const p=document.getElementById("smsvChgMsg");if(p){if(p.textContent===t){p.textContent="";setTimeout(function(){p.textContent=t;},60);}else p.textContent=t;}if(i){i.setAttribute("aria-invalid","true");const b=i.closest(".vfbox");if(b)b.classList.add("bad");smsvFocus(i);}};
  if(!m){fail("Enter an Australian mobile, like 0412 345 678.");return;}
+ if(smsvIsBad(m)){fail(smsvBadMsg());return;}
  if(m===SMSV.ph){if(SMSV.until>Date.now()){fail("That's the number we texted. You can resend the code when the timer ends.");return;}SMSV.chg=0;SMSV.chgErr="";SMSV.chgVal=null;SMSV.want=1;smsvStart(true);smsvPaint();return;}
  contact.mobile=m;try{gdv.mobile=smsvFmt(m);}catch(e){}SMSV.chgN++;
  try{sendLead("mobile corrected",undefined,true);}catch(e){}
- smsvLog("chg.sent");smsvReset();SMSV.chg=0;SMSV.chgErr="";SMSV.chgVal=null;SMSV.want=1;SMSV.done=1;smsvStart(false,m);}
+ smsvLog("chg.sent");smsvReset();SMSV.chg=0;SMSV.chgErr="";SMSV.chgVal=null;SMSV.want=1;SMSV.done=1;SMSV.rf="c:"+m;smsvStart(false,m);}
 /* Our side failed (not the customer): after 2 in a row, open the options rather than trap them. */
 function smsvSysFail(){SMSV.fails++;smsvLog("sysfail");if(SMSV.fails>=2&&view==="verify"){SMSV.st="off";smsvToResults();return true;}return false;}
 /* Mobile step passed (guided details): text the code now. Nothing is written to contact and no lead is sent here. */
@@ -3046,10 +3070,10 @@ function smsvSubmitView(){try{const mob=smsvMob();if(!mob)return "unlocking";
 /* After submitGate has sent the lead: the apply portal check, and the text if it hasn't gone yet. */
 function smsvGate(){try{if(!smsvMob())return;if(typeof aplCheck==="function")aplCheck();if(SMSV.st==="idle")smsvStart(false);}catch(e){}}
 /* After "Unlocking" (no code open), or questions finished again after details: the code step if a code is open. */
-function smsvAfterUnlock(){return ["starting","sending","sent","checking"].indexOf(SMSV.st)>-1?"verify":"results";}
+function smsvAfterUnlock(){return ["starting","sending","sent","checking","bad"].indexOf(SMSV.st)>-1?"verify":"results";}
 function smsvToResults(){if(view!=="verify")return;clearTimeout(SMSV.timer);view="results";render();window.scrollTo(0,0);}
 /* ── the card (ALC done screen, or results if someone reaches it with a code still open) ── */
-function smsvCard(){const S=SMSV;if(S.st==="idle"||S.st==="off"||S.st==="starting")return "";
+function smsvCard(){const S=SMSV;if(S.st==="idle"||S.st==="off"||S.st==="starting"||S.st==="bad")return "";
  const who=smsvWho(),Who=who.charAt(0).toUpperCase()+who.slice(1),first=smsvFirst();
  if(S.st==="verified")return `<div class="smsv ok"><span class="smsvi">${TICK}</span><div><b>Mobile confirmed</b><small>Thanks${first?", "+first:""}. ${Who} has the right number to reach you.</small></div></div>`;
  const num=smsvFmt(S.ph||smsvMob());
@@ -3063,7 +3087,7 @@ function smsvCard(){const S=SMSV;if(S.st==="idle"||S.st==="off"||S.st==="startin
 function smsvPaint(){if(view==="details"){smsvPrePaint();return;}
  if(view==="verify"){const sc=document.getElementById("screen");if(!sc)return;const n=document.getElementById("smsvCode"),had=!!n&&document.activeElement===n;
   if(n&&!SMSV.chg&&SMSV.st!=="verified"){smsvPatch();smsvTick();return;}
-  if(SMSV.chg&&sc.querySelector(".vfcancel")&&SMSV.st!=="verified")return;   /* never wipe the Change panel while they type (audit) */
+  if((SMSV.chg||SMSV.st==="bad")&&sc.querySelector(".vfcancel,#smsvNew")&&SMSV.st!=="verified")return;   /* never wipe the Change panel while they type (audit) */
   const old=sc.querySelector(".vfy"),h=old?old.offsetHeight:0;sc.innerHTML=smsvView();const c=sc.querySelector(".vfy");if(old&&c){c.classList.remove("anim");if(SMSV.st==="verified"&&h)c.style.minHeight=h+"px";}
   const m=document.getElementById("smsvCode");if(m&&(had||SMSV.want)){SMSV.want=0;smsvFocus(m);}smsvTick();return;}
  const el=document.getElementById("smsv");if(!el)return;const inp=document.getElementById("smsvCode");const had=!!inp&&document.activeElement===inp;
@@ -3087,7 +3111,7 @@ function smsvErr(m){SMSV.msg=m;smsvSetLine();const n=document.getElementById("sm
  if(n){n.setAttribute("aria-invalid","true");const o=n.closest(".otp");if(o){o.classList.remove("bad");void o.offsetWidth;o.classList.add("bad");}}}
 function smsvBusy(on){const n=document.getElementById("smsvCode"),r=document.getElementById("smsvR"),o=n&&n.closest(".otp");if(o)o.classList.toggle("busy",on);smsvSetLine();if(r&&on)r.disabled=true;if(!on)smsvTick();smsvBoxPaint();}
 function smsvMount(){if(view==="details"){smsvPrePaint();return;}
- if(view==="verify"){const m=document.getElementById("smsvCode");if(m&&!SMSV.done&&SMSV.st!=="verified"){SMSV.done=1;smsvFocus(m);}smsvTick();return;}
+ if(view==="verify"){const m=document.getElementById("smsvCode"),c=document.getElementById("smsvNew");if(m&&!SMSV.done&&SMSV.st!=="verified"){SMSV.done=1;smsvFocus(m);}else if(c&&!SMSV.done&&SMSV.st==="bad"){SMSV.done=1;smsvFocus(c);}smsvTick();return;}
  if(view!=="results"&&view!=="alcdone")return;const mob=smsvMob();if(!mob||!contact.name)return;
  if(SMSV.ph&&SMSV.ph!==mob&&SMSV.st!=="off"&&SMSV.st!=="verified")smsvReset();
  if(view==="results"&&["sent","sending","checking"].indexOf(SMSV.st)<0)return; /* results: only as a way back in to an open code */
@@ -3098,20 +3122,26 @@ function smsvMount(){if(view==="details"){smsvPrePaint();return;}
  if(SMSV.st==="idle"&&view==="alcdone"){const t=document.getElementById("smsv");if(SMSV.io){SMSV.io.disconnect();SMSV.io=null;}
   if(typeof IntersectionObserver==="function"&&t){SMSV.io=new IntersectionObserver(function(es){if(es.some(function(e){return e.isIntersecting;})){if(SMSV.io){SMSV.io.disconnect();SMSV.io=null;}smsvStart(false);}});SMSV.io.observe(t);}
   else smsvStart(false);}}
-async function smsvStart(resend,mobIn){const mob=mobIn||(resend&&SMSV.ph)||smsvMob(),eid=afhLeadEid();if(!mob||!eid||["verified","sending","starting","checking","off"].indexOf(SMSV.st)>-1)return;if(!resend&&SMSV.st!=="idle")return;
+async function smsvStart(resend,mobIn){const mob=mobIn||(resend&&SMSV.ph)||smsvMob(),eid=afhLeadEid();if(!mob||!eid||["verified","sending","starting","checking","off","bad"].indexOf(SMSV.st)>-1)return;if(!resend&&SMSV.st!=="idle")return;
  const seq=++SMSV.seq,stale=function(w){return SMSV.seq!==seq||SMSV.st!==w;};SMSV.eid=eid;SMSV.ph=mob;
  if(typeof apl!=="undefined"&&apl){if(apl.on||apl.url||apl.busy){SMSV.st="off";if(view==="verify")smsvToResults();return;}
   if(apl.p&&!resend){SMSV.st="starting";smsvPaint();let a=null;try{a=await Promise.race([apl.p,new Promise(function(r){setTimeout(function(){r(null);},3000);})]);}catch(e){}if(stale("starting"))return;
    if(a&&a.ok&&a.on===true){SMSV.st="off";if(view==="verify")smsvToResults();return;}}}
+ if(!resend&&smsvIsBad(mob)){smsvBadShow(mob);return;}                     /* refused before: same message, no request */
  const want=resend?"sending":"starting";SMSV.st=want;SMSV.msg="";if(resend){SMSV.val="";}smsvPaint();
- const j=await smsvPost("/sms/start",{phone:mob,purpose:"calc",event_id:eid,device_id:smsvDev(),hp:""},view==="verify"?8000:15000);if(stale(want))return;
- smsvLog(j.ok?(j.test_mode?"test":resend?"resend":view==="details"?"pre":"sent"):j.error==="cooldown"?"cool":"off."+String(j.error||"x").replace(/[^a-z_]/g,"").slice(0,24));
+ const t0=Date.now(),j=await smsvPost("/sms/start",{phone:mob,purpose:"calc",event_id:eid,device_id:smsvDev(),hp:""},view==="verify"?8000:15000);
+ const bad=!j.ok&&!resend&&smsvBadErr(j.error);if(bad){smsvMarkBad(mob);if(SMSV.rf==="c:"+mob)SMSV.chgN=Math.max(0,SMSV.chgN-1);}  /* a refused number is not one of the 2 changes */
+ if(SMSV.rf.slice(2)===mob)SMSV.rf="";if(stale(want))return;
+ smsvLog(j.ok?(j.test_mode?"test":resend?"resend":view==="details"?"pre":"sent"):j.error==="cooldown"?"cool":(bad?"bad.":"off.")+String(j.error||"x").replace(/[^a-z_]/g,"").slice(0,24));
  if(j.ok&&j.test_mode&&!SMSV.debug){SMSV.st="off";}
  else if(j.ok){SMSV.st="sent";SMSV.until=Date.now()+30000;SMSV.fails=0;}
+ else if(bad){smsvBadShow(mob);return;}
  else if(j.error==="cooldown"){SMSV.st="sent";SMSV.until=Date.now()+1000*Math.min(600,+j.retry_after||30);}
  else if(resend&&(j.error==="rate_limited"||j.error==="blocked")){SMSV.st="sent";SMSV.msg="We've sent as many codes as we can to this number for now. Check the number is right, or call us on "+smsvCall()+".";SMSV.until=Date.now()+1000*Math.min(3600,+j.retry_after||600);}
  else if(resend){SMSV.st="sent";SMSV.until=Date.now()+30000;if(smsvSysFail())return;SMSV.msg="We couldn't send a new code just now. Please try again in a moment.";}
  else if(view!=="verify"&&view!=="alcdone"&&(j.error==="network"||j.error==="server")){SMSV.st="idle";SMSV.ph="";smsvPaint();return;}  /* the early text failed (they may have left details): try again at Unlock */
+ else if(view==="verify"&&(j.error==="network"||j.error==="server")&&Date.now()-t0<4000){if(smsvSysFail())return;SMSV.st="idle";SMSV.ph="";smsvPaint();   /* v16.7: a quick error retries once; 2 in a row open the options */
+  const s2=SMSV.seq;setTimeout(function(){if(SMSV.seq===s2&&view==="verify"&&SMSV.st==="idle")smsvStart(false,mob);},1500);return;}
  else{SMSV.st="off";}
  if(SMSV.st==="off"&&view==="verify"){smsvToResults();return;}
  smsvPaint();if(j.ok&&SMSV.st==="sent")smsvSay("Code sent to "+smsvFmt(mob));
