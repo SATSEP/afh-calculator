@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AFH Finance - Loan Calculator</title>
-<!-- AFH-CALC-VERSION: 2026-11-06-v16.8b-lm-debt -->
+<!-- AFH-CALC-VERSION: 2026-11-06-v16.9b -->
 <!-- Meta Pixel Code: standalone loads its own pixel; embedded relays every event to the host page's pixel (one pixel, no duplicate PageView) -->
 <script>
 (function(){
@@ -2271,7 +2271,7 @@ function gdLm(){const k="lm",cl=st[funnel].emp==='centrelink';
  return `<div class="card anim lmc gdcard${GS[k]>0?' gdl':''}" id="gdc-lm">
   ${gdHead(k)}
   <span class="lmpill">${lmIcon('<path d="M5 12.5l4.5 4.5L19 7.5"/>')} Specialist lenders available</span>
-  <h2 class="lmh">Good news, there's a way forward for you</h2>
+  <h2 class="lmh">Specialist lenders may be able to help</h2>
   <div class="gdintro"><p class="lmp">${debtLow()?'Our partner Credit Sense works with lenders who handle smaller debt consolidation loans.':'Our partner Credit Sense works with lenders who look past the usual boxes.'} Your answers carry over, so there's nothing to repeat.</p>
   <div class="lmbens">${ben('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>','Lenders based on your answers','Specialists in your situation')}${ben('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/>','No payslips or paperwork','A secure bank check does the work')}${ben('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>','About 3 minutes','Finish now while it\'s fresh')}</div>
   <hr class="lmhr"></div>
@@ -2390,10 +2390,14 @@ function lmBar(done,part){const seg=i=>i<done?'<i class="lmseg on"></i>':i===don
  const lab=(i,t)=>`<span class="${i<done?'ok':i===done?'cur':''}">${t}${i<done?' ✓':''}</span>`;
  return `<div class="lmbar"><div class="lmsegs">${seg(0)}${seg(1)}${seg(2)}</div><div class="lmlabs">${lab(0,'Your answers')}${lab(1,'Your details')}${lab(2,'Bank check')}</div></div>`;}
 /* Called from next(): switch the moment the answer that disqualifies them is confirmed. */
-/* Owner, 1 Nov 2026: every Centrelink lead goes to Lead Market for now. */
-function clOnly(){return funnel!=='business'&&st[funnel]&&st[funnel].emp==='centrelink';}
-/* v18 (3 Nov 2026): car AND non-debt personal sell only Centrelink, 3+ payday loans, or Rebuilding credit with income under $60k. */
-function lmCarOut(){try{const s=st[funnel];const bad=(+s.credit||0)<=1;const gross=s.wage?(+s.income||0):0;return s.emp==='centrelink'||(s.payday==='yes'&&(s.paydayN==='3'||s.paydayN==='3+'))||(bad&&gross>0&&gross<60000);}catch(e){return false;}}
+/* Owner, 1 Nov 2026: every Centrelink lead goes to Lead Market for now. v16.9b: not car (Centrelink car stays with AFH,
+   so a car decliner always gets "Not now, show my results" and reaches the AFH options). */
+function clOnly(){return funnel!=='business'&&funnel!=='car'&&st[funnel]&&st[funnel].emp==='centrelink';}
+/* v18 (3 Nov 2026): car AND non-debt personal sell only Centrelink, 3+ payday loans, or Rebuilding credit with income under $60k.
+   v16.9b (Sep, 5 Nov): EVERY Centrelink CAR lead (caravan included) stays with AFH, 3+ payday and Rebuilding included
+   (Lead Market has never sold a Centrelink lead). Non-Centrelink car keeps the 3+ payday and Rebuilding under $60k rules.
+   Centrelink non-debt personal still goes to Lead Market; Centrelink debt goes there through debtToLeadMarket(). */
+function lmCarOut(){try{const s=st[funnel];if(funnel==='car'&&s.emp==='centrelink')return false;const bad=(+s.credit||0)<=1;const gross=s.wage?(+s.income||0):0;return s.emp==='centrelink'||(s.payday==='yes'&&(s.paydayN==='3'||s.paydayN==='3+'))||(bad&&gross>0&&gross<60000);}catch(e){return false;}}
 /* v16.8 (Sep, 6 Nov 2026 12:24): a debt consolidation enquiry that meets ANY rule below goes to Lead Market
    automatically, at any amount and whether ALC is open or not (it is never offered to ALC). It switches the moment the
    answer that triggers a rule is given, the same way car does. Clean debt keeps the v18 routing: ALC at or over ALC's
@@ -2440,7 +2444,7 @@ function lmHand(){if(GUIDED_DETAILS)return gdLm();const cl=st[funnel].emp==='cen
  const ben=(i,b,t)=>`<div class="lmben"><span class="lmbi">${lmIcon(i)}</span><span><b>${b}</b><small>${t}</small></span></div>`;
  return `${lmBar(1,30)}<div class="card anim lmc">
   <span class="lmpill">${lmIcon('<path d="M5 12.5l4.5 4.5L19 7.5"/>')} Specialist lenders available</span>
-  <h2 class="lmh">Good news, there's a way forward for you</h2>
+  <h2 class="lmh">Specialist lenders may be able to help</h2>
   <p class="lmp">${debtLow()?'Our partner Credit Sense works with lenders who handle smaller debt consolidation loans.':'Our partner Credit Sense works with lenders who look past the usual boxes.'} Your answers carry over, so there's nothing to repeat.</p>
   <div class="lmbens">${ben('<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>','Lenders based on your answers','Specialists in your situation')}${ben('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/>','No payslips or paperwork','A secure bank check does the work')}${ben('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>','About 3 minutes','Finish now while it\'s fresh')}</div>
   <hr class="lmhr">
