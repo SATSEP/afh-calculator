@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AFH Finance - Loan Calculator</title>
-<!-- AFH-CALC-VERSION: 2026-11-05-v16.7-sms-badnum -->
+<!-- AFH-CALC-VERSION: 2026-11-06-v16.8b-lm-debt -->
 <!-- Meta Pixel Code: standalone loads its own pixel; embedded relays every event to the host page's pixel (one pixel, no duplicate PageView) -->
 <script>
 (function(){
@@ -1254,6 +1254,7 @@ const GATE_BACK=true;       /* "Change my answers" link on the details screen */
 const SELL_SKIP=["term","live","howlong","postcode","residency"];
 function sellShort(){if(!SELL||funnel!=="personal"||st.personal.purpose!=="debt")return false;let m=5000;try{m=alc.min;}catch(e){}return (+st.personal.amount||0)<m;}
 let repayFreq="weekly";  // hero repayment frequency
+let repayFreqSet=false;  /* v16.8: true once the customer (or the landing page estimate) picked a frequency. Lead Market gets it only then. */
 const TABMAP={car:"car",personal:"personal",business:"business",caravan:"car"};
 /* ── CARAVAN MODE ──────────────────────────────────────────────────────────────
    Caravan reuses the car funnel engine. ASSET only changes wording + lender pool. */
@@ -2078,7 +2079,7 @@ async function aplGo(auto){if(apl.busy||apl.url||apl.msg)return;apl.busy=true;ap
  if(auto&&!(j&&j.error==="submitted")){if(j&&j.error&&j.error!=="pending")apl.on=false;aplPaint();afhTrack('ApplyUnavailable',{reason:(j&&j.error)||'network',via:'auto'});return;}
  apl.msg=(j&&j.error==="submitted")?"Your application is already with us. Your broker will be in touch shortly.":"We couldn't open your application just now. Your broker will be in touch shortly to finish it with you, or call us on 03 7031 6881.";
  aplPaint();afhTrack('ApplyUnavailable',{reason:(j&&j.error)||'network'});}
-function setFreq(f){repayFreq=f;afhTrack('CalcFreqToggle',{freq:f});render();}
+function setFreq(f){repayFreq=f;repayFreqSet=true;afhTrack('CalcFreqToggle',{freq:f});render();}
 
 function detailsGate(){if(GUIDED_DETAILS)return gdGate();const{list}=match();const n=list.length;
  return `<div class="card anim gate2">
@@ -2393,7 +2394,39 @@ function lmBar(done,part){const seg=i=>i<done?'<i class="lmseg on"></i>':i===don
 function clOnly(){return funnel!=='business'&&st[funnel]&&st[funnel].emp==='centrelink';}
 /* v18 (3 Nov 2026): car AND non-debt personal sell only Centrelink, 3+ payday loans, or Rebuilding credit with income under $60k. */
 function lmCarOut(){try{const s=st[funnel];const bad=(+s.credit||0)<=1;const gross=s.wage?(+s.income||0):0;return s.emp==='centrelink'||(s.payday==='yes'&&(s.paydayN==='3'||s.paydayN==='3+'))||(bad&&gross>0&&gross<60000);}catch(e){return false;}}
-function lmShouldSwitch(){return LM.on&&!lm.declined&&funnel!=='business'&&!alcEligible()&&((funnel==='car'||!debtFunnel())?lmCarOut():subparCheck().sub);}
+/* v16.8 (Sep, 6 Nov 2026 12:24): a debt consolidation enquiry that meets ANY rule below goes to Lead Market
+   automatically, at any amount and whether ALC is open or not (it is never offered to ALC). It switches the moment the
+   answer that triggers a rule is given, the same way car does. Clean debt keeps the v18 routing: ALC at or over ALC's
+   minimum while ALC is open, Lead Market under the minimum, AFH otherwise. Car, non-debt personal and business are unchanged.
+   Same entry points as before: /debt-consolidation/, /personal-loan/, /combine-debts/, the homepage and the calculator itself.
+   All thresholds live in this block. Income is the calculator's estimated annual gross (st.income), as in subparCheck(). */
+const DEBT_LM={
+ on:true,
+ payday_min:3,                /* 3 or "More than 3" payday loans */
+ centrelink:true,             /* Centrelink income */
+ rebuild_income_under:60000,  /* Rebuilding credit and gross income under this */
+ rebuild_casual:true,         /* Rebuilding credit and casual work */
+ rebuild_temp_visa:true,      /* Rebuilding credit and a temporary or bridging visa */
+ income_under:47500,          /* gross income under this, any credit */
+ subpar_debt_alc_first:false  /* OFF (Sep, 6 Nov): Lead Market at any amount. ON: subpar debt at or over ALC's minimum goes to ALC
+                                 first while ALC is open and under its limits (the v18 routing), Lead Market otherwise. ALC's minimum
+                                 is whatever intake.php reports (7000 today, 5000 while the $5k to $7k bonus band is on), so the
+                                 bonus band follows the same switch. Centrelink never goes to ALC. */
+};
+/* Which rules this debt enquiry meets, from the answers given so far. Empty for anything that isn't debt consolidation. */
+function debtLmReasons(){const r=[];try{if(!DEBT_LM.on||!debtFunnel())return r;const s=st.personal,c=DEBT_LM;
+ const bad=(+s.credit||0)<=1;const gross=s.wage?(+s.income||0):0;
+ const pd=s.payday==='yes'?({'1':1,'2':2,'3':3,'3+':4}[s.paydayN]||0):0;
+ if(c.centrelink&&(s.emp==='centrelink'||s.emp==='benefits'))r.push('centrelink');
+ if(c.payday_min>0&&pd>=c.payday_min)r.push(s.paydayN==='3+'?'payday_more_than_3':'payday_'+pd);
+ if(bad&&gross>0&&gross<c.rebuild_income_under)r.push('rebuilding_income_under_'+c.rebuild_income_under);
+ if(bad&&c.rebuild_casual&&s.emp==='casual')r.push('rebuilding_casual');
+ if(bad&&c.rebuild_temp_visa&&(s.visa==='temp'||s.visa==='bridging'))r.push('rebuilding_temp_visa');
+ if(gross>0&&gross<c.income_under)r.push('income_under_'+c.income_under);
+}catch(e){}return r;}
+/* THE RULE: true sends this debt enquiry to Lead Market now. */
+function debtToLeadMarket(){try{if(!debtLmReasons().length)return false;if(DEBT_LM.subpar_debt_alc_first&&alcEligible())return false;return true;}catch(e){return false;}}
+function lmShouldSwitch(){return LM.on&&!lm.declined&&funnel!=='business'&&(debtToLeadMarket()||(!alcEligible()&&((funnel==='car'||!debtFunnel())?lmCarOut():subparCheck().sub)));}
 function lmStart(){afhTrack('ReferRouted',{});lmLog('routed',qi+1);view="lmswitch";render();window.scrollTo(0,0);lmTsLoad();
  setTimeout(function(){if(view==="lmswitch"){view="lmhand";render();lmTsMount();afhTrack('ReferOffer',{});lmLog('offer');}},1700);}
 function lmTsLoad(){if(!LM.turnstile||window.turnstile||document.getElementById('lmTsJs'))return;const sc=document.createElement('script');sc.id='lmTsJs';sc.async=true;
@@ -2439,7 +2472,7 @@ function lmValid(f){let ok=true;const g=k=>(f.elements[k]&&f.elements[k].value||
  if(st[funnel].emp==='centrelink'&&!lm.benefit)bad('lmf-ben');
  if(!lm.consent){const r=document.getElementById('lmRow'),e=document.getElementById('lmErr');if(r)r.classList.add('is-error');if(e)e.classList.add('is-shown');if(ok&&CALC_STEP_LOG)lmLog('lm.err.consent',0);ok=false;}
  return ok;}
-function lmSubmit(ev){ev.preventDefault();const f=ev.target;if(!lmValid(f))return false;
+function lmSubmit(ev){ev.preventDefault();if(lm.sent)return false;const f=ev.target;if(!lmValid(f))return false;lm.sent=true;
  contact.name=f.elements.name.value.trim();contact.mobile=(GATE_FORGIVING&&afhMob(f.elements.mobile.value))||f.elements.mobile.value.trim();contact.email=f.elements.email.value.trim();contact.dob=f.elements.dob.value.trim();
  consent.contact=true;consent.ts=lm.ts;
  afhTrack('ReferConsent',{});lmLog('submit');
@@ -2447,10 +2480,17 @@ function lmSubmit(ev){ev.preventDefault();const f=ev.target;if(!lmValid(f))retur
  try{sendLead("referred to lead market",{consent_wording:LM_WORDING,lm_consent:"yes",lm_consent_wording:LM_WORDING,lm_consent_timestamp:lm.ts,lm_route:"lead market",date_of_birth:lmDobIso(contact.dob),centrelink_payment:(LM_BENEFITS.find(b=>b[0]===lm.benefit)||["",""])[1]},true);  /* v18: no Lead for Lead Market referrals (Meta or Google) */}catch(e){}
  lmRelay();
  if(debtFunnel())debtPixelOther('lead_market');
- view="lmbank";render();window.scrollTo(0,0);lmLog('bank_screen');return false;}
+ view=lm.stop?"lmstop":"lmbank";render();window.scrollTo(0,0);lmLog('bank_screen');return false;}
+/* v16.8b: relay.php refused the send (409 duplicate: the same person is sold, recalled, withdrawn, with ALC or with a partner
+   broker in the last 30 days). No SMS code on this path (Sep, 6 Nov), so not_verified is only a fallback message. */
+function lmStopView(){const first=(contact.name||"").trim().split(/\s+/)[0]||"";const dup=lm.stop==="duplicate";
+ return `<div class="card anim lmc lmdn" id="lmStop"><h2 class="lmh">${dup?"We already have your enquiry":"We'll call you to finish"}${first?", "+gdEsc(first):""}</h2>
+  <p class="lmp">${dup?"You enquired with us recently, so we won't send your details out again. If your situation has changed, a broker can talk you through your options.":"We couldn't finish this here. Your answers are saved and a broker will call you to finish this."}</p>
+  <p class="lmp">Questions? Call us on <a href="tel:${PHONE}">03 7031 6881</a>.</p>
+  ${debtFunnel()?'<div class="lmnils">Free, independent financial counselling: National Debt Helpline <a href="tel:1800007007">1800 007 007</a>.</div>':''}</div>`;}
 /* Declining returns them to the question they were on and carries on the normal AFH flow,
    so every remaining question is still asked. */
-function lmDecline(){if(clOnly()){clearTimeout(lmT);afhTrack('ReferDecline',{});lmLog('decline_cl');view="lmclno";render();window.scrollTo(0,0);return;}
+function lmDecline(){lm.sent=false;if(clOnly()){clearTimeout(lmT);afhTrack('ReferDecline',{});lmLog('decline_cl');view="lmclno";render();window.scrollTo(0,0);return;}
  lm.declined=true;clearTimeout(lmT);afhTrack('ReferDecline',{});lmLog('decline');view="form";render();next();}
 function lmClNo(){return `<div class="card anim lmc lmdn" id="lmClNo">
   <h2 class="lmh">No problem</h2>
@@ -2610,7 +2650,7 @@ function lmDobIso(t){const m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec((t||"").trim());
  const d=+m[1],mo=+m[2],y=+m[3],dt=new Date(y,mo-1,d);if(dt.getFullYear()!==y||dt.getMonth()!==mo-1||dt.getDate()!==d)return "";
  const n=new Date(),min=new Date(n.getFullYear()-18,n.getMonth(),n.getDate()),max=new Date(n.getFullYear()-100,n.getMonth(),n.getDate());if(dt>min||dt<max)return "";
  return y+"-"+String(mo).padStart(2,'0')+"-"+String(d).padStart(2,'0');}
-function lmBack(){clearTimeout(lmT);afhTrack('ReferBack',{});lmLog('back');view="form";render();window.scrollTo(0,0);}
+function lmBack(){clearTimeout(lmT);lm.sent=false;afhTrack('ReferBack',{});lmLog('back');view="form";render();window.scrollTo(0,0);}
 /* Centrelink payment type: Lead Market buyers bid on unemployment vs other benefits separately. */
 const LM_BENEFITS=[["jobseeker","JobSeeker / Youth Allowance"],["pension","Age or Disability Pension"],["carer","Carer Payment"],["family","Family / Parenting Payment"],["other","Something else"]];
 function lmSetBenefit(k){lm.benefit=k;document.querySelectorAll('.lmchip').forEach(b=>b.classList.toggle('on',b.getAttribute('onclick').indexOf("'"+k+"'")>-1));
@@ -2619,7 +2659,7 @@ const LM_WORK_VISAS=["482","494","491","485","417","462","408","400","403","457"
 const LM_MAP={
  emp:{fulltime:"full_time",parttime:"part_time",casual:"casual",self:"self_employed_contract",centrelink:"other_benefits"},
  credit:{4:"excellent",3:"good",2:"fair",1:"low"},
- reason:{debt:"debt_consolidation",home:"home_improvements_repair",car:"car_purchase",travel:"holiday_travel",wedding:"wedding",medical:"medical_dental_bill",investing:"",other:""},
+ reason:{debt:"debt_consolidation",home:"home_improvements_repair",car:"car_purchase",travel:"holiday_travel",wedding:"wedding",medical:"medical_dental_bill",legal:"legal_fees",investing:"",other:""},
  res:{owner:"owner",renter:"renting",boarding:"boarding"},
  months:{lt6:3,"6to12":9,lt1:6,"1to2":18,"2to5":42,"3plus":48,"5plus":72},
  per:{weekly:52,fortnightly:26,monthly:12}};
@@ -2632,10 +2672,10 @@ function lmPayload(){const s=st[funnel];const nm=(contact.name||"").trim().split
  return {
   lead_reference:afhLeadEid(),
   consent:{customer_authority:lm.consent===true,authority_type:"Explicit",anti_hawking:lm.consent===true,wording:LM_WORDING,timestamp:lm.ts,page:location.href.split("?")[0]},
-  application:{date:new Date().toISOString().slice(0,10),type:"Loan",
-   repayment_cycle:LM_MAP.per[repayFreq]?repayFreq:"",repayment_count:((s._term||!SELL)&&LM_MAP.per[repayFreq]&&+s.term)?String(Math.round(+s.term*LM_MAP.per[repayFreq])):"",
+  application:{date:new Date().toISOString().slice(0,10),type:isCar?"Car Loan":"Personal Loan",
+   repayment_cycle:(repayFreqSet&&LM_MAP.per[repayFreq])?repayFreq:"",repayment_count:(repayFreqSet&&s._term&&LM_MAP.per[repayFreq]&&+s.term)?String(Math.round(+s.term*LM_MAP.per[repayFreq])):"",
    amount:String(Math.round(+s.amount||0)),reason:isCar?(ASSET==="caravan"?"other_vehicle_purchase":"car_purchase"):(LM_MAP.reason[s.purpose]||""),
-   description:((s._term||!SELL)?(+s.term||0)+" year term requested":"")+(s.purpose==="investing"?". Purpose: investing":""),
+   description:(s._term&&+s.term?(+s.term)+" year term requested":"")+(s.purpose==="investing"?(s._term&&+s.term?". ":"")+"Purpose: investing":""),
    security_asset:isCar?"vehicle":""},
   person:{first_name:nm[0]||"",last_name:nm.slice(1).join(" "),dob:lmDobIso(contact.dob),mobile:mob,email:(contact.email||"").trim(),
    citizenship:s._visa?lmCitizenship(s):"",can_provide_security:isCar?"true":"",
@@ -2652,13 +2692,15 @@ function lmRelay(){if(lm.relay)return lm.relay;
  lm.relay=fetch(LM.relay,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(lmPayload()),credentials:"omit"})
   .then(function(r){return r.json();}).then(function(j){if(j&&j.ok){lm.tok=j.tok||"";lm.leadId=j.lead_id||"";lm.env=(j.env==="dev"?"dev":"prod");afhTrack('ReferCreated',{});lmLog('relay_ok');
     if(SELL&&debtFunnel()&&!debtCentrelink())debtPixelLead('lead_market',LM_SELL_VALUE);}
+   else if(j&&(j.error==="duplicate"||j.error==="not_verified")){lm.err=j.error;lm.stop=j.error;lm.stopWhy=String(j.reason||"").slice(0,24);afhTrack('ReferError',{});lmLog('relay_'+j.error);
+    if(view==="lmbank"||view==="lmframe"){view="lmstop";render();window.scrollTo(0,0);}}
    else{lm.err=(j&&j.error)||"relay";lm.relay=null;afhTrack('ReferError',{});lmLog('relay_err');}return j;})
   .catch(function(){lm.err="network";lm.relay=null;afhTrack('ReferError',{});lmLog('relay_net');return null;});
  return lm.relay;}
 /* The iframe only gets our opaque reference and Lead Market's token, no personal details. */
 function lmFrameUrl(){return LM.url+"&ref="+encodeURIComponent(afhLeadEid())+(lm.tok?"&tok="+encodeURIComponent(lm.tok):"")+(lm.env?"&env="+lm.env:"");}
 function lmGoBank(b){afhTrack('ReferStep2',{});lmLog('bank_click',lm.tok?1:0);if(b)b.classList.add('busy');
- Promise.race([lmRelay(),new Promise(function(r){setTimeout(r,6000);})]).then(function(){view='lmframe';render();window.scrollTo(0,0);});}
+ Promise.race([lmRelay(),new Promise(function(r){setTimeout(r,6000);})]).then(function(){view=lm.stop?'lmstop':'lmframe';render();window.scrollTo(0,0);});}
 function lmFrameLoaded(f){try{f.contentWindow.postMessage({afhLmRef:afhLeadEid(),afhLmTok:lm.tok||""},LM.origin);}catch(e){}afhTrack('ReferFrameLoaded',{});lmLog('frame_load',lm.tok?1:0);}
 function lmFrame(){return `${lmBar(2,60)}<div class="card anim lmc lmfr"><div class="lmfh"><span>${lmIcon('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>')} Secure connection</span><small>by Credit Sense</small></div>
   <iframe src="${lmFrameUrl()}" title="Secure bank check" onload="lmFrameLoaded(this)" class="lmif"></iframe>
@@ -2823,7 +2865,7 @@ function quickCalc(){const s=st[funnel];const amax={car:250000,personal:100000,b
 function refreshQuick(){const p=document.getElementById('qcPreview');if(!p)return;const q=quickRepay();const fw={weekly:"week",fortnightly:"fortnight",monthly:"month"}[repayFreq];p.innerHTML=q?`<div class="qcpl">Estimated repayment</div><div class="qcpv">${fmt(q.per)}<span>/${fw}</span></div>`:`<div class="qcpl">Set your amount to see an estimate</div>`;const rd=document.getElementById('qcReady');if(rd&&q)rd.textContent=q.n+" lenders ready to compare your rate";const ct=document.querySelector('.qccta');if(ct&&q)ct.firstChild.textContent="See my "+q.n+" lender options ";}
 function quickTerm(v){st[funnel].term=+v;render();}
 function quickBalloon(v){st[funnel].balloon=+v;render();}
-function setFreq(f){repayFreq=f;render();}
+function setFreq(f){repayFreq=f;repayFreqSet=true;render();}
 function goFullFunnel(){view="form";qi=0;signalParent("form");render();window.scrollTo(0,0);}
 
 
@@ -2867,7 +2909,7 @@ function homeEst(e){try{
  if(funnel!=="business"){const cp=[4,3,2,1,0][e.cr];s._cp=cp;s.credit=cp===0?2:cp;}       // homepage order: Excellent, Good, Average, Rebuilding, Not sure
  if(funnel==="car"){if(e.bal>0){s._bal="yes";s.balloon=Math.min(e.bal,balloonMaxDollar()||0);if(!s.balloon){s._bal="no";s._balNo=1;}}else{s._bal="no";s.balloon=0;s._balNo=1;}}
  else if(funnel==="business"){s.balloon=e.bal;}
- repayFreq={52:"weekly",26:"fortnightly",12:"monthly"}[e.f];
+ repayFreq={52:"weekly",26:"fortnightly",12:"monthly"}[e.f];repayFreqSet=true;
  HOME_EST={t:funnel,skip:true,ids:{amount:1,term:1,balloon:funnel==="car"?1:0,credit:funnel==="business"?0:1}};
  const S=steps();while(qi<S.length-1&&estSkip(S[qi])){estEv(S,qi);qi++;}
  render();
@@ -2903,7 +2945,7 @@ function preEst(p){try{
  if(has("bal")&&funnel==="car"){if(p.bal>0){s._bal="yes";s.balloon=Math.min(p.bal,preBalMax());}if(!(p.bal>0)||!s.balloon){s._bal="no";s.balloon=0;s._balNo=1;}ids.balloon=1;n++;}
  else if(has("bal")&&funnel==="business"){s.balloon=p.bal;ids.balloon=1;n++;}
  if(!n)return;                                                                   // nothing carried: exactly v15
- if(has("f"))repayFreq={52:"weekly",26:"fortnightly",12:"monthly"}[p.f];
+ if(has("f")){repayFreq={52:"weekly",26:"fortnightly",12:"monthly"}[p.f];repayFreqSet=true;}
  HOME_EST={t:funnel,skip:true,pre:true,ids:ids};
  if(CALC_STEP_LOG)lmLog('pre.'+funnel,n);
  const S=steps();while(qi<S.length-1&&estSkip(S[qi])){estEv(S,qi);qi++;}
@@ -3159,7 +3201,7 @@ async function smsvCheck(){if(SMSV.st!=="sent")return;const el=document.getEleme
  smsvErr(j.error==="wrong_code"?"That code isn't right. Check the latest text and try again.":j.error==="expired"?"That code has expired. Tap Resend code and we'll text you a new one.":j.error==="rate_limited"?"Too many tries on that code. Tap Resend code for a new one.":"We couldn't check the code. Please try again.");
  if(el)smsvFocus(el);}
 
-function render(){if(GUIDED_DETAILS)gdView(view);tabs();document.getElementById("screen").innerHTML=view==="chooser"?chooser():view==="quick"?quickCalc():view==="form"?form():view==="details"?detailsGate():view==="analysing"?analysing():view==="ready"?readyScreen():view==="unlocking"?unlocking():view==="lmswitch"?lmSwitch():view==="lmhand"?lmHand():view==="lmbank"?lmBank():view==="lmframe"?lmFrame():view==="lmdone"?lmDone():view==="lmclno"?lmClNo():view==="alcmatch"?alcMatch():view==="alchand"?alcHand():view==="alcsend"?alcSending():view==="alcdone"?alcDone():view==="verify"?smsvView():results();applyView();paintRanges();try{smsvMount();}catch(e){}
+function render(){if(GUIDED_DETAILS)gdView(view);tabs();document.getElementById("screen").innerHTML=view==="chooser"?chooser():view==="quick"?quickCalc():view==="form"?form():view==="details"?detailsGate():view==="analysing"?analysing():view==="ready"?readyScreen():view==="unlocking"?unlocking():view==="lmswitch"?lmSwitch():view==="lmhand"?lmHand():view==="lmbank"?lmBank():view==="lmframe"?lmFrame():view==="lmdone"?lmDone():view==="lmclno"?lmClNo():view==="lmstop"?lmStopView():view==="alcmatch"?alcMatch():view==="alchand"?alcHand():view==="alcsend"?alcSending():view==="alcdone"?alcDone():view==="verify"?smsvView():results();applyView();paintRanges();try{smsvMount();}catch(e){}
  afhPost({afhCalcView:{view:view,qi:qi,funnel:funnel,pp:(typeof payPh!=="undefined"&&payPh)?1:0}});
  if(view==="details")afhOnce('details','CalcDetailsForm',{});
  if(view==="results")afhOnce('results','CalcViewedMatches',{});
