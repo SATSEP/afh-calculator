@@ -352,7 +352,7 @@ footer{margin-top:28px;padding:4px}footer p{font-size:12px;color:var(--mute);lin
 .afhc-fine a{color:var(--slate);font-weight:700}
 /* v23 shared (design panel FIX-BRIEF-6 S9): a quiet stepper on the details and code steps; one consent card ("faux glass":
    still gradients, no backdrop filter); the offers tick (consent step only) and the legal line (every details step: APP 5) below the button */
-.gdhead .lmlabs,.vfy .vfhead .lmlabs{display:none}
+#gdc-gate .gdhead .lmlabs,.vfy .vfhead .lmlabs{display:none}
 .afhcard{position:relative;margin:0 0 16px;padding:18px 16px 14px;border-radius:20px;text-align:left;
  background:linear-gradient(180deg,rgba(255,255,255,.80),rgba(255,255,255,.62)),radial-gradient(120% 140% at 0% 0%,rgba(17,181,238,.20),rgba(17,181,238,0) 58%),radial-gradient(120% 140% at 100% 100%,rgba(109,84,232,.18),rgba(109,84,232,0) 58%),#F6F6FA;
  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 0 0 1px rgba(30,35,41,.07),0 12px 28px -18px rgba(45,27,140,.35)}
@@ -1447,8 +1447,30 @@ html.bcvw footer{display:none}
 .bcsave{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;margin:8px 0 0;font-size:14px;font-weight:650;color:#3A1FB8;text-decoration:none}
 .bcsave svg{width:16px;height:16px}
 /* v21h (coordinator, decision 1): the why line under the bank check heading */
-.bcx .bch+.bcwhy{margin:-6px 0 16px;font-size:15px;line-height:1.5;color:var(--bci2)}
+.bcx .bch+.bcwhy{margin:-6px 0 16px;font-size:15px;line-height:1.5;color:var(--bci2);text-align:center;text-wrap:balance}
+/* v25b: the why line on the staged bank check: centred under the centred heading, one line from 360 px (14 px, a hair
+   tighter); in the compact zone layout (v25 Z4) it and the trio tiles tighten too, so Agree keeps the zone y */
+html[data-afhst="b"] #bcCard .bch+.bcwhy{margin:-4px 0 14px;font-size:14px;letter-spacing:-.006em;line-height:1.45}
+html[data-afhcmp][data-afhz="b"] #bcCard .bch+.bcwhy{margin:-4px 0 10px}
+/* on a narrow framed phone (a frame under 341 px: a 360 px screen) the compact bank check also sets the decorative bank
+   to AFH row aside (aria-hidden; the trio and every word stay), so Agree keeps the zone y with the why line */
+@media (max-width:340px){html[data-afhcmp][data-afhz="b"] .bcglass2 .bcrow{display:none}}
+/* v25b: the quiet way not to do the bank check now (OAIC APP guidelines B.46 to B.47: consent must be a genuine
+   choice). A native text button under the primary: muted ink, no underline until hover or focus, 44 px tall, a visible
+   focus ring; Agree stays the only primary. */
+.bcno{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;margin:6px 0 0;padding:0 12px;border:0;background:none;font:inherit;font-size:14.5px;font-weight:600;line-height:1.3;color:var(--bci2,#434A55);text-align:center;text-decoration:none;cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:10px}
+.bcno:focus-visible{text-decoration:underline;text-underline-offset:3px}
+@media (hover:hover){.bcno:hover{text-decoration:underline;text-underline-offset:3px}}   /* never a sticky underline after a tap on a touch screen */
+.bcno:focus-visible{outline:2px solid #4B2EDB;outline-offset:2px}
+.bcend .bcno{margin:0}
+/* v25b: the decline screen keeps the all set layout with a phone (the glass orb of the waiting screen), not the tick */
+.bctick.bcph{color:#3A1FB8;background:radial-gradient(circle at 30% 25%,#fff,rgba(255,255,255,.6) 60%),linear-gradient(140deg,rgba(17,181,238,.35),rgba(109,84,232,.35));box-shadow:inset 0 1px 0 #fff,0 0 0 1px rgba(30,35,41,.07),0 14px 30px -14px rgba(45,27,140,.45)}
+.bctick.bcph svg{width:32px;height:32px}
 /* v21h: the Credit Guide link inside Details item 5 (44 px tall, in the sentence) */
+/* v25b: a short stage (under 600 px: the Facebook 360x740 in app view, about 585 px) keeps the teaser's Indicative only
+   footer whole on the first screen */
+html[data-afhzs="s"][data-afhz="t"] .wrap>footer{padding-top:4px;margin-top:0}
+html[data-afhzs="s"][data-afhz="t"] .wrap>footer,html[data-afhzs="s"][data-afhz="t"] .wrap>footer p{line-height:1.35}
 .bcdetails a.bccgl{display:inline-flex;align-items:center;min-height:44px;margin:-13px 0;color:var(--bcl);font-weight:700;white-space:nowrap}
 </style>
 </head>
@@ -1523,13 +1545,17 @@ function A(k){return AL[ASSET][k];}
    afh-consent-v3 has never been live, so it stays v3. consent_wording records every line the customer could see. Any
    wording change after the first live lead: bump CONSENT_VERSION. */
 const CONSENT_LINE="Call, text or email me about this enquiry.";
-const CONSENT_EDELIVERY="Documents by SMS or email, not paper.";
-const CONSENT_DETAILS=["By tapping Agree, you agree AFH Finance may call, text or email you about this enquiry, even if your number is on the Do Not Call Register.",
+/* v25bs (legal review M1, 9 Nov 2026): the three electronic delivery matters (not paper, check regularly, withdraw) are
+   visible before the tap again (v24 C1 reversed); "Credit Guide" is a link (cgLinkify) */
+const CONSENT_EDELIVERY="Documents like our Credit Guide come by SMS or email, not paper. Check your messages regularly. You can withdraw anytime.";
+const CONSENT_DETAILS=["By tapping Agree and continue, you agree AFH Finance may call, text or email you about this enquiry, even if your number is on the Do Not Call Register.",
  "We share your details with lenders on our panel, and with our licensee Access Lending Group, only to check your options. We won't pass them to anyone else unless you separately agree.",
  "We'll send documents like our Credit Guide by SMS or email, not on paper, so check your messages regularly. You can withdraw this consent at any time by contacting us."];
 const CONSENT_BUTTON="Agree and continue";
 const CONSENT_OPT="Send me offers too";
-const CONSENT_VERSION="afh-consent-v3";
+/* v25bs (legal review M1, 10a): afh-consent-v3 has been live since 9 Nov 2026 20:50 with the v24 words, so these words
+   are afh-consent-v4. The server must accept v4 first: sql/bc_calc_v21h_consent_v4.sql, before the upload. */
+const CONSENT_VERSION="afh-consent-v4";
 /* v21h (coordinator, 9 Nov): every visible "Credit Guide" is a link to the published Credit Guide (new tab, noopener, no query) */
 const CREDIT_GUIDE_URL="https://afhfinance.com.au/credit-guide/";
 function cgLinkify(t){return t.replace("Credit Guide",'<a class="afhcg" href="'+CREDIT_GUIDE_URL+'" target="_blank" rel="noopener">Credit Guide</a>');}
@@ -1541,7 +1567,7 @@ let consent={contact:false,marketing:false,ts:"",page:""};
 function consentBlock(q){return `<div class="afhv2">
   <div class="afhcard">
    <div class="afhq"><span class="afhic" aria-hidden="true">${AFH_CHAT}</span>${q||`<p class="gdq">${CONSENT_LINE}</p>`}</div>
-   <p class="afhed">${cgLinkify(CONSENT_EDELIVERY)} <button type="button" class="afhdbtn" id="afhDetBtn" aria-expanded="false" aria-controls="afhDet" onclick="consentDet(this)">Details</button></p>
+   <p class="afhed"><span class="afhedt">${cgLinkify(CONSENT_EDELIVERY)}</span> <button type="button" class="afhdbtn" id="afhDetBtn" aria-expanded="false" aria-controls="afhDet" onclick="consentDet(this)">Details</button></p>
   </div>
   <div class="afhdet" id="afhDet" hidden>${CONSENT_DETAILS.map((t,i)=>`<p>${cgLinkify(t)}${i===CONSENT_DETAILS.length-1?` <a href="${PRIVACY_URL}" target="_blank" rel="noopener">Privacy Policy</a>`:""}</p>`).join("")}</div>
   <div class="afhc-err" id="afhConsentErr" role="alert">Tap ${CONSENT_BUTTON} so we can contact you.</div>
@@ -3313,9 +3339,9 @@ function smsvLine(){const S=SMSV;if(S.st==="checking")return '<i class="vfspin" 
  if(S.msg)return S.msg;return view==="verify"&&S.st==="sent"&&!(S.val||"").length?`<span class="vfhint">${smsvHint()}</span>`:"";}
 function smsvStatus(){const S=SMSV,left=Math.max(0,Math.ceil((S.until-Date.now())/1000));
  return `<button type="button" class="vfr" id="smsvR" onclick="smsvStart(true)"${left>0||smsvBusyNow()?" disabled":""}>${left>0?"Resend code in "+smsvLeft(left):"Resend code"}</button>`;}
-function smsvHelp(){return `<details class="vfhelp"><summary>Didn't get it?</summary><ul>
+function smsvHelp(){return `<div class="vfhelp afhx"><button type="button" id="vfHelpBtn" aria-expanded="false" aria-controls="vfHelp" onclick="afhX(this)">Didn't get it?</button><div id="vfHelp" hidden><ul>
   <li>Check the number above. If it's wrong, tap Change.</li><li>Look in your filtered, unknown sender or spam texts.</li>
-  <li>Texts are sometimes slow. Tap Resend code if it hasn't come.</li><li>Still stuck? Call us on ${smsvCall()}.</li></ul></details>`;}
+  <li>Texts are sometimes slow. Tap Resend code if it hasn't come.</li><li>Still stuck? Call us on ${smsvCall()}.</li></ul></div></div>`;}
 /* progress: "Your details" is the current step (92%) until the code is confirmed, then it ticks and the options fill */
 function smsvHead(ok){return `<div class="vfhead"><div class="lmsegs"><i class="lmseg ok"></i><i class="lmseg${ok?" ok":" vfcur"}"></i><i class="lmseg${ok?" ok":""}"></i></div><div class="lmlabs"><span class="ok">Your answers ✓</span><span class="${ok?"ok":"cur"}">Your details${ok?" ✓":""}</span><span${ok?' class="cur"':""}>Your options</span></div></div>`;}
 function smsvIntro(){const S=SMSV,sending=["idle","starting","sending"].indexOf(S.st)>-1&&!S.until;return sending?"Sending to":"Sent to";}
@@ -3533,6 +3559,9 @@ afhPost({afhCalcReady:true,v:16});
     confirm the lenders that fit you" is already the heading ("let's confirm your options") and the pill. The two things to
     have ready sit in the trust panel as a list. BC_TIME_LINE keeps its v21f rule ("" drops the time, the sentence still reads). */
  var WHY="Most lenders ask for bank statements.";
+ /* v25b (legal review S2): the count heading of the teaser and the bank check, one constant ("to compare" implies no
+    suitability assessment); the fallback without a count is unchanged */
+ var COUNT=" lenders to compare";
  var BC_TIME_LINE="in a few minutes";
  function why2(){return "Share yours securely"+(BC_TIME_LINE?" "+BC_TIME_LINE:"")+".";}
  var HOW=["Use your internet banking login, the one for its website","Your bank may send a code or ask you to confirm in its app"];
@@ -3662,7 +3691,7 @@ afhPost({afhCalcReady:true,v:16});
   return lmBar(1,8).replace('class="lmbar"','class="lmbar bcqbar"')+`<div class="card anim lmc bcx bctz2">
   ${r?`<p class="bclbl">Your indicative repayment</p><p class="bcamt">${r[0]===r[1]?"About "+r[0]:r[0]+" to "+r[1]}<small> a week</small></p>`:""}
   <p class="bcfor">${fmt(s.amount)} ${kind()}${funnel==="business"||!s.term?"":" over "+yrs(s.term)}</p>
-  <div class="bcglass"><span class="bcflow" aria-hidden="true"><span class="bcnode">${lmIcon(I.bank)}</span></span><b>${n?n+" lenders may suit you":"We compare 40+ lenders for you"}</b></div>
+  <div class="bcglass"><span class="bcflow" aria-hidden="true"><span class="bcnode">${lmIcon(I.bank)}</span></span><b>${n?n+COUNT:"We compare 40+ lenders for you"}</b></div>
   <button type="button" class="cta rdcta" onclick="afhTrack('CalcUnlockClick',{});view='details';render();">Continue ${ARROW}</button>
   <p class="bcsafe2">${C("no_enquiry")?lmIcon(I.shield)+"No credit score impact":lmIcon(I.lock)+"No obligation"}</p>
  </div>`;}
@@ -3679,15 +3708,18 @@ afhPost({afhCalcReady:true,v:16});
   out.push(`<a href="${esc(cgUrl())}" target="_blank" rel="noopener">Credit Guide</a>`);
   return out.join("");}
  function act(){
-  if(B.st==="prep")return `<button type="button" class="cta bcgo" id="bcGo" disabled aria-busy="true"><span class="spin" aria-hidden="true"></span> Getting your secure link</button>`;
+  if(B.st==="prep")return `<button type="button" class="cta bcgo" id="bcGo" disabled aria-busy="true"><span class="spin" aria-hidden="true"></span> Getting your secure link</button>${no()}`;
   if(B.st==="stop")return `<div class="bcerr" role="alert"><b>We couldn't start your bank check</b><span>Call us on ${tel(PHONE,"03 7031 6881")} and a broker will help you with your next step.</span></div>
    <a class="cta bcgo" id="bcCall" href="tel:${PHONE}">${lmIcon(I.phone)} Call AFH Finance</a>`;
   if(B.st==="error"){
    var sub=B.sms===true?`We've texted the link to ${mask()}.`:`Tap Try again, or call us on ${tel(PHONE,"03 7031 6881")}.`;
    var btn=B.url?`<a class="cta bcgo" id="bcGo" href="${esc(B.url)}" target="_top" rel="noopener" onclick="AFH_BC.retry()">Try again ${ARROW}</a>`
     :`<button type="button" class="cta bcgo" id="bcGo" onclick="AFH_BC.go()">Try again ${ARROW}</button>`;
-   return `<div class="bcerr" role="alert"><b>We couldn't open the bank check here</b><span>${sub}</span></div>${btn}`;}
-  return `<button type="button" class="cta bcgo" id="bcGo" onclick="AFH_BC.go()"${B.st==="going"?' aria-busy="true"':''}><span class="lk" aria-hidden="true">${lmIcon(I.lock)}</span>${LABEL} ${ARROW}</button>`;}
+   return `<div class="bcerr" role="alert"><b>We couldn't open the bank check here</b><span>${sub}</span></div>${btn}${no()}`;}
+  return `<button type="button" class="cta bcgo" id="bcGo" onclick="AFH_BC.go()"${B.st==="going"?' aria-busy="true"':''}><span class="lk" aria-hidden="true">${lmIcon(I.lock)}</span>${LABEL} ${ARROW}</button>${B.st==="going"?"":no()}`;}
+ /* v25b (coordinator, Sep approved, 9 Nov 2026): the quiet secondary under the primary. Before the tap "Not now"; once
+    a check was started (the waiting screen, the error state) "instead". Never a second primary, no extra words. */
+ function no(){return `<button type="button" class="bcno" id="bcNo" onclick="AFH_BC.decline()">${B.tapped?"Have a broker call me instead":"Not now, have a broker call me"}</button>`;}
  /* v21f B2: the quiet service line under the button (not in the stop and error states, which carry their own number) */
  function q(){return `<p class="bcfine bcc" id="bcQ">Questions? Call ${tel(PHONE,"03 7031 6881")}</p>`;}
  function overlay(){return `<div class="bcov" id="bcOv" role="status" aria-live="polite"${B.st==="going"?"":" hidden"}><span class="bclock">${lmIcon(I.lock)}</span>
@@ -3706,7 +3738,7 @@ afhPost({afhCalcReady:true,v:16});
  function screen(){var f=flags(),n=count();
   if(!B.prep&&B.st==="idle")B.st="prep";
   return `<div class="card anim lmc bcx" id="bcCard">${head(false)}
-  <h2 class="bch" id="bcH" tabindex="-1">${n?n+" lenders may suit you":"We compare 40+ lenders for you"}</h2>
+  <h2 class="bch" id="bcH" tabindex="-1">${n?n+COUNT:"We compare 40+ lenders for you"}</h2>
   <p class="bcsub bcwhy" id="bcWhy">${WHY}</p>   <!-- v21h (coordinator, decision 1): the why line Sep approved -->
   <div class="bcglass bcglass2">
    <div class="bcrow" aria-hidden="true"><span class="bcflow"><span class="bcnode">${lmIcon(I.bank)}</span><i></i><span class="bcnode bcsafe">${lmIcon(I.lock)}</span><i></i><span class="bcnode bcafh">${MARK}</span></span></div>
@@ -3742,7 +3774,7 @@ afhPost({afhCalcReady:true,v:16});
  function saveNo(){return booked?`<a class="bcsave" id="bcSave" href="${VCF}" target="_blank" rel="noopener" download="AFH Finance.vcf">${lmIcon(I.save)}Save our number</a>`:"";}
  var NEXT="A broker will call you about your next step.";      /* audit M3: true for every outcome, every check goes to a broker */
  function outcome(){var P=B.P,n=P.state==="ready"&&!P.hold?P.next:"";
-  if(n==="broker")return ["keep",tick()+`<h2 class="lmh bcc" id="bcH" tabindex="-1">You're all set${nm(", ")}</h2>${sum()}<p class="bclead bcc">A broker will call you.</p>`,saveNo(),PAY];
+  if(n==="broker")return ["keep",tick()+`<h2 class="lmh bcc" id="bcH" tabindex="-1">Thanks${nm(", ")}</h2>${sum()}<p class="bclead bcc">A broker will call you.</p>`,saveNo(),PAY];
   if(n==="lead_market"&&P.lm)return ["lead_market",`<h2 class="lmh" id="bcH" tabindex="-1">Thanks${nm(", ")}</h2><div class="bcout">
    <p class="bclead">Our lenders aren't the right fit for this loan. As you agreed, Lead Market, operated by Credit Sense, can show your enquiry to lenders and brokers who may help.</p>
    ${P.carries?"<p>Your bank check carries over.</p>":""}
@@ -3755,10 +3787,10 @@ afhPost({afhCalcReady:true,v:16});
    <p>For essentials, a no interest loan from NILS may help.</p>
    <a class="cta bcgo bcalt" href="tel:136457">${lmIcon(I.phone)} Call NILS on 13 64 57</a>
    <p>Think we've got this wrong? Call us on ${tel(PHONE,"03 7031 6881")}.</p></div>`,""];
-  if(n)return ["later",tick()+`<h2 class="lmh bcc" id="bcH" tabindex="-1">You're all set${nm(", ")}</h2>${sum()}<p class="bclead bcc">A broker will call you.</p>`,saveNo(),PAY];
-  if(P.gone)return ["gone",`<div class="bcicon">${lmIcon(I.tab)}</div><h2 class="lmh bcc" id="bcH" tabindex="-1">Your enquiry is saved${nm(", ")}</h2><p class="bcsub bcc">Finished your bank check? ${NEXT}</p>`+(B.url?cont():callCta()),fresh()];
+  if(n)return ["later",tick()+`<h2 class="lmh bcc" id="bcH" tabindex="-1">Thanks${nm(", ")}</h2>${sum()}<p class="bclead bcc">A broker will call you.</p>`,saveNo(),PAY];
+  if(P.gone)return ["gone",`<div class="bcicon">${lmIcon(I.tab)}</div><h2 class="lmh bcc" id="bcH" tabindex="-1">Your enquiry is saved${nm(", ")}</h2><p class="bcsub bcc">Finished your bank check? ${NEXT}</p>`+(B.url?cont()+no():callCta()),fresh()];
   if(P.state==="in_progress")return ["waiting",`<div class="bcicon">${lmIcon(I.tab)}</div><h2 class="lmh bcc bcwt" id="bcH" tabindex="-1"><i class="vfspin" aria-hidden="true"></i>Finish your bank check</h2>
-   <p class="smsvsr">This page updates when it's done.</p>${cont()}`,fresh()];
+   <p class="smsvsr">This page updates when it's done.</p>${cont()}${B.url?no():""}`,fresh()];
   return ["progress",tick()+`<h2 class="lmh bcc" id="bcH" tabindex="-1">Done${nm(", ")}. That's everything.</h2><p class="bcsub bcc">Your bank check is in. We're reading it now.</p>${steps()}`,""];}
  var shown="";
  /* the booking card needs the customer's details: not after a resume in a fresh page, where only the reference is known */
@@ -3828,6 +3860,7 @@ afhPost({afhCalcReady:true,v:16});
 
  /* ── flow ── */
  function mount(){
+  if(view==="bcno"){if(B.nf){B.nf=false;focusH();}return;}   /* v25b: the heading takes focus once, on arrival */
   if(view==="bcwait"){shown=outcome()[0]+"|"+B.P.state+"|"+B.P.first+"|"+B.P.carries;return;}
   if(!B.viewed){B.viewed=true;log("view");focusH();}
   if(!B.prep)prepare();}
@@ -3874,7 +3907,7 @@ afhPost({afhCalcReady:true,v:16});
   clearTimeout(B.t.nav);clearTimeout(B.t.prep);
   /* v21d m-a: an enquiry that already went to AFH stays with AFH, as stop() keeps it: v16.9b's AFH results, never a Lead
      Market or ALC referral on top. v21f B1: every lead goes at the details step (B.rel), so this is every fallback. */
-  var v=view,rel=B.rel,b=rel?"afh":bound(),go=["bankcheck","verify","unlocking","form"].indexOf(v)>-1;
+  var v=view,rel=B.rel,b=rel?"afh":bound(),go=["bankcheck","verify","unlocking","form","bcno"].indexOf(v)>-1;
   B.held=[];                                              /* m1: the held lead is dropped; v16.9b never sent it */
   uninstall();
   if(b!=="afh")reset169(b);
@@ -3962,6 +3995,20 @@ afhPost({afhCalcReady:true,v:16});
  B.fresh=function(){var P=B.P;log("new_enquiry");P.done=true;P.dead=true;clearTimeout(P.timer);clearRef();
   try{window.location.reload();}catch(e){try{uninstall();afhEid="";view=view0;qi=0;render();}catch(e2){}}};
  B.pick=function(){if(!B.picked){B.picked=true;log("book_open");}};
+ /* v25b: decline (before the tap: bc.decline; after it: bc.decline.after). No consent, no journey_started, no Credit
+    Sense link, no bc/start call: the lead went at the details step (B1). A check already started carries on at the
+    server; only this browser's reference is cleared (as New enquiry does), so a reload shows the normal page. The
+    call is booked with v16.9b's own booking (bkSet, bookCall), the flag off arm's path: untagged, as no check exists
+    for this browser (B.ok false before the tap). */
+ B.decline=function(){if(!B.on||view==="bcno"||B.st==="going")return;var after=!!B.tapped;B.no=after?"after":"before";
+  log(after?"decline.after":"decline");if(after)clearRef();B.nf=true;view="bcno";render();window.scrollTo(0,0);};
+ /* "Do the bank check now": back to the bank check screen, as it was (Agree records the consent and opens the link as
+    usual; after a started check, Agree goes back to the waiting screen and its reference is stored again) */
+ B.undecline=function(){if(!B.on||view!=="bcno")return;log("undecline");if(B.no==="after"&&B.key&&!B.P.done)remember();B.no="";
+  view="bankcheck";render();window.scrollTo(0,0);focusH();};
+ function noHtml(){var f=first()||B.P.first||"";
+  return `<div class="card anim lmc bcx bcw" id="bcCard" data-screen="declined" aria-live="polite"><div class="bctick bcph" aria-hidden="true">${lmIcon(I.phone)}</div><h2 class="lmh bcc" id="bcH" tabindex="-1">No problem${f?", "+esc(f):""}</h2><p class="bclead bcc">A broker will call you.</p></div>`
+   +(contact.name?book("declined"):"")+`<div class="bcend" id="bcEnd">${saveNo()}<button type="button" class="bcno" id="bcUndo" onclick="AFH_BC.undecline()">Do the bank check now</button>${legal(false,PAY)}</div>`;}
  B.bookT=function(el){if(el.getAttribute("data-auto")==="1"&&el.open){el.removeAttribute("data-auto");return;}   /* v22: the automatic open is not the customer's */
   B.book=!!el.open;B.bookTouched=true;if(B.book)log("book_open");};
 
@@ -3993,7 +4040,7 @@ afhPost({afhCalcReady:true,v:16});
   wrap("bookCall",function(){if(bk.day&&bk.time)release("book",false);return O.bookCall.apply(null,arguments);});
   /* v21c m3: the AFH landing page treats the bank check and waiting screens as end screens, as v16.9b's results (once
      details are sent, Back leaves the page). The landing page's history knows only v16.9b's view names. */
-  wrap("afhPost",function(o){try{var a=o&&o.afhCalcView;if(a&&(a.view==="bankcheck"||a.view==="bcwait"))o={afhCalcView:Object.assign({},a,{view:"results",qi:a.view==="bcwait"?-1:a.qi,bc:a.view})};}catch(e){}return O.afhPost(o);});
+  wrap("afhPost",function(o){try{var a=o&&o.afhCalcView;if(a&&(a.view==="bankcheck"||a.view==="bcwait"||a.view==="bcno"))o={afhCalcView:Object.assign({},a,{view:"results",qi:a.view==="bankcheck"?a.qi:-1,bc:a.view})};}catch(e){}return O.afhPost(o);});
   wrap("chooser",function(){return O.chooser().replace("Pick one to see your indicative repayments and lenders to compare.","Pick one to get started.")
    .replace("No credit score impact · No obligation",cs("No credit score impact · No obligation","No obligation"));});
   wrap("quickCalc",function(){return O.quickCalc().replace("No credit score impact · 2 minutes · No upfront cost",cs("No credit score impact · 2 minutes · No upfront cost","2 minutes · No upfront cost"));});   /* QA minor 8 */
@@ -4022,10 +4069,10 @@ afhPost({afhCalcReady:true,v:16});
   wrap("smsvToResults",function(){if(view!=="verify")return;
    if(SMSV.st==="verified"&&!B.fallback){clearTimeout(SMSV.timer);view="bankcheck";render();window.scrollTo(0,0);return;}
    fallback("sms_"+String(SMSV.st).replace(/[^a-z]/g,""));});
-  wrap("results",function(){return view==="bankcheck"?screen():view==="bcwait"?waitHtml():O.results();});
+  wrap("results",function(){return view==="bankcheck"?screen():view==="bcwait"?waitHtml():view==="bcno"?noHtml():O.results();});
   /* QA M1: the funnel tabs are hidden on the bank check, waiting and outcome screens */
   wrap("render",function(){if(view==="analysing")ENDSNAP=snap();   /* v16.9b's routing point after the last question */
-   O.render();var bv=view==="bankcheck"||view==="bcwait";try{var de=document.documentElement;de.classList.toggle("bcv",bv);de.classList.toggle("bcvw",view==="bcwait");}catch(e){}   /* v22 P1-7 */
+   O.render();var bv=view==="bankcheck"||view==="bcwait"||view==="bcno";try{var de=document.documentElement;de.classList.toggle("bcv",bv);de.classList.toggle("bcvw",view==="bcwait"||view==="bcno");}catch(e){}   /* v22 P1-7 */
    if(bv){var t=document.getElementById("tabs");if(t)t.style.display="none";mount();}});
   /* v21f B1 (council FIX-BRIEF-2): every route's details step lead goes now, untagged; nothing is held. A Lead Market
      bound customer's leads never fire a Lead or QualifiedLead (m-c: noPixel). Tagged bank_check:"on" only once the check
@@ -4189,13 +4236,14 @@ html[data-afhst] #screen>.card{animation:afhRise .2s ease-out both}
  function kind(){
   if(scr.querySelector(".bctz2"))return "t";
   if(scr.querySelector("#gdc-gate.gdcz"))return "c";
+  if(scr.querySelector("#gdc-gate"))return "d";
   if(scr.querySelector(".card.vfy"))return "k";
   if(scr.querySelector("#bcCard #bcGo"))return "b";
   if(scr.querySelector("#bcAgain"))return "w";
   if(scr.querySelector(".bctick"))return "o";
   return "";}
  function guess(){var s=Math.min(screen.height||0,screen.availHeight||screen.height||0)||700;return Math.round(s*.79);}
- function target(){var v=vx||Math.max(guess(),vl);return Math.max(460,Math.min(760,v-41));}
+ function target(){var p=window.__afhPvh|0,v=p>300?p:(vx||Math.max(guess(),vl));return Math.max(460,Math.min(900,v-41));}
  function typing(){var a=document.activeElement;return !!a&&(a.tagName==="TEXTAREA"||a.tagName==="SELECT"||(a.tagName==="INPUT"&&!/^(checkbox|radio|button|submit)$/.test(a.type)));}
  function apply(){if(!framed)return;var t=target();if(Math.abs(t-cur)>=8&&!typing()){cur=t;R.style.setProperty("--afh-stage",cur+"px");}}
  function paint(){var k=kind(),c=scr.firstElementChild,key=k+"|"+(c?c.id+"|"+c.className:"");
@@ -4214,6 +4262,204 @@ html[data-afhst] #screen>.card{animation:afhRise .2s ease-out both}
    var top=r.top-b.top,clip=(r.bottom-b.top)<b.height-1;
    if(top>1&&clip)vx=Math.round(r.height);else if(clip)vl=Math.max(vl,Math.round(r.height));},{threshold:th}).observe(s);}
  window.__afhStage=function(){return {kind:R.getAttribute("data-afhst")||"",stage:cur,vx:vx,vl:vl,guess:guess()};};
+}catch(e){}})();</script>
+<style id="afh-v25">
+/* v25 (FIX-BRIEF-8, 9 Nov 2026): the fixed action zone. On every staged step that has a primary action, the action
+   button's top sits at the SAME distance from the stage top: zone y = zone stage - 112 - 56, frozen for the session at
+   the first zone step. The script below sets --afh-sp (the space above the content) so the button lands there; content
+   that would push it lower is absorbed first by an open disclosure (internal scroll with a fade), never by moving the
+   button. Scoped by html[data-afhz] (set only when a zone button is on screen); without it the v24 layout renders. */
+html[data-afhz="t"] #screen::before,html[data-afhz="w"] #screen::before,html[data-afhz="o"] #screen::before,
+html[data-afhz="c"] #gateForm::before,html[data-afhz="d"] #gateForm::before,html[data-afhz="b"] #bcCard::before{flex:0 0 var(--afh-sp,0px)!important;min-height:0!important}
+/* D: the details steps (name, mobile, email) join the stage like consent */
+html[data-afhst="d"] #gdc-gate{flex:1 0 auto;display:flex;flex-direction:column}
+html[data-afhst="d"] #gdc-gate>.gdhead{order:-1;flex:none}
+html[data-afhst="d"] #gateForm{flex:1 0 auto;display:flex;flex-direction:column}
+html[data-afhst="d"] #gateForm::before,html[data-afhst="d"] #gateForm::after{content:"";display:block;flex:5 1 0;min-height:8px}
+html[data-afhst="d"] #gateForm::after{flex-grow:6}
+html[data-afhst="d"] #gateForm>.afhlegal{order:1}
+/* the question and the bank check hero sit centred in the room above the zone; the consent text and the Credit Sense
+   line stay touching their button (the split is set by the script: --afh-mid) */
+html[data-afhz="d"] #gdgo-gate{margin-top:var(--afh-mid,0px)!important}
+html[data-afhz="b"] #bcCons{margin-top:calc(12px + var(--afh-mid,0px))}
+/* the zone button: one size on every step (56 px), a 150 ms press state, no bounce */
+html[data-afhz="t"] .bctz2 .rdcta,html[data-afhz="c"] #gdgo-gate,html[data-afhz="d"] #gdgo-gate,html[data-afhz="b"] #bcGo,
+html[data-afhz="w"] #bcAgain,html[data-afhz="o"] #bcBookGo{box-sizing:border-box;height:56px;min-height:56px;margin-bottom:0;border-radius:16px;
+ transition:transform .15s ease,background-color .15s ease,box-shadow .15s ease}
+html[data-afhz] #screen .cta:active{transform:scale(.985)}
+/* Z8 keyboard dock (touch only, set by the script): while a details field has focus, Continue rides up to 12 px under
+   the field, so it sits just above the keyboard. A transform: nothing reflows, the field never moves, the frame height
+   never changes. Back to the zone on blur. */
+html[data-afhkb][data-afhz="d"] #gdgo-gate{transform:translateY(calc(-1 * var(--afh-dock,0px)));scroll-margin:12px 0 16px}
+html[data-afhkb][data-afhz="d"] #gdgo-gate:active{transform:translateY(calc(-1 * var(--afh-dock,0px))) scale(.985)}
+/* teaser: the reassurance sits with the button, so the zone below holds only the Indicative only footer */
+html[data-afhz="t"] .bctz2{display:flex;flex-direction:column}
+html[data-afhz="t"] .bctz2>.rdcta{order:2}
+html[data-afhz="t"] .bctz2>.bcsafe2{order:1;margin:0 0 12px}
+html[data-afhz="t"] .wrap>footer{padding-top:8px}
+/* consent: "Send me offers too" and the Privacy Policy link share one row under the button, so the licence line fits
+   on the first screen (DOM and focus order unchanged: the box, then the link, then the licence) */
+html[data-afhz="c"] #gateForm>.afhopt{margin:10px 0 0;justify-content:flex-start;align-self:flex-start;padding-right:8px}
+html[data-afhz="c"] #gateForm::after{content:none!important}
+html[data-afhz="c"] #gateForm>.afhlegal{position:relative;margin:0}
+html[data-afhz="c"] #gateForm>.afhlegal>a{position:absolute;right:0;top:-56px;min-height:44px;padding:0 4px}   /* 44 row + 12 form gap */
+/* Z4 compact, only when a step would push its button below the zone: the hero steps aside, nothing legal moves.
+   Bank check: the bank to AFH row and the trio tiles shrink (Details open: items 1 to 4 say the same, so they hide).
+   All set with a time picked: the tick and the summary chips step aside; the day and time chips scroll in their panel.
+   Teaser: tighter figure. Consent: the icon hides (as v24 does with Details open). Details steps: the answer chips hide. */
+html[data-afhcmp][data-afhz="b"] .bcglass2{padding:10px 8px 8px}
+html[data-afhcmp][data-afhz="b"] .bcglass2 .bcrow{margin:0 0 8px;padding:0 0 8px}
+html[data-afhcmp][data-afhz="b"] .bcrow .bcnode{width:38px;height:38px;border-radius:12px}
+html[data-afhcmp][data-afhz="b"] .bcrow .bcnode.bcsafe{width:44px;height:44px;border-radius:14px}
+html[data-afhcmp][data-afhz="b"] .bctrio li i{width:28px;height:28px;border-radius:9px}
+html[data-afhcmp][data-afhz="b"] .bctrio li i svg{width:16px;height:16px}
+html[data-afhcmp][data-afhz="b"] #bcCard .bch{margin:0 0 8px}
+html[data-afhxo][data-afhz="b"] .bcglass2{display:none}
+html[data-afhcmp][data-afhz="o"] .bctick,html[data-afhcmp][data-afhz="o"] .bcsum{display:none}
+html[data-afhcmp][data-afhz="o"] #book>.chips:last-of-type{max-height:var(--afh-cmax,none);overflow:auto;overscroll-behavior:auto}
+html[data-afhcmp][data-afhz="o"] #book>.chips:first-of-type{max-height:var(--afh-cmax2,none);overflow:auto;overscroll-behavior:auto}
+html[data-afhcmp][data-afhz="t"] .bcfor{margin:6px 0 14px}
+html[data-afhcmp][data-afhz="t"] .bctz2 .bcglass{margin:0 0 12px;padding:10px 14px}
+html[data-afhcmp][data-afhz="c"] .afhic,html[data-afhxo] #gd-gate-consent .afhic{display:none}
+html[data-afhcmp][data-afhz="d"] .gdtrail{display:none}
+html[data-afhz="c"] #gd-gate-consent .afhcard{margin-bottom:6px}
+/* the code step: the message line keeps its height, so the boxes never move while typing */
+html[data-afhst="k"] #smsvMsg{min-height:44px;box-sizing:border-box}
+
+/* X: one disclosure for the whole flow (consent Details, bank check Details, code "Didn't get it?"). A soft glass
+   panel that opens in place, directly above the action it qualifies; the toggle is a 44 px pill with a chevron that
+   turns, and reads "Hide" while open. */
+#gd-gate-consent .afhed{display:flex;flex-direction:column;align-items:center}
+#bcCons{display:flex;flex-direction:column;align-items:center}
+#afhDetBtn,#bcDet,#vfHelpBtn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;margin:8px auto 0;padding:0 18px;
+ border:0;border-radius:999px;background:#F6F4FE;box-shadow:inset 0 0 0 1px rgba(75,46,219,.14);color:#3A1FB8;font:inherit;font-size:13.5px;font-weight:700;
+ line-height:1;text-decoration:none;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background-color .15s ease}
+#afhDetBtn:active,#bcDet:active,#vfHelpBtn:active{background:#ECE8FD}
+#afhDetBtn::after,#bcDet::after,#vfHelpBtn::after{content:"";flex:none;width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;
+ transform:translateY(-2px) rotate(45deg);transition:transform .2s ease}
+#afhDetBtn[aria-expanded="true"],#bcDet[aria-expanded="true"],#vfHelpBtn[aria-expanded="true"]{font-size:0;gap:8px}
+#afhDetBtn[aria-expanded="true"]::before,#bcDet[aria-expanded="true"]::before,#vfHelpBtn[aria-expanded="true"]::before{content:"Hide";font-size:13.5px}
+#afhDetBtn[aria-expanded="true"]::after,#bcDet[aria-expanded="true"]::after,#vfHelpBtn[aria-expanded="true"]::after{transform:translateY(2px) rotate(-135deg)}
+.vfhelp.afhx{text-align:center}
+#afhDet,#bcDetails,#vfHelp{box-sizing:border-box;margin:10px 0 14px;padding:14px 16px;border:0;border-radius:18px;background:#F6F4FE;
+ box-shadow:inset 0 0 0 1px rgba(75,46,219,.10);font-size:14px;line-height:1.55;color:#434A55;text-align:left;
+ max-height:var(--afh-dmax,none);overflow:auto;overscroll-behavior:auto;-webkit-overflow-scrolling:touch;animation:afhxIn .2s ease-out both}
+#afhDet[hidden],#bcDetails[hidden],#vfHelp[hidden]{display:none}
+#afhDet.afhx-more,#bcDetails.afhx-more,#vfHelp.afhx-more{-webkit-mask-image:linear-gradient(#000 calc(100% - 40px),transparent);mask-image:linear-gradient(#000 calc(100% - 40px),transparent)}
+#afhDet:focus-visible,#bcDetails:focus-visible,#vfHelp:focus-visible{outline:2px solid #4B2EDB;outline-offset:2px}
+#afhDet{counter-reset:afhx}
+#afhDet p{position:relative;margin:0;padding:0 0 0 32px;counter-increment:afhx}
+#afhDet p+p{margin-top:10px}
+#bcDetails h3{margin:0 0 10px;font-size:14px;line-height:1.4;font-weight:700;color:#14171C;cursor:pointer}
+#bcDetails ol,#vfHelp ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;counter-reset:afhx;background:none;border-radius:0}
+#bcDetails li,#vfHelp li{position:relative;padding:0 0 0 32px;counter-increment:afhx}
+#vfHelp li+li{margin-top:0}
+#afhDet p::before,#bcDetails li::before,#vfHelp li::before{content:counter(afhx);position:absolute;left:0;top:1px;width:20px;height:20px;border-radius:7px;
+ background:#fff;box-shadow:inset 0 0 0 1px rgba(30,35,41,.12);color:#5B6370;font-size:11.5px;font-weight:700;line-height:20px;text-align:center}
+#bcDetails .bclinks{margin:12px 0 0}
+#afhDet a,#bcDetails a,#vfHelp a{color:#3A1FB8;font-weight:700}
+@keyframes afhxIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+ #afhDet,#bcDetails,#vfHelp{animation:none}
+ #afhDetBtn::after,#bcDet::after,#vfHelpBtn::after,html[data-afhz] #screen .cta,html[data-afhz] #gdgo-gate{transition:none}
+ html[data-afhz] #screen .cta:active{transform:none}}
+/* direct visits (not framed): the stage is the small viewport; keep the zone clear of the home indicator */
+html[data-afhfr="0"][data-afhz] .wrap{padding-bottom:env(safe-area-inset-bottom,0px)}
+/* v25bs (legal review M1): the longer visible e-delivery line. On a narrow phone (a 360 px screen, framed or direct)
+   with Details open, the Details panel scrolls in place from 96 px (v25: 120), so Agree and continue keeps the
+   zone y and the visible line stays whole above it */
+@media (max-width:374px){html[data-afhcmp][data-afhz="c"] #afhDet{max-height:96px}}
+</style>
+<script>/* v25 disclosure toggle for the code step help (X1). Outside the try below so the button always works. */
+window.afhX=function(b){var p=document.getElementById(b.getAttribute("aria-controls"));if(!p)return;p.hidden=!p.hidden;b.setAttribute("aria-expanded",String(!p.hidden));};
+/* v25 action zone (FIX-BRIEF-8 Z3). Inside the iframe neither fixed nor sticky pins anything to the phone screen (the
+   frame is as tall as its content and the landing page scrolls), so the zone lives in the v24 stage: the stage starts
+   about 17 px under the screen top after the landing page's scroll, so a fixed distance from the stage top is a fixed
+   place on the phone screen. Rules: the zone stage is frozen at the first zone step (it only ever shrinks, at a step
+   change, if the screen proves smaller); nothing is re-solved while a text field has focus (no jump while typing). */
+(function(){try{
+ var R=document.documentElement,scr=document.getElementById("screen"),wrap=scr&&scr.closest(".wrap");if(!scr||!wrap)return;
+ var framed=window.parent!==window,zs=0,lastKey="",keyAt=0,ZB=112,BH=56,raf=0;
+ R.setAttribute("data-afhfr",framed?"1":"0");
+ var BTN={t:".bctz2 .rdcta",c:"#gdgo-gate",d:"#gdgo-gate",b:"#bcGo",w:"#bcAgain",o:"#bcBookGo"};
+ var PANELS=["afhDet","bcDetails","vfHelp"],TOGGLE={afhDet:"afhDetBtn",bcDetails:"bcDet",vfHelp:"vfHelpBtn"};
+ function typing(){var a=document.activeElement;return !!a&&(a.tagName==="TEXTAREA"||a.tagName==="SELECT"||(a.tagName==="INPUT"&&!/^(checkbox|radio|button|submit)$/.test(a.type)));}
+ function shown(el){return !!el&&!el.closest("[hidden]")&&el.getClientRects().length>0;}
+ function stageH(){return parseFloat(getComputedStyle(wrap).minHeight)||0;}
+ function fade(){PANELS.forEach(function(id){var p=document.getElementById(id);if(!p)return;var more=!p.hidden&&p.scrollHeight-p.clientHeight-p.scrollTop>2;
+  if(p.classList.contains("afhx-more")!==more)p.classList.toggle("afhx-more",more);
+  if(more||p.scrollHeight>p.clientHeight+2){if(!p.hasAttribute("tabindex"))p.setAttribute("tabindex","0");}else if(p.getAttribute("tabindex")==="0")p.removeAttribute("tabindex");});}
+ /* layout position, not the painted one: the v24 rise (translateY 8 px for 200 ms) must not shift the zone */
+ function pos(el){var y=0;while(el){y+=el.offsetTop;el=el.offsetParent;}return y;}
+ function top(b){return pos(b)-pos(wrap);}
+ function solve(){raf=0;
+  var k=R.getAttribute("data-afhst")||"",b=BTN[k]&&document.querySelector(BTN[k]),open=PANELS.some(function(id){var p=document.getElementById(id);return p&&!p.hidden&&scr.contains(p);});
+  if(open!==R.hasAttribute("data-afhxo")){if(open)R.setAttribute("data-afhxo","");else R.removeAttribute("data-afhxo");}
+  keep(k);
+  if(!b||!shown(b)){undock();if(R.hasAttribute("data-afhz")){["data-afhz","data-afhcmp"].forEach(function(a){R.removeAttribute(a);});["--afh-sp","--afh-mid","--afh-dmax","--afh-cmax","--afh-cmax2"].forEach(function(v){R.style.removeProperty(v);});}fade();return;}
+  var on=scr.querySelector("#gateForm>.gds.on"),key=k+"|"+(scr.firstElementChild?scr.firstElementChild.className:"")+"|"+(on?on.id:""),h=stageH();
+  /* typing: nothing moves, except in the first 700 ms after a step change (the next field is focused for the person) */
+  if(typing()&&R.getAttribute("data-afhz")===k&&key===lastKey&&Date.now()-keyAt>700){fade();if(k==="d")dock();return;}
+  if(!zs)zs=h;else if(key!==lastKey&&h&&h<zs-8)zs=h;   /* frozen; shrinks only if the screen proves smaller */
+  if(key!==lastKey){keyAt=Date.now();setTimeout(later,720);}
+  lastKey=key;
+  var zb=zs<600?64:ZB;   /* short screens (stage under 600): the legal block may run under the fold, the button may not */
+  R.setAttribute("data-afhzs",zs<600?"s":"m");
+  R.setAttribute("data-afhz",k);R.removeAttribute("data-afhcmp");
+  ["--afh-sp","--afh-mid"].forEach(function(v){R.style.setProperty(v,"0px");});["--afh-dmax","--afh-cmax","--afh-cmax2"].forEach(function(v){R.style.setProperty(v,"none");});
+  var zy=Math.round(zs-zb-BH),need=Math.round(zy-top(b));
+  if(need<0){R.setAttribute("data-afhcmp","");need=Math.round(zy-top(b));}   /* compact: the hero steps aside (FIX-BRIEF-8 Z4) */
+  if(need<0){var over=-need;
+   PANELS.forEach(function(id){var p=document.getElementById(id);if(over<=0||!p||p.hidden||!scr.contains(p))return;var ph=p.offsetHeight,m=Math.max(120,ph-over);R.style.setProperty("--afh-dmax",m+"px");over-=ph-m;});
+   /* booking: the time chips, then the day chips, scroll in place (the Book button itself never scrolls) */
+   if(over>0&&k==="o"){var gs=[].slice.call(document.querySelectorAll("#book>.chips")),vars=["--afh-cmax","--afh-cmax2"],mins=[96,48];   /* two rows of times, one row of days */
+    if(gs.length>1)gs=[gs[gs.length-1],gs[0]];
+    gs.forEach(function(g,i){if(over<=0||!vars[i])return;var gh=g.offsetHeight,gm=Math.max(mins[i],gh-over);R.style.setProperty(vars[i],gm+"px");over-=gh-gm;});}
+   need=Math.round(zy-top(b));}
+  if(need>0){var mid=(k==="d"||k==="b")?Math.round(need*.5):0;R.style.setProperty("--afh-sp",(need-mid)+"px");R.style.setProperty("--afh-mid",mid+"px");}
+  /* anything still left over: the button sits lower on this screen only (verify_v25 reports it) */
+  fade();if(k==="d"){keys();dock();}else undock();}
+ /* direct visits: v24 sizes the stage with 100svh, which a keyboard that resizes the page (older Android, some in-app
+    browsers) can change. Pin it in px from 100svh, refreshed only on a step change and never while typing. */
+ var svhEl=null,stKey="";
+ function keep(k){if(framed||!k)return;var c=scr.firstElementChild,sk=k+"|"+(c?c.className:"");if(sk===stKey||typing())return;
+  if(!svhEl){svhEl=document.createElement("div");svhEl.setAttribute("aria-hidden","true");svhEl.style.cssText="position:fixed;left:0;top:0;width:1px;height:100vh;height:100svh;visibility:hidden;pointer-events:none";R.appendChild(svhEl);}
+  var v=svhEl.offsetHeight;if(v>300){stKey=sk;R.style.setProperty("--afh-stage",(v-24)+"px");}}
+ /* Z8 keyboard dock: touch screens only (pointer:coarse). Inside the frame the keyboard is invisible to us, so the
+    button docks under the focused field (where the browser brings the field into view) and, once the keyboard is up,
+    asks for the least scroll that shows it (block nearest). Never while the person types: the dock is set on focus. */
+ var coarse=!!(window.matchMedia&&matchMedia("(pointer:coarse)").matches),dockT=0;
+ function gdIn(el){return !!el&&el.tagName==="INPUT"&&/^gdin-gate-/.test(el.id||"");}
+ function reveal(){var b=document.getElementById("gdgo-gate");if(b&&R.hasAttribute("data-afhkb"))try{b.scrollIntoView({block:"nearest",inline:"nearest"});}catch(e){}}
+ function undock(){if(R.hasAttribute("data-afhkb")){R.removeAttribute("data-afhkb");R.style.removeProperty("--afh-dock");}}
+ function dock(){var a=document.activeElement,b=document.getElementById("gdgo-gate"),g=a&&a.closest&&a.closest(".gds");
+  if(!coarse||R.getAttribute("data-afhz")!=="d"||!gdIn(a)||!b||!g){undock();return;}
+  var x=Math.round(pos(b)-(pos(g)+g.offsetHeight+12));
+  if(x<=0){undock();return;}
+  R.style.setProperty("--afh-dock",x+"px");if(!R.hasAttribute("data-afhkb"))R.setAttribute("data-afhkb","");
+  clearTimeout(dockT);dockT=setTimeout(reveal,340);}
+ /* Enter on the keyboard: next on every details field, done on the last one (the next screen has nothing to type) */
+ function keys(){var ins=[].slice.call(document.querySelectorAll("#gateForm input[id^='gdin-gate-']"));
+  ins.forEach(function(el,i){var h=i===ins.length-1?"done":"next";if(el.getAttribute("enterkeyhint")!==h)el.setAttribute("enterkeyhint",h);});}
+ document.addEventListener("focusin",function(e){if(gdIn(e.target))later();});
+ document.addEventListener("focusout",function(e){if(gdIn(e.target))setTimeout(function(){if(!gdIn(document.activeElement))undock();},300);});
+ if(window.visualViewport)visualViewport.addEventListener("resize",function(){if(R.hasAttribute("data-afhkb")){clearTimeout(dockT);dockT=setTimeout(reveal,60);}});
+ function later(){if(!raf)raf=requestAnimationFrame(solve);}
+ new MutationObserver(later).observe(scr,{childList:true,subtree:true,attributes:true,attributeFilter:["class","hidden","disabled"]});
+ window.addEventListener("resize",function(){if(!typing())later();});
+ document.addEventListener("focusout",function(){setTimeout(later,0);});
+ document.addEventListener("scroll",function(e){var t=e.target;if(t&&t.id&&PANELS.indexOf(t.id)>-1)fade();},true);
+ /* the disclosure: tapping the panel heading closes it; Esc closes the open panel and returns focus to its toggle */
+ document.addEventListener("click",function(e){var h=e.target&&e.target.closest&&e.target.closest("#bcDetails h3");if(h){var t=document.getElementById("bcDet");if(t)t.click();}later();});
+ document.addEventListener("keydown",function(e){if(e.key!=="Escape"&&e.key!=="Esc")return;
+  for(var i=0;i<PANELS.length;i++){var p=document.getElementById(PANELS[i]),t=document.getElementById(TOGGLE[PANELS[i]]);if(p&&!p.hidden&&t){t.click();t.focus();e.preventDefault();break;}}});
+ /* optional landing page help (FIX-BRIEF-8 P1): a page that adds vh to its afhParent reply gives the exact height */
+ window.addEventListener("message",function(e){var d=e.data;if(!d||typeof d!=="object"||!d.afhParent||e.source!==window.parent)return;
+  try{if(typeof AFH_HOME!=="undefined"&&AFH_HOME.indexOf(e.origin)<0)return;}catch(x){}
+  var v=Math.round(+d.vh),sh=screen.height||0;if(typing())return;   /* a keyboard height never becomes the stage */
+  if(v>300&&v<2000&&(!sh||v>=sh*.5))window.__afhPvh=v;});
+ solve();
+ window.__afhZone=function(){return {kind:R.getAttribute("data-afhz")||"",zs:zs,zy:zs?Math.round(zs-(zs<600?64:ZB)-BH):0,cmp:R.hasAttribute("data-afhcmp"),sp:R.style.getPropertyValue("--afh-sp"),dmax:R.style.getPropertyValue("--afh-dmax")};};
 }catch(e){}})();</script>
 <script>
 /* Embedded auto-height: tell the parent page how tall we are so the iframe never clips a step. */
