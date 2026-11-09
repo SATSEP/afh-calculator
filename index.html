@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AFH Finance - Loan Calculator</title>
-<!-- AFH-CALC-VERSION: 2026-11-06-v16.9b -->
+<!-- AFH-CALC-VERSION: 2026-11-09-v21h-bankcheck (base 2026-11-06-v16.9b) -->
 <!-- Meta Pixel Code: standalone loads its own pixel; embedded relays every event to the host page's pixel (one pixel, no duplicate PageView) -->
 <script>
 (function(){
@@ -350,6 +350,34 @@ footer{margin-top:28px;padding:4px}footer p{font-size:12px;color:var(--mute);lin
 .afhc-err.is-shown{display:block}
 .afhc-fine{font-size:10.5px;line-height:1.5;color:var(--mute);margin:9px 2px 0;font-weight:500}
 .afhc-fine a{color:var(--slate);font-weight:700}
+/* v23 shared (design panel FIX-BRIEF-6 S9): a quiet stepper on the details and code steps; one consent card ("faux glass":
+   still gradients, no backdrop filter); the offers tick (consent step only) and the legal line (every details step: APP 5) below the button */
+.gdhead .lmlabs,.vfy .vfhead .lmlabs{display:none}
+.afhcard{position:relative;margin:0 0 16px;padding:18px 16px 14px;border-radius:20px;text-align:left;
+ background:linear-gradient(180deg,rgba(255,255,255,.80),rgba(255,255,255,.62)),radial-gradient(120% 140% at 0% 0%,rgba(17,181,238,.20),rgba(17,181,238,0) 58%),radial-gradient(120% 140% at 100% 100%,rgba(109,84,232,.18),rgba(109,84,232,0) 58%),#F6F6FA;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 0 0 1px rgba(30,35,41,.07),0 12px 28px -18px rgba(45,27,140,.35)}
+.afhq{display:flex;gap:12px;align-items:flex-start}
+.afhic{flex:none;width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:#1E2329;color:#fff}
+.afhic svg{width:18px;height:18px}
+.afhq .gdq{flex:1;padding-top:6px;font-family:var(--display);font-size:19px;font-weight:700;line-height:1.25;letter-spacing:-.015em;color:#1E2329;text-wrap:balance}
+.afhed{margin:12px 0 0;padding:12px 0 0;border-top:1px solid rgba(30,35,41,.08);font-size:13px;line-height:1.5;color:#434A55}
+.afhdbtn{display:inline-flex;align-items:center;min-height:44px;margin:-13px 0;padding:0 2px;border:0;background:none;font:inherit;font-weight:650;color:#3A1FB8;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.afhdet{margin:0 0 14px;padding:12px 14px;border-radius:14px;background:#FAFAFC;box-shadow:inset 0 0 0 1px rgba(30,35,41,.09);font-size:12.5px;line-height:1.55;color:#434A55;text-align:left}
+.afhdet[hidden]{display:none}
+.afhdet p{margin:0 0 6px}
+.afhdet p:last-child{margin:0}
+.afhdet a{padding:4px 0;color:#3A1FB8;font-weight:650}
+.afhcg{display:inline-flex;align-items:center;min-height:44px;margin:-13px 0;color:#3A1FB8;font-weight:650;text-decoration:underline;text-underline-offset:2px;white-space:nowrap;vertical-align:baseline}
+.afhdet a.afhcg{padding:0}
+.afhopt{display:none}
+.gdcz .afhopt{display:flex;align-items:center;justify-content:center;gap:10px;min-height:44px;margin:6px 0 0;font-size:13px;color:#5B6370;cursor:pointer}
+.afhopt input{flex:none;width:20px;height:20px;margin:0;accent-color:#4B2EDB}
+.afhlegal{display:block;margin:16px 0 0;text-align:center;font-size:11.5px;line-height:1.5;color:#646B78;text-wrap:balance}
+.afhlegal a{display:flex;align-items:center;justify-content:center;min-height:44px;font-size:12.5px;font-weight:650;color:#3A1FB8}
+.gdcz .gtrust,.gdcz .g2back,.gdcz #smsvPre,.gdcz .gdtrail{display:none!important}
+.vfy .vfnum .vfp{display:inline;margin:0;font-size:15px;font-weight:400;color:#434A55}
+.vfy .vfedit{min-height:44px}
+.vfy .vfhelp summary{min-height:44px;box-sizing:border-box}
 @media(prefers-reduced-motion:reduce){.afhc-row{transition:none}.afhc-row.is-error{animation:none}}
 </style><style>.logobox{background:linear-gradient(135deg,#EDE9FD,#E1F3FB)!important;border-color:transparent!important}.logobox .ph,.caplogo span{color:#4B2EDB!important;font-weight:800}</style>
 
@@ -1214,6 +1242,215 @@ html.afh-framed body.embed footer p+p{display:none}   /* framed in an AFH page: 
 </style>
 <style id="afh-v15">.r2fine.r2warn{margin-top:8px;color:var(--ink-2);font-weight:600}</style>
 <style id="afh-v16">.prechips{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 14px}.prechips .pcl{display:inline-flex;align-items:center;gap:5px;margin-right:2px;font-size:12px;font-weight:750;letter-spacing:.05em;text-transform:uppercase;color:var(--mute)}.prechips .pcl svg{width:14px;height:14px;color:var(--ok,#0B7552)}.pch{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:6px 10px 6px 12px;border:1.5px solid var(--line-2);border-radius:999px;background:#fff;color:var(--ink);font:inherit;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;cursor:pointer;transition:border-color .15s,background-color .15s,transform .12s var(--ease)}.pch svg{width:14px;height:14px;color:var(--brand)}.pch.on{border-color:var(--brand);background:var(--sel);box-shadow:inset 0 0 0 1px var(--brand)}.pch:active{transform:scale(.96)}.pch:focus-visible{outline:3px solid var(--brand-2);outline-offset:2px}@media (hover:hover){.pch:hover{border-color:var(--brand)}}@media (prefers-reduced-motion:reduce){.pch{transition:none}}</style>
+<style id="afh-bc">
+/* v21 bank check step: used only when the remote flag is on (every class starts with bc)
+   v22 (design panel FIX-BRIEF-4, 9 Nov 2026): one design language for the flag on screens. Charcoal ink from the logo
+   (#1E2329); purple stays the one action colour (the landing page and v16.9b use it); the logo cyan only in the AFH mark.
+   One frosted panel per screen, made of still gradients (no backdrop filter). A real backdrop blur only on the opening
+   overlay, with an @supports fallback and prefers-reduced-transparency. No endless animation except the status spinners. */
+.bcx,.bcbook,.bcend,.bcglass{--bci:#1E2329;--bci2:#434A55;--bcm:#5B6370;--bcf:#646B78;--bcl:#3A1FB8;--bcok:#0F9F6E}
+.bcx{position:relative;gap:14px}
+.bcx:not(.bcw){gap:0}
+.bcx .vfhead{margin:0 0 18px}
+.bcx .lmseg.bccur{background:linear-gradient(90deg,#4B2EDB 34%,#E4E0F7 34%)}   /* v22: no endless pulse (WCAG 2.2.2) */
+.bcstep{margin:-4px 0 0;font-size:12.5px;font-weight:750;letter-spacing:.02em;color:#5B6370}
+.bcpill{background:#F0EDFD;color:#3A1FB8}
+.bcx .bcpill{margin:0 0 12px}
+.bcx h2.lmh{font-size:clamp(23px,6.6vw,26px);color:var(--bci);margin:0 0 8px}
+.bcx h2.lmh:focus{outline:none}
+.bcsub{font-size:15px;line-height:1.5;color:var(--bci2);margin:0 0 16px}
+/* the trust panel: frosted white over a still brand aurora */
+.bcglass{position:relative;margin:0 0 16px;padding:14px;border-radius:20px;
+ background:linear-gradient(180deg,rgba(255,255,255,.80),rgba(255,255,255,.62)),
+  radial-gradient(120% 140% at 0% 0%,rgba(17,181,238,.20),rgba(17,181,238,0) 58%),
+  radial-gradient(120% 140% at 100% 100%,rgba(109,84,232,.18),rgba(109,84,232,0) 58%),#F6F6FA;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 0 0 1px rgba(30,35,41,.07),0 12px 28px -18px rgba(45,27,140,.35)}
+.bcrow{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px;margin:0 0 10px}
+.bcflow{flex:none;display:flex;align-items:center}
+.bcflow i{width:8px;height:0;margin:0 3px;border-top:2px dotted rgba(30,35,41,.35)}
+.bcnode{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.85);color:var(--bci);box-shadow:inset 0 0 0 1px rgba(30,35,41,.10)}
+.bcnode svg{width:15px;height:15px}
+.bcnode.bcsafe{width:34px;height:34px;border-radius:11px;background:var(--bci);color:#fff;box-shadow:0 6px 14px -6px rgba(30,35,41,.55)}
+.bcnode.bcsafe svg{width:17px;height:17px}
+.bcnode.bcafh svg{width:17px;height:15px}
+.bcproof{display:flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;color:var(--bcm);white-space:nowrap}
+.bcproof svg{flex:none;width:14px;height:14px}
+.bctrust{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.bctrust li{display:block}
+.bctrust b{display:block;font-size:15px;font-weight:650;line-height:1.35;color:var(--bci);text-wrap:balance}
+.bctrust small{display:block;font-size:13px;line-height:1.4;color:var(--bcm);margin-top:2px}
+.bcnext{list-style:none;margin:10px 0 0;padding:10px 0 0;border-top:1px solid rgba(30,35,41,.08);display:flex;flex-direction:column;gap:8px}
+.bcnext li{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.45;color:var(--bci2)}
+.bcnext svg{flex:none;width:18px;height:18px;margin-top:1px;color:var(--bci)}
+/* the agreement: the consent line, its links, the Credit Guide and the button read as one group */
+.bccons{margin:0;font-size:13px;line-height:1.55;color:var(--bci2)}
+.bcdet{display:inline-flex;align-items:center;min-height:44px;margin:-13px 0 -13px 1px;padding:0 4px;border:0;background:none;font:inherit;font-size:13px;font-weight:650;color:var(--bcl);text-decoration:underline;text-underline-offset:2px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.bcdet:focus-visible{outline:2px solid #4B2EDB;outline-offset:2px;border-radius:6px}
+.bccons .bcdet+.bcdet{margin-left:6px}
+a.bcdet{text-decoration:underline}
+.bcdetails{margin:10px 0 0;border:1px solid rgba(30,35,41,.09);border-radius:14px;padding:14px 14px 12px;background:#FAFAFC;font-size:13px;line-height:1.5;color:var(--bci2)}
+.bcdetails[hidden]{display:none}
+.bcdetails h3{font-size:14px;font-weight:700;margin:0 0 8px;color:var(--bci)}
+.bcdetails ol{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.bclinks{display:flex;flex-wrap:wrap;gap:0 16px;margin:6px 0 0}
+.bclinks a{display:inline-flex;align-items:center;min-height:44px;color:var(--bcl);font-weight:650}
+.bccgx{display:flex;flex-direction:column;gap:2px;margin:-4px 0 0}
+.bccgx .bccg{margin:0}
+.bccg{margin:0;font-size:13px;line-height:1.45}
+.bccg a{display:inline-flex;align-items:center;min-height:44px;color:var(--bcl);font-weight:650;text-decoration:underline;text-underline-offset:2px}
+.bccg a:focus-visible{outline:2px solid #4B2EDB;outline-offset:2px;border-radius:6px}
+.bced{margin:0;font-size:13px;line-height:1.5;color:var(--bci2)}
+.bced[hidden]{display:none}
+#bcAct{display:flex;flex-direction:column;gap:2px;margin:4px 0 0}
+.bcgo{margin-top:0;text-decoration:none;min-height:56px}
+.bcgo[disabled]{opacity:.75;cursor:default;box-shadow:none}
+.bcgo .spin{width:18px;height:18px;border-radius:50%;border:2.5px solid rgba(255,255,255,.45);border-top-color:#fff;animation:r2spin .8s linear infinite}
+.bcgo svg{width:18px;height:18px}
+.bcfine{margin:0;font-size:13px;color:var(--bcm);text-wrap:pretty}
+.bcc{text-align:center}
+.bctel{display:inline-flex;align-items:center;min-height:44px;margin:-12px 0;padding:0;color:var(--bcl);font-weight:700;white-space:nowrap;vertical-align:middle}
+.bclic{margin:10px 0 0;font-size:11.5px;line-height:1.5;color:var(--bcf);text-align:center;text-wrap:balance}
+.bcerr{display:flex;flex-direction:column;gap:3px;margin:0 0 10px;padding:12px 14px;border-radius:14px;background:#FFF5F2;border:1px solid #F6D3C8;color:#5C2B1E;font-size:14px;line-height:1.45}
+.bcerr b{font-size:15px;color:#3D1A10}
+.bcerr a{color:var(--bcl);font-weight:700}
+.bcerr .bctel{margin:-13px 0}
+.bckeep{margin:0 0 10px;padding:10px 12px;border-radius:12px;background:#FFF8E6;border:1px solid #F3E1B0;font-size:13.5px;font-weight:650;line-height:1.45;color:#4A3A10}
+/* glass orbs: the waiting icon and the opening overlay's lock */
+.bcicon,.bcov .bclock{align-self:center;width:72px;height:72px;border-radius:50%;display:grid;place-items:center;color:var(--bci);
+ background:radial-gradient(circle at 30% 25%,#fff,rgba(255,255,255,.6) 60%),linear-gradient(140deg,rgba(17,181,238,.35),rgba(109,84,232,.35));
+ box-shadow:inset 0 1px 0 #fff,0 0 0 1px rgba(30,35,41,.07),0 14px 30px -14px rgba(45,27,140,.45)}
+.bcicon svg,.bcov .bclock svg{width:30px;height:30px}
+/* the opening overlay: the one real backdrop blur (static content under it, a few seconds) */
+.bcov{position:absolute;inset:-6px;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:28px 20px;text-align:center;border-radius:20px;background:rgba(255,255,255,.97)}
+@supports ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+ .bcov{background:rgba(255,255,255,.70);-webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4)}}
+@media (prefers-reduced-transparency:reduce){.bcov{background:rgba(255,255,255,.97);-webkit-backdrop-filter:none;backdrop-filter:none}}
+html:not(.afh-framed) .bcov{position:fixed;inset:0;border-radius:0}
+.bcov[hidden]{display:none}
+.bcov h3{font-family:var(--display,inherit);font-size:21px;font-weight:700;letter-spacing:-.015em;margin:4px 0 0;color:var(--bci);text-wrap:balance}
+.bcov p{margin:0;font-size:15px;color:var(--bci2)}
+.bcov .vfspin{width:22px;height:22px;margin-top:4px}
+.bcwm{font-size:12px;font-weight:750;letter-spacing:.04em;color:#5B6370}
+/* waiting and outcome screens */
+.bcw{text-align:left}
+.bcw .vfhead{margin:0 0 6px}
+.bcw h2.lmh{font-size:clamp(23px,6.6vw,26px);margin:2px 0 0}
+.bcw .bcsub{font-size:15px;margin:0}
+.bcw .bcgo{margin-top:6px}
+.bcwaitl{display:flex;align-items:center;justify-content:center;gap:10px;margin:0;font-size:15px;color:var(--bci2)}
+.bcwaitl .vfspin{width:16px;height:16px;animation:r2spin .8s linear infinite}
+.bccall,.bcagain{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;font-size:14px;font-weight:600;color:var(--bcm);text-decoration:none}
+.bccall b{color:var(--bcl);font-weight:700}
+.bccall svg{width:15px;height:15px}
+.bcagain{text-decoration:underline;text-underline-offset:2px}
+.bctick{align-self:center;width:76px;height:76px;border-radius:50%;display:grid;place-items:center;color:#fff;background:var(--bcok);
+ box-shadow:0 0 0 9px rgba(15,159,110,.12),0 16px 30px -12px rgba(15,159,110,.6)}
+.bctick svg{width:38px;height:38px}
+.bclead{margin:0;font-size:16px;line-height:1.45;font-weight:600;color:var(--bci2)}
+.bcout{display:flex;flex-direction:column;gap:12px}
+.bcout p{margin:0;font-size:15px;line-height:1.5;color:var(--bci2)}
+.bcout .bclead{font-size:16px;font-weight:650;color:var(--bci)}
+.bcout a:not(.cta):not(.bccall){color:var(--bcl);font-weight:750;white-space:nowrap}
+.bcalt{background:#fff;color:var(--bcl);border:0;box-shadow:inset 0 0 0 1.5px #CFC8F6}
+.bcalt svg{color:var(--bcl)}
+.cta.bcalt:hover,.cta.bcalt:active{background:#F6F4FE;color:var(--bcl);box-shadow:inset 0 0 0 1.5px #B9AEF3}   /* v16.9b .cta:hover would paint it purple under purple text */
+.bcsteps{list-style:none;display:flex;flex-direction:column;gap:2px;margin:4px 0 0;padding:14px 16px;border-radius:16px;background:#F6F4FE}
+.bcsteps li{display:flex;align-items:center;gap:12px;min-height:40px;font-size:15px;font-weight:650;color:#5B6370}
+.bcsteps li i{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;border:2px solid #D6D0F5;background:#fff}
+.bcsteps li.now{color:var(--bci)}
+.bcsteps li.now i{border-color:#DCD6FA;border-top-color:#4B2EDB;animation:r2spin .8s linear infinite}
+.bcsteps li.done{color:var(--bci)}
+.bcsteps li.done i{background:#0F9F6E;border-color:#0F9F6E;color:#fff}
+.bcsteps li.done i svg{width:14px;height:14px}
+/* the booking card: light, the same surface as the panel (v16.9b's dark block stays on its own results screen) */
+.bcbook{margin-top:22px;border-radius:20px;background:rgba(255,255,255,.92);box-shadow:0 0 0 1px rgba(30,35,41,.09),0 12px 28px -18px rgba(45,27,140,.35)}
+.bcbook>summary{display:flex;gap:12px;align-items:center;padding:12px 16px 12px 12px;min-height:64px;cursor:pointer;list-style:none;-webkit-tap-highlight-color:transparent}
+.bcbook>summary::-webkit-details-marker{display:none}
+.bcbook>summary:focus-visible{outline:2px solid #4B2EDB;outline-offset:2px;border-radius:20px}
+.bcbook>summary b{display:block;font-family:var(--display,inherit);font-size:16px;font-weight:700;letter-spacing:-.01em;color:var(--bci)}
+.bcbook>summary:after{content:"";margin-left:auto;flex:none;width:9px;height:9px;border-right:2px solid var(--bcm);border-bottom:2px solid var(--bcm);transform:rotate(45deg);transition:transform .2s}
+.bcbook[open]>summary:after{transform:rotate(225deg)}
+.bcbook .r2book{margin:0;padding:0 16px 16px;background:transparent;color:var(--bci);border-radius:0;overflow:visible;animation:none}
+.bcbook .r2book:after{display:none}
+.bcbook .r2lbl{margin:4px 0 8px;font-size:13px;font-weight:600;color:var(--bcm)}
+.bcbook .r2lbl+.chips+.r2lbl{margin-top:14px}
+.bcbook .chip{font-size:14px;font-weight:600;color:var(--bci);background:#fff;border:1.5px solid #E1E4EA;border-radius:12px;padding:8px 12px;min-height:44px}
+.bcbook .chip.on{background:#F0EDFD;border-color:#4B2EDB;color:#3A1FB8;box-shadow:inset 0 0 0 1px #4B2EDB}
+.bcbook .r2book .cta{margin-top:14px}
+.bcbooked{margin-top:22px;display:flex;gap:12px;align-items:flex-start;padding:16px;border-radius:20px;background:#EFF8F3;color:var(--bci);box-shadow:inset 0 0 0 1px rgba(15,159,110,.18);animation:none}
+.bcbooked:after{display:none}
+.bcbooked small{color:var(--bci2)}
+.bcbooked a{color:var(--bcl)}
+/* the end of the waiting and outcome screens: secondary actions, the way out, the licence */
+.bcend{display:flex;flex-direction:column;gap:6px;margin-top:18px}
+.bcend .bcalt{margin:0}
+.bcend .bcfine{text-align:center;font-size:12.5px;line-height:1.5;text-wrap:balance}
+.bcend .bclic{margin-top:4px}
+.bcnew{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;margin:0;padding:0;border:0;background:none;font:inherit;font-size:13.5px;font-weight:600;color:var(--bcm);text-decoration:underline;text-underline-offset:2px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.bcnew:focus-visible{outline:2px solid #4B2EDB;outline-offset:2px;border-radius:6px}
+/* the calculator footer ("Indicative only"), only while a bank check screen is up: quieter; gone on waiting and outcomes (no rates) */
+html.bcv footer{border-top:0;padding-top:4px}
+html.bcv footer p{font-size:11.5px;color:#646B78}
+html.bcvw footer{display:none}
+/* the teaser's button sheen runs twice, then stops (WCAG 2.2.2) */
+.bctz .rdcta::after{animation-iteration-count:2}
+@media (prefers-reduced-motion:reduce){.bcgo .spin,.bcwaitl .vfspin,.bcsteps li.now i,.bcov .vfspin{animation:none}.bcbook>summary:after{transition:none}.bctz .rdcta::after{animation:none}}
+
+/* ── v23 (design panel FIX-BRIEF-6 F23): radically minimal, trust first ── */
+.bcx .vfhead .lmlabs,.bcqbar .lmlabs{display:none}
+.bcx .vfhead{margin:0 0 22px}
+.bclegal{margin:16px 0 0;text-align:center;font-size:11.5px;line-height:1.5;color:#646B78;text-wrap:balance}
+.bclegal nav{display:flex;flex-wrap:wrap;justify-content:center;gap:0 14px;margin:0 0 2px}
+.bclegal nav a{display:inline-flex;align-items:center;gap:5px;min-height:44px;font-size:13px;font-weight:650;color:#3A1FB8;text-decoration:none}
+.bclegal nav a svg{width:14px;height:14px}
+.bclegal p{margin:0}
+.bclegal .lgl{display:flex;flex-wrap:wrap;justify-content:center;gap:0 14px}
+.bclegal .lgl a{display:inline-flex;align-items:center;min-height:44px;font-size:12.5px;font-weight:650;color:#3A1FB8}
+.bctz2{text-align:center;display:flex;flex-direction:column;align-items:center}
+.bctz2 .bclbl{font-size:13px;font-weight:600;color:#5B6370;margin:0 0 4px}
+.bctz2 .bcamt{font-family:var(--display);font-weight:800;font-size:clamp(34px,10vw,42px);line-height:1.05;letter-spacing:-.03em;color:#1E2329;margin:0;font-variant-numeric:tabular-nums}
+.bctz2 .bcamt small{font-size:.5em;font-weight:700;letter-spacing:-.01em;color:#434A55}
+.bctz2 .bcfor{font-size:15px;color:#434A55;margin:8px 0 18px}
+.bctz2 .bcglass{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:12px 14px;margin:0 0 18px}
+.bctz2 .bcglass b{font-size:15px;font-weight:650;color:#1E2329}
+.bctz2 .cta{margin:0;width:100%}
+.bcsafe2{display:flex;align-items:center;justify-content:center;gap:6px;margin:10px 0 0;font-size:13px;font-weight:600;color:#0B7552}
+.bcsafe2 svg{width:15px;height:15px}
+.bcx .bch{font-family:var(--display);font-weight:700;font-size:clamp(25px,7.4vw,30px);line-height:1.12;letter-spacing:-.03em;color:#1E2329;margin:0 0 16px;text-wrap:balance}
+.bcx .bch:focus{outline:none}
+.bcx .bcglass2{margin:0 0 18px;padding:16px}
+.bcglass2 .bcrow{margin:0 0 14px;padding:0 0 12px;border-bottom:1px solid rgba(30,35,41,.08)}
+.bctrio{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.bctrio li{display:flex;align-items:center;gap:12px;font-size:15px;font-weight:650;color:#1E2329}
+.bctrio li i{flex:none;width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:rgba(255,255,255,.9);color:#1E2329;box-shadow:inset 0 0 0 1px rgba(30,35,41,.10)}
+.bctrio li i svg{width:16px;height:16px}
+.bcx .bccons{font-size:12.5px;line-height:1.5;color:#5B6370;margin:0 0 10px}
+.bcx .bccons .bcdet{font-size:12.5px}
+.bcgo .lk{display:inline-flex;margin-right:2px}
+.bcgo .lk svg{width:17px;height:17px}
+.bcw .bcwt{display:flex;align-items:center;justify-content:center;gap:10px}
+.bcw .bcwt .vfspin{width:18px;height:18px}
+.bcsum{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:12px 0 0;padding:0;list-style:none}
+.bcsum li{padding:7px 12px;border-radius:99px;background:rgba(255,255,255,.9);box-shadow:inset 0 0 0 1px rgba(30,35,41,.10);font-size:14px;font-weight:650;color:#1E2329}
+.bcpick{margin-top:20px;padding:16px;border-radius:20px}
+.bcpick h3{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-family:var(--display);font-size:17px;font-weight:700;letter-spacing:-.01em;color:#1E2329}
+.bcpick h3 i{flex:none;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(140deg,#6D54E8,#4B2EDB 55%,#2E8FE0);color:#fff}
+.bcpick h3 i svg{width:17px;height:17px}
+.bcpick .r2book{margin:0;padding:0;background:none;border:0;box-shadow:none;overflow:visible}
+.bcpick .r2book:after{display:none}
+.bcbooked{--bci:#1E2329;--bci2:#434A55;--bcl:#3A1FB8}
+.r2book.done.bcbooked small{color:#434A55}   /* v22 left v16.9b's #C9CDD6 (1.6:1 on the green card) */
+.bcpick .chips{gap:8px;margin:0 0 10px}
+.bcpick .chip{font-size:14px;font-weight:600;color:#1E2329;background:#fff;border:1.5px solid #E1E4EA;border-radius:12px;padding:8px 12px;min-height:44px}
+.bcpick .chip.on{background:#F0EDFD;border-color:#4B2EDB;color:#3A1FB8;box-shadow:inset 0 0 0 1px #4B2EDB}
+.bcpick .cta{margin:6px 0 0;width:100%}
+.bcsave{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;margin:8px 0 0;font-size:14px;font-weight:650;color:#3A1FB8;text-decoration:none}
+.bcsave svg{width:16px;height:16px}
+/* v21h (coordinator, decision 1): the why line under the bank check heading */
+.bcx .bch+.bcwhy{margin:-6px 0 16px;font-size:15px;line-height:1.5;color:var(--bci2)}
+/* v21h: the Credit Guide link inside Details item 5 (44 px tall, in the sentence) */
+.bcdetails a.bccgl{display:inline-flex;align-items:center;min-height:44px;margin:-13px 0;color:var(--bcl);font-weight:700;white-space:nowrap}
+</style>
 </head>
 <body>
 <div class="wrap" role="main">
@@ -1276,31 +1513,46 @@ function A(k){return AL[ASSET][k];}
 /* ── CONSENT ───────────────────────────────────────────────────────────────────
    State lives here because the gate is re-rendered with innerHTML. Handlers never
    call render(), so a tick cannot wipe details the applicant has already typed. */
-const CONSENT_WORDING="Yes, contact me about this enquiry. I agree AFH Finance may call, text or "
- +"email me about my enquiry, and may share my details with lenders to check my options. This "
- +"overrides my listing on the Do Not Call Register for this enquiry.";
+/* v21 N3 (NCCP reg 28L(4)), both flag states: the electronic delivery sentence in the enquiry consent. WORDING PENDING
+   Sep's approval: swap CONSENT_EDELIVERY only (the label and the recorded consent_wording both read it) and bump
+   CONSENT_VERSION with any change once a version has been in production (v21f F6: the council's wording, reg 28L(4)(b)
+   "regularly"; afh-consent-v3 has never been used in production, so it stays v3). */
+/* v23 (design panel FIX-BRIEF-6 S1), both flag states: one consent card and an Agree button, no tick box. The tap on
+   CONSENT_BUTTON is the express consent (Spam Act, DNCR Act). The three reg 28L(4) matters are on screen (CONSENT_EDELIVERY);
+   the Do Not Call Register and the sharing with lenders are one tap away (CONSENT_DETAILS) and in the Privacy Policy.
+   afh-consent-v3 has never been live, so it stays v3. consent_wording records every line the customer could see. Any
+   wording change after the first live lead: bump CONSENT_VERSION. */
+const CONSENT_LINE="Call, text or email me about this enquiry.";
+const CONSENT_EDELIVERY="Documents by SMS or email, not paper.";
+const CONSENT_DETAILS=["By tapping Agree, you agree AFH Finance may call, text or email you about this enquiry, even if your number is on the Do Not Call Register.",
+ "We share your details with lenders on our panel, and with our licensee Access Lending Group, only to check your options. We won't pass them to anyone else unless you separately agree.",
+ "We'll send documents like our Credit Guide by SMS or email, not on paper, so check your messages regularly. You can withdraw this consent at any time by contacting us."];
+const CONSENT_BUTTON="Agree and continue";
+const CONSENT_OPT="Send me offers too";
+const CONSENT_VERSION="afh-consent-v3";
+/* v21h (coordinator, 9 Nov): every visible "Credit Guide" is a link to the published Credit Guide (new tab, noopener, no query) */
+const CREDIT_GUIDE_URL="https://afhfinance.com.au/credit-guide/";
+function cgLinkify(t){return t.replace("Credit Guide",'<a class="afhcg" href="'+CREDIT_GUIDE_URL+'" target="_blank" rel="noopener">Credit Guide</a>');}
+const CONSENT_WORDING=[CONSENT_LINE,CONSENT_EDELIVERY,"Details:"].concat(CONSENT_DETAILS,["Button: "+CONSENT_BUTTON+"."]).join(" ");
+const AFH_CHAT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.8 7L4 20.5l1.5-4.6A8 8 0 1 1 21 12z"/></svg>';
 const PRIVACY_URL="https://afhfinance.com.au/privacy/";
 let consent={contact:false,marketing:false,ts:"",page:""};
 
-function consentBlock(){return `<div class="afhc">
-  <details class="afhc-note"><summary>Why we ask for your details</summary>
-    <p>AFH Finance is a credit representative, not a lender. We use your details to work out which
-    lenders on our panel may suit you, and to contact you about your enquiry. We share your
-    information with lenders and our aggregator only where it is needed to do that. We never pass
-    your details to anyone else unless you separately agree to it. Full detail is in our <a href="${PRIVACY_URL}" target="_blank" rel="noopener">Privacy Policy</a>.</p></details>
-  <label class="afhc-row ${consent.contact?'on':''}" id="afhContactRow">
-    <input type="checkbox" id="afhContact" ${consent.contact?'checked':''} onchange="consentTick(this,'contact')">
-    <span class="afhc-txt"><b>Yes, contact me about this enquiry.</b> I agree AFH Finance may call,
-    text or email me about my enquiry, and may share my details with lenders to check my options.
-    This overrides my listing on the Do Not Call Register for this enquiry.</span></label>
-  <label class="afhc-row ${consent.marketing?'on':''}">
-    <input type="checkbox" id="afhMarketing" ${consent.marketing?'checked':''} onchange="consentTick(this,'marketing')">
-    <span class="afhc-txt">Send me rate updates and offers.
-    <span class="opt">Optional. Unsubscribe anytime.</span></span></label>
-  <div class="afhc-err" id="afhConsentErr">Please tick the first box so we can contact you.</div>
-  <p class="afhc-fine">AFH Finance Pty Ltd, ABN 30 633 575 005,
-  Authorised Credit Representative 548852 of Access Lending Group Pty Ltd, Australian Credit Licence
-  531308. <a href="${PRIVACY_URL}" target="_blank" rel="noopener">Privacy Policy</a></p></div>`;}
+function consentBlock(q){return `<div class="afhv2">
+  <div class="afhcard">
+   <div class="afhq"><span class="afhic" aria-hidden="true">${AFH_CHAT}</span>${q||`<p class="gdq">${CONSENT_LINE}</p>`}</div>
+   <p class="afhed">${cgLinkify(CONSENT_EDELIVERY)} <button type="button" class="afhdbtn" id="afhDetBtn" aria-expanded="false" aria-controls="afhDet" onclick="consentDet(this)">Details</button></p>
+  </div>
+  <div class="afhdet" id="afhDet" hidden>${CONSENT_DETAILS.map((t,i)=>`<p>${cgLinkify(t)}${i===CONSENT_DETAILS.length-1?` <a href="${PRIVACY_URL}" target="_blank" rel="noopener">Privacy Policy</a>`:""}</p>`).join("")}</div>
+  <div class="afhc-err" id="afhConsentErr" role="alert">Tap ${CONSENT_BUTTON} so we can contact you.</div>
+ </div>`;}
+/* v23 S2: Details opens the full wording in place; the optional offers tick and the legal line sit BELOW the button (gdForm) */
+function consentDet(b){const d=document.getElementById("afhDet");if(!d)return;d.hidden=!d.hidden;b.setAttribute("aria-expanded",String(!d.hidden));
+ if(!d.hidden&&CALC_STEP_LOG)try{lmLog("g.details",0);}catch(e){}}
+function consentAfter(){return `<label class="afhopt" id="afhOptRow"><input type="checkbox" id="afhMarketing" ${consent.marketing?'checked':''} onchange="consentTick(this,'marketing')"><span>${CONSENT_OPT}</span></label>
+   <p class="afhlegal"><a href="${PRIVACY_URL}" target="_blank" rel="noopener">Privacy Policy</a>AFH Finance Pty Ltd, ABN 30 633 575 005, ACR 548852, an authorised credit representative of Access Lending Group Pty Ltd, ACL 531308</p>`;}
+/* v23 S3: the tap on CONSENT_BUTTON (the consent step's submit, after every field is valid) records the consent */
+function consentAgree(){consent.contact=true;consent.ts=new Date().toISOString();try{consent.page=location.href.split('#')[0];}catch(e){consent.page="";}}
 
 function consentTick(el,key){
   consent[key]=!!el.checked;
@@ -1488,7 +1740,7 @@ function consentFields(){return{
   consent_marketing:consent.marketing?"yes":"no",
   consent_wording:consent.contact?CONSENT_WORDING:"",
   consent_timestamp:consent.ts||"",
-  consent_version:"afh-consent-v2",
+  consent_version:CONSENT_VERSION,
   consent_page:consent.page||""};}
 
 /* Lenders confirmed on the AFH panel for caravans and leisure assets.
@@ -1698,7 +1950,7 @@ function loanSteps(){const s=st[funnel];const L=[];const debt=funnel==="personal
  }else{s.secured="unsecured";}
  return L;}
 function balChoice(c){afhStart();const s=st[funnel];s._bal=c;if(c==='no'){s.balloon=0;s._balNo=1;render();maybeAuto("_balNo");}else{s.balloon=s.balloon||balloonMaxDollar();render();}}
-function creditStep(){const s=st[funnel];return {id:"credit",icon:"gauge",secs:4,t:"How would you rate your credit?",sub:"Best guess. Checking your options won't affect your credit score.",auto:"_cp",need:()=>[],
+function creditStep(){const s=st[funnel];return {id:"credit",icon:"gauge",secs:4,t:"How would you rate your credit?",sub:"Best guess. Checking your options has no credit score impact.",auto:"_cp",need:()=>[],
  render:()=>{const sel=(v)=>(s._cp!==undefined&&String(s._cp)===String(v));
   const o=[[4,'star','Excellent',''],[3,'thumb','Good',''],[2,'minus','Average',''],[1,'thumbdown','Rebuilding','Past defaults or issues'],[0,'help',"Not sure",'']];
   return `<div class="rows">${o.map(([v,i,t,sb])=>`<button type="button" class="ro ${sel(v)?'on':''}" onclick="setCredit(${v})"><span class="ri">${ICON[i]}</span><span class="rt"><b>${t}</b><small>${sb}</small></span><span class="rc">${TICK}</span></button>`).join('')}</div>`;}};}
@@ -1882,7 +2134,7 @@ function livePreview(){const s=st[funnel];let{list}=match();
   <div class="pvsub">Indicative only · ${list.length} lender${list.length>1?'s':''} to compare · ${s.term} yr on ${fmt(s.amount)}${s.balloon>0?' · balloon '+fmt(s.balloon):''}. Your final repayment depends on the rate the lender offers you.</div></div>`;}
 
 function steps(){return funnel==="car"?carSteps():funnel==="personal"?personalSteps():businessSteps();}
-function tabs(){const tb=document.getElementById("tabs");if(LOCKTAB||view==="chooser"){tb.style.display="none";return;}tb.style.display="";tb.innerHTML=[["car","car","Car"],["caravan","truck","Caravan"],["personal","card","Personal"],["business","briefcase","Business"]].map(([f,ic,lbl])=>{
+function tabs(){const tb=document.getElementById("tabs");if(LOCKTAB||view==="chooser"||["details","unlocking","verify","lmhand","alchand"].indexOf(view)>-1){   /* v23 S7: no product tabs from the details step on */tb.style.display="none";return;}tb.style.display="";tb.innerHTML=[["car","car","Car"],["caravan","truck","Caravan"],["personal","card","Personal"],["business","briefcase","Business"]].map(([f,ic,lbl])=>{
  const on=(f==="caravan")?(funnel==="car"&&ASSET==="caravan"):(f==="car")?(funnel==="car"&&ASSET==="car"):(funnel===f);
  return `<button class="tab ${on?'on':''}" onclick="setFunnel('${f}')">${ICON[ic]}<span class="tx">${lbl}</span></button>`;}).join("");}
 function chooser(){return `<div class="card anim chooser">
@@ -1914,7 +2166,7 @@ function form(){const S=steps();if(qi>S.length-1)qi=S.length-1;const step=S[qi];
  else if(gdp&&!st[funnel]._wf)h+=`<div class="tapnote">Tap an option to continue</div>`;
  else if(!step.auto||answered)h+=`<button type="button" class="cta" onclick="next()">${qi===S.length-1?'See my options':'Continue'} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>`;
  else h+=`<div class="tapnote">Tap an option to continue</div>`;
- h+=`<div class="trust">${ICON.shield} Won't affect your credit score · No obligation</div></div>`;
+ h+=`<div class="trust">${ICON.shield} No credit score impact · No obligation</div></div>`;
  navDir=1;return h;}
 
 function missingFields(){const s=st[funnel];const m=[];
@@ -2015,14 +2267,20 @@ let bk={day:"",time:""},booked=null,showAll=false;
 ICON.mail='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>';
 const FREQ={weekly:[52,'week','wk'],fortnightly:[26,'fortnight','fn'],monthly:[12,'month','mth']};
 function perF(w){return w*52/FREQ[repayFreq][0];}
-function bkDays(){const out=[];const now=new Date();const fmtD=d=>d.toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short'});
- for(let i=0;out.length<5&&i<10;i++){const d=new Date(now);d.setDate(now.getDate()+i);const wd=d.getDay();if(wd===0)continue;
+/* v21, both flag states: booking days and times on the Melbourne calendar (AFH's calling hours) in any browser time
+   zone. v16.9b keyed each day by toISOString (UTC): before 11am (10am in winter) every day was keyed one day early, so
+   Saturday got the weekday times and the booking went out with the previous day's date. */
+function bkMel(t){try{const p={};new Intl.DateTimeFormat('en-CA',{timeZone:'Australia/Melbourne',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',hourCycle:'h23'}).formatToParts(new Date(t)).forEach(x=>{p[x.type]=x.value;});
+  if(!/^\d{4}$/.test(p.year||'')||!p.month||!p.day)throw 0;return {k:p.year+'-'+p.month+'-'+p.day,h:(+p.hour)%24};}
+ catch(e){const d=new Date(t),z=n=>(n<10?'0':'')+n;return {k:d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate()),h:d.getHours()};}}
+function bkDays(){const out=[];const m=bkMel(Date.now());const fmtD=d=>d.toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'});
+ for(let i=0;out.length<5&&i<10;i++){const d=new Date(m.k+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+i);const wd=d.getUTCDay();if(wd===0)continue;
   const k=d.toISOString().slice(0,10);if(i===0&&!bkSlots(k).length)continue;
   out.push({k,l:i===0?'Today':i===1?'Tomorrow':fmtD(d),full:fmtD(d)});}
  return out;}
 function bkSlots(k){const all=[[9,'9 to 11am'],[11,'11am to 1pm'],[13,'1 to 3pm'],[15,'3 to 5pm'],[17,'5 to 7pm']];if(!k)return all;
- const d=new Date(k+'T12:00:00');let sl=d.getDay()===6?all.slice(0,3):all;const now=new Date();
- if(k===now.toISOString().slice(0,10))sl=sl.filter(([h])=>h>now.getHours()+1);return sl;}
+ const d=new Date(k+'T12:00:00Z');let sl=d.getUTCDay()===6?all.slice(0,3):all;const m=bkMel(Date.now());
+ if(k===m.k)sl=sl.filter(([h])=>h>m.h+1);return sl;}
 function bkSet(k,v){bk[k]=v;if(k==='day'&&bk.time&&!bkSlots(v).some(x=>x[1]===bk.time))bk.time="";render();}
 function bookCall(){if(!bk.day||!bk.time)return;const d=bkDays().find(x=>x.k===bk.day);booked={day:d?d.full:bk.day,time:bk.time};
  try{sendLead("booked call",{"Call booked":booked.day+", "+booked.time,booking_date:bk.day,booking_time:bk.time},true);}catch(e){}
@@ -2103,7 +2361,7 @@ function detailsGate(){if(GUIDED_DETAILS)return gdGate();const{list}=match();con
    Typed values wait in gdv until a submit. v10 copied them into contact as people typed, so typing a name and then
    tapping "Change my answers" let the end of the questions skip the details screen (no consent, no lead copy). */
 const GD={
- gate:{form:"gateForm",pre:"fl-",log:"g",bar:["Your answers","Your details","Your options"],go:"Unlock my options",fields:()=>["name","mobile","email","consent"]},
+ gate:{form:"gateForm",pre:"fl-",log:"g",bar:["Your answers","Your details","Your options"],go:CONSENT_BUTTON,fields:()=>["name","mobile","email","consent"]},
  lm:{form:"lmForm",pre:"lmf-",log:"lmd",bar:["Your answers","Your details","Bank check"],go:"Continue",
   fields:()=>["name","mobile","email","dob"].concat(st[funnel]&&st[funnel].emp==="centrelink"?["ben"]:[]).concat(["consent"])},
  alc:{form:"alcForm",pre:"alcf-",log:"alc",bar:["Your answers","Your details","Specialist call"],go:"Connect me",fields:()=>["name","mobile","email","consent"]}};
@@ -2156,7 +2414,8 @@ function gdQ(k,f){const n=gdFirst();
  if(f==="email")return n?"And your email, "+n+"?":"And your email?";
  if(f==="dob")return "What's your date of birth?";
  if(f==="ben")return "Which Centrelink payment is your main one?";
- const L=(k==="gate"?"Nearly done":"Last step")+(n?", "+n:"")+". ";
+ if(k==="gate")return CONSENT_LINE;   /* v23 S4: no "Nearly done"; the consent line is the step's question (focus target) */
+ const L="Last step"+(n?", "+n:"")+". ";
  return L+(k==="gate"?"Are you happy for us to contact you?":k==="lm"?"Are you happy to share your details with Credit Sense?":"Can we connect you with Australian Lending Centre?");}
 function gdPart(k){return Math.round(15+85*GS[k]/GD[k].fields().length);}
 function gdPct(k){return Math.round((100+gdPart(k))/3);}
@@ -2177,7 +2436,7 @@ function gdTrail(k,pop){const F=GD[k].fields(),i=GS[k];let h="";
  return h;}
 function gdStep(k,f,j){const G=GD[k],on=j===GS[k]?" on":"";
  if(f==="consent"){const q=`<p class="gdq" id="gdq-${k}-consent" tabindex="-1">${gdEsc(gdQ(k,f))}</p>`;
-  if(k==="gate")return `<div class="gds gdcons${on}" id="gd-gate-consent" data-f="consent">${q}${consentBlock()}</div>`;
+  if(k==="gate")return `<div class="gds gdcons${on}" id="gd-gate-consent" data-f="consent">${consentBlock(q)}</div>`;
   if(k==="lm")return `<div class="gds gdcons${on}" id="gd-lm-consent" data-f="consent">${q}<label class="afhc-row lmcons ${lm.consent?'on':''}" id="lmRow"><input type="checkbox" id="lmTickBox" ${lm.consent?'checked':''} onchange="window.lmTick(this)"><span class="afhc-txt">${LM_WORDING}</span></label>
    <div class="lmerr" id="lmErr">Please tick the box to continue.</div>${LM.turnstile?'<div id="lmTs" class="lmts"></div>':''}</div>`;
   return `<div class="gds gdcons${on}" id="gd-alc-consent" data-f="consent">${q}<label class="afhc-row lmcons ${alc.consent?'on':''}" id="alcRow"><input type="checkbox" id="alcTickBox" ${alc.consent?'checked':''} onchange="window.alcTick(this)"><span class="afhc-txt">${ALC_WORDING}</span></label>
@@ -2200,14 +2459,14 @@ function gdForm(k){const G=GD[k],F=G.fields();GS[k]=Math.max(0,Math.min(GS[k],F.
  return `<div class="gdtrail" id="gdtrail-${k}">${gdTrail(k)}</div>${k==="gate"?'<p class="vfpre" id="smsvPre" aria-live="polite" hidden></p>':""}
   <form id="${G.form}" data-gd="${k}" onsubmit="return gdSubmit(event,'${k}')" novalidate>
    ${F.map((f,j)=>gdStep(k,f,j)).join("")}
-   <button type="submit" class="cta gdgo" id="gdgo-${k}">${gdGoLbl(k)}</button>
+   <button type="submit" class="cta gdgo" id="gdgo-${k}">${gdGoLbl(k)}</button>${k==="gate"?"\n   "+consentAfter():""}
   </form>`;}
 function gdShow(k,j,fwd){const G=GD[k],F=G.fields();j=Math.max(0,Math.min(j,F.length-1));GS[k]=j;
  if(gdT[k]){clearTimeout(gdT[k].t);gdT[k]=null;}
  const form=document.getElementById(G.form);if(!form)return;
  form.querySelectorAll(".gds").forEach(function(el){const on=el.getAttribute("data-f")===F[j];el.classList.toggle("on",on);el.classList.remove("in","back");
   if(on&&gdMotion()){void el.offsetWidth;el.classList.add(fwd?"in":"back");}});
- const card=form.closest(".gdcard");if(card)card.classList.toggle("gdl",j>0);
+ const card=form.closest(".gdcard");if(card){card.classList.toggle("gdl",j>0);card.classList.toggle("gdcz",F[j]==="consent");}   /* v23: .gdcz = the consent step */
  const tr=document.getElementById("gdtrail-"+k);if(tr)tr.innerHTML=gdTrail(k,fwd&&gdMotion());
  F.forEach(function(f){const q=document.getElementById("gdq-"+k+"-"+f);if(q)q.textContent=gdQ(k,f);});
  const seg=document.getElementById("gdseg-"+k),p=gdPart(k);if(seg)seg.style.background="linear-gradient(90deg,#4B2EDB "+p+"%,#E4E0F7 "+p+"%)";
@@ -2258,10 +2517,9 @@ function gdBack(k){if(gdT[k]){clearTimeout(gdT[k].t);gdT[k]=null;}const i=GS[k];
  if(k==="gate"){if(GATE_BACK){if(CALC_STEP_LOG)lmLog('g.back',0);goForm();}}else if(k==="lm")lmBack();else alcBack();}
 function gdGo(k,j){if(j<GS[k])gdShow(k,j,0);}
 function gdGate(){const{list}=match();const n=list.length;const k="gate";
- return `<div class="card anim gate2 gdcard${GS[k]>0?' gdl':''}" id="gdc-gate">
+ return `<div class="card anim gate2 gdcard${GS[k]>0?' gdl':''}${GD[k].fields()[GS[k]]==="consent"?' gdcz':''}" id="gdc-gate">
   ${gdHead(k)}
-  <div class="g2top"><span class="g2lock">${ICON.lock}</span><span>Almost there</span></div>
-  <h2>Where should we send your ${n?n+' ':''}option${n!==1?'s':''}?</h2>
+  <h2 class="smsvsr">Your details</h2>
   ${gdForm(k)}
   <div class="gtrust"><span>${ICON.lock} Secure · No credit score impact · No obligation</span></div>
   ${GATE_BACK?`<button type="button" class="g2back" onclick="if(CALC_STEP_LOG)lmLog('g.back',0);goForm()">Change my answers</button>`:''}
@@ -2333,6 +2591,7 @@ function gateValid(f){const g=k=>((f.elements&&f.elements[k])||f[k]||{}).value||
  return ok;}
 function submitGate(ev){ev.preventDefault();const f=ev.target;
  if(!gateValid(f))return false;
+ consentAgree();   /* v23 S3: no tick box; reaching here means the customer tapped Agree and continue on the consent step */
  if(!afhConsentOK()){if(GATE_FORGIVING)afhTrack('CalcGateError',{field:'consent'});if(CALC_STEP_LOG)lmLog('g.err.consent',0);return false;}   // no consent, no lead
  const gv=k=>{const el=(f.elements&&f.elements[k])||f[k];return(el&&el.value!=null)?el.value:"";};
  contact.name=gv('name');contact.mobile=(GATE_FORGIVING&&afhMob(gv('mobile')))||gv('mobile');contact.email=gv('email');if(CALC_STEP_LOG)lmLog('g.submit',0);gatePassed=true;
@@ -2891,7 +3150,7 @@ window.addEventListener("message",function(e){const d=e.data;if(!d||typeof d!=="
  if((d.afhParent||d.afhAnswer||d.afhNav)&&(AFH_HOME.indexOf(e.origin)<0||e.source!==window.parent))return;  /* v12: only AFH pages that framed us */
  if(d.afhNav==="back"){try{if(view==="form"){if(qi>0||payPh)prev();}else if(view==="analysing"||view==="ready"||view==="details"){goForm();}else if(view==="lmswitch"||view==="lmhand"||view==="lmclno"){lmBack();}else if(view==="alcmatch"||view==="alchand"){alcBack();}else if(view==="verify"){if(SMSV.chg)smsvChangeClose();else smsvChangeOpen();afhPost({afhCalcView:{view:"verify",qi:qi,funnel:funnel,pp:0}});}}catch(err){}return;}  /* v13: the AFH page's browser Back = back to the questions */
  if(d.afhParent){afhCtx=Object.assign(afhCtx,afhCleanCtx(d.ctx));if(window.__afhRelay)window.__afhRelay(e.origin);if(d.pre)preEst(d.pre);else if(d.est)homeEst(d.est);}
- if(d.afhAnswer){const a=d.afhAnswer;try{
+ if(d.afhAnswer&&!(window.AFH_BC&&AFH_BC.live&&AFH_BC.live())){const a=d.afhAnswer;try{
    if(a.ctx)afhCtx=Object.assign(afhCtx,afhCleanCtx(a.ctx));
    afhStart();
    if(typeof funnel==="undefined"||!st[funnel])return;
@@ -3023,7 +3282,9 @@ async function smsvPost(path,body,ms){const ac=typeof AbortController!=="undefin
  try{const r=await fetch(SMSV.api+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body),credentials:"omit",signal:ac?ac.signal:undefined});return (await r.json().catch(function(){return null;}))||{ok:false,error:"server"};}
  catch(e){return {ok:false,error:"network",fallback:true};}finally{clearTimeout(tm);}}
 const SMSV_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-5A8 8 0 1 1 21 12z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/></svg>';
-const SMSV_TRUST="We confirm every mobile so your broker can reach you. The text comes from our verification service, so it won't show our name. Only enter the code on this page. We'll never call or text asking for it.";
+/* v23 S8: true only once the Twilio Verify service's friendly name is "AFH Finance" and a test text shows it (FIX-BRIEF-6 C1).
+   Until then ship SMSV_TRUST="Only enter it here. We never ask for it by phone." */
+const SMSV_TRUST="Only enter it here. We never ask for it by phone.";   /* v21h: the fallback (coordinator, decision 2). After C1, flip to "From AFH Finance. We never ask for it by phone." */
 function smsvHint(){return smsvTouch()?"Your phone may offer the code above the keyboard.":"Check your phone for a text with the code.";}
 function smsvReset(){SMSV.seq++;clearTimeout(SMSV.timer);SMSV.st="idle";SMSV.msg="";SMSV.until=0;SMSV.val="";SMSV.ph="";SMSV.fails=0;SMSV.done=0;SMSV.token="";}
 /* v16.7: numbers the server refused as wrong (st "bad"). Kept in memory for the visit only, never stored or sent anywhere. */
@@ -3052,12 +3313,12 @@ function smsvLine(){const S=SMSV;if(S.st==="checking")return '<i class="vfspin" 
  if(S.msg)return S.msg;return view==="verify"&&S.st==="sent"&&!(S.val||"").length?`<span class="vfhint">${smsvHint()}</span>`:"";}
 function smsvStatus(){const S=SMSV,left=Math.max(0,Math.ceil((S.until-Date.now())/1000));
  return `<button type="button" class="vfr" id="smsvR" onclick="smsvStart(true)"${left>0||smsvBusyNow()?" disabled":""}>${left>0?"Resend code in "+smsvLeft(left):"Resend code"}</button>`;}
-function smsvHelp(){return `<details class="vfhelp"><summary>Didn't get the text?</summary><ul>
+function smsvHelp(){return `<details class="vfhelp"><summary>Didn't get it?</summary><ul>
   <li>Check the number above. If it's wrong, tap Change.</li><li>Look in your filtered, unknown sender or spam texts.</li>
   <li>Texts are sometimes slow. Tap Resend code if it hasn't come.</li><li>Still stuck? Call us on ${smsvCall()}.</li></ul></details>`;}
 /* progress: "Your details" is the current step (92%) until the code is confirmed, then it ticks and the options fill */
 function smsvHead(ok){return `<div class="vfhead"><div class="lmsegs"><i class="lmseg ok"></i><i class="lmseg${ok?" ok":" vfcur"}"></i><i class="lmseg${ok?" ok":""}"></i></div><div class="lmlabs"><span class="ok">Your answers ✓</span><span class="${ok?"ok":"cur"}">Your details${ok?" ✓":""}</span><span${ok?' class="cur"':""}>Your options</span></div></div>`;}
-function smsvIntro(){const S=SMSV,sending=["idle","starting","sending"].indexOf(S.st)>-1&&!S.until;return "Your options are ready. Enter the 6 digit code we"+(sending?"'re texting":" texted")+" to";}
+function smsvIntro(){const S=SMSV,sending=["idle","starting","sending"].indexOf(S.st)>-1&&!S.until;return sending?"Sending to":"Sent to";}
 /* ── the code step (AFH details path) ── */
 function smsvView(){const S=SMSV,num=smsvFmt(S.ph||smsvMob()),first=smsvFirst(),ok=S.st==="verified",head=smsvHead(ok);
  if(ok)return `<div class="card anim vfy vfok">${head}<div class="lmtick">${lmIcon('<path d="M5 12.5l4.5 4.5L19 7.5"/>')}</div><h2 class="vft">Mobile confirmed</h2><p class="vfp">Thanks${first?", "+first:""}. Opening your options…</p><p id="smsvLive" class="smsvsr" aria-live="polite"></p></div>`;
@@ -3073,9 +3334,8 @@ function smsvView(){const S=SMSV,num=smsvFmt(S.ph||smsvMob()),first=smsvFirst(),
   <p id="smsvLive" class="smsvsr" aria-live="polite"></p></div>`;}
  return `<div class="card anim vfy">${head}
   <span class="vfi">${SMSV_ICON}</span>
-  <h2 class="vft" id="vfT">Last step${first?", "+first:""}</h2>
-  <p class="vfp" id="vfP">${smsvIntro()}</p>
-  <p class="vfnum"><b id="vfN">${num}</b><button type="button" class="vfedit" onclick="smsvChangeOpen()" aria-label="Change number ${num}">Change</button></p>
+  <h2 class="vft" id="vfT">Enter your code</h2>
+  <p class="vfnum"><span class="vfp" id="vfP">${smsvIntro()}</span><b id="vfN">${num}</b><button type="button" class="vfedit" onclick="smsvChangeOpen()" aria-label="Change number ${num}">Change</button></p>
   <form class="vff" novalidate onsubmit="event.preventDefault();smsvCheck()" aria-labelledby="vfT">${smsvBoxes()}
    <p class="smsvm${smsvBusyNow()&&SMSV.st!=="idle"&&SMSV.st!=="starting"?" wait":""}" id="smsvMsg" role="status" aria-live="polite">${smsvLine()}</p></form>
   <div class="vfrow">${smsvStatus()}</div>
@@ -3222,6 +3482,739 @@ render();
 // Fire Meta top-of-funnel signal once the calculator has loaded
 afhPost({afhCalcReady:true,v:16});
 </script>
+<script id="afh-bc-js">
+/* ── v21 BANK CHECK STEP (6 Nov 2026; v20 design, v21b server contract, QA and audit UI fixes; v21c to v21e 7 Nov; v21f 9 Nov) 
+   Behind a REMOTE FLAG that defaults OFF, and (v21f F7) per enquiry a share, the partner page and a tester override. On load the calculator asks the bank check router
+   POST /functions/v1/bc/start {action:"status"}. Only an answer of on:true installs the step. Off, an error, slower than
+   4 s, or an answer that arrives after the customer has left the questions = nothing is installed and the calculator
+   behaves as v16.9b (plus the two v21 base changes that apply in both flag states: the electronic delivery sentence in
+   the enquiry consent, and the booking days on the Melbourne calendar; both are in v16.9b's own code, see build.mjs).
+   On:
+   - no routing before the bank check: every enquiry is AFH's, SMS verified, then the AFH bank check.
+   - the bank check screen: consent line, Details and Privacy Policy, the Credit Guide link (v21f F3: the electronic
+     delivery sentence is item 5 of Details only; N3 took that consent at the details step), then "Agree and start my
+     bank check". Nothing goes to Credit Sense before the tap (v21b server).
+   - the tap opens a NEW TAB in the same tap; bc/start records the consent and only then releases the link (20 s limit).
+     No new tab (popup blocked, or an Android WebView that hands back the top window): top level navigation that ADDS
+     a history entry, so Back returns to the AFH page.
+   - RESUME (QA B1): the check reference {event_id, status_key, started_at, url} is kept in this calculator's own
+     localStorage and, when the AFH page runs afh-parent-bankcheck.js, in the AFH page's first party storage too. On
+     load and on a back/forward cache restore a stored check goes straight to the waiting or outcome screen and polls.
+     It expires after 24 h and is cleared on a final outcome. The status key never goes in a URL.
+   - waiting and outcome screens poll bc/status (POST). The funnel tabs are hidden there (QA M1).
+   - fallbacks (QA M2): the flag switched off, bank check not configured or refused before the consent, or the SMS check
+     failing (at the mobile step or on the code screen, v21c QB1): the step uninstalls itself. A refusal of the consent
+     itself (consent, consent_record) or three failed tries: a "Call us" screen (audit m6), never an endless Try again.
+   - v21f B1 (council FIX-BRIEF-2; Sep: everyone does the bank check first, the broker decides after the report): every
+     route's "viewed matches" lead goes at the details step, untagged, and nothing is held. Pixels: a Lead Market bound
+     customer's leads and debt pixels never fire (m-c); an ALC bound customer keeps v16.9b's $15 debt Lead at the details
+     step (F1); AFH customers get exactly v16.9b's. bank_check:"on" marks only leads sent after the tap. Every fallback
+     comes after the details step (the flag is read once, before activation), so it keeps the customer with AFH (m-a:
+     v16.9b's AFH results, never a Lead Market or ALC referral on top), and stop() shows the "Call us" screen for every
+     customer. v21c m1 (a fallback before the details step routes exactly as v16.9b) stays in the code for that case.
+     The v21d RM1 pagehide release and sendOnLeave stay in the file and can no longer fire (nothing is held).
+   - v21d (QA recheck RB1): while a check is live (or the bank check screen is up) the landing page's first question
+     (afhAnswer) is ignored, and after a resume the landing page is told once more which screen is up so it can show the
+     calculator (it hides it behind its own question 1 card on a reload or a Back).
+   No personal information in any URL or in storage. */
+(function(){
+ var FNB="https://gqgykllxzotrqfiyzkax.supabase.co/functions/v1/bc/";
+ var START=FNB+"start",STATUS=FNB+"status";
+ var HOME=["https://afhfinance.com.au","https://www.afhfinance.com.au"];
+ var VCF="https://afhfinance.com.au/bank-check/afh-finance.vcf";
+ var LABEL="Agree";                                       /* v23 F1: the consent line sits right above it; recorded as button_label */
+ /* v21f B3 (council FIX-BRIEF-2, with the research playbook addendum, section 8.2): the bank check screen's reason and what
+    to expect. Substantiation:
+    - WHY: most panel lenders ask for bank statements for car and personal loans (Sep confirmed, 9 Nov 2026);
+    - HOW: the internet banking login, the one for the bank's website (app only customers need it; "as usual" failed them);
+    - BC_TIME_LINE: "a few minutes": check the median tap to complete time in bc_events in the test window and after the
+      first 20 checks; change it if the median is over 5 minutes, or set it to "" to drop it (the sentence still reads). */
+ /* v22 (design panel FIX-BRIEF-4 P1-2): Sep's two sentences, shortened. The sub says why and how long; "so your broker can
+    confirm the lenders that fit you" is already the heading ("let's confirm your options") and the pill. The two things to
+    have ready sit in the trust panel as a list. BC_TIME_LINE keeps its v21f rule ("" drops the time, the sentence still reads). */
+ var WHY="Most lenders ask for bank statements.";
+ var BC_TIME_LINE="in a few minutes";
+ function why2(){return "Share yours securely"+(BC_TIME_LINE?" "+BC_TIME_LINE:"")+".";}
+ var HOW=["Use your internet banking login, the one for its website","Your bank may send a code or ask you to confirm in its app"];
+ /* v22 P1-3: the AFH mark (logo master colours) for the trust panel, and the traced logo for the holding tab */
+ var MARK='<svg viewBox="140 430 1712 1492" aria-hidden="true"><polygon fill="#1E2329" points="991.7,438.4 1842.9,1912.7 1076.3,1912.7 608.5,1101.8"/><polygon fill="#11B5EE" points="464.8,1364.9 780.1,1912.3 149.3,1912.3"/></svg>';
+ var LOGO='<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AFH Finance" height="34" viewBox="0 0 888 320"><path fill="#1E2329" fill-rule="evenodd" d="M824 208l-0.8 1.2l0.5 85l1.8 1l58.8 0l3.5 -0.8l0 -18.2l-35 -0.5l-1.2 -1.5l-0.2 -12.5l0.5 -2l1.2 -1l28.2 -0.5l0 -16.2l-28.8 -0.5l-1 -1.2l0 -12.2l1.2 -1.8l35 -0.2l0 -18.2zM648.5 207.8l-1 1.5l0.5 85l1.5 1l21 0l2.8 -0.8l0.5 -42.2l0.5 -1.5l1 -0.2l25.2 39l4.2 5.2l23.8 0.5l1.5 -0.8l0.8 -1.2l-0.2 -84.8l-1.8 -1l-21.5 0l-2 1l-0.2 42.8l-1.5 1l-1.5 -1.2l-4.8 -8.5l-20 -30.2l-3.5 -4.2zM576.5 208.5l-26.2 81l-0.8 4.8l1.5 1l25.2 -0.2l1.5 -1.5l2.5 -11l2.2 -6l21.8 -0.5l2 0.5l1.2 1.2l3 14.2l2 3l26.5 0l0.8 -1l-0.5 -3.8l-26 -82.2l-34.2 -0.5zM594.5 229.2l0.8 0l7.2 26.5l0 1.2l-1.5 1.2l-13 0l-2 -1.5l6.2 -22.8zM458.5 208.2l0 85.8l2.8 1.2l21 0l1.8 -1.2l0.2 -42.5l1.2 -1l2 1.2l27 42.2l2.8 1.2l23.2 -0.2l1.2 -1.8l-0.5 -85.2l-22.5 -0.5l-2.8 1l0 42.5l-1 1.8l-2.8 -3l-27.2 -41.8l-24.2 -0.5zM417.2 207.5l-1.8 1.2l0 84.8l2 1.8l24.8 -0.2l1.5 -2l0 -84l-2.2 -1.5zM405.5 207.8l-60.2 -0.2l-1.8 1l-0.2 84.8l1.2 1.8l26 -0.2l1 -1.5l0.2 -31.2l1.8 -1.2l25.2 0l1 -0.8l0.2 -15.5l-1.5 -1l-25.8 0l-1.2 -2l0 -13l1.8 -2l32.5 -0.2l1.2 -1.5l0 -15.2zM810.5 208.5l-18.2 -2.5l-8 0.2l-12.8 2.2l-5.8 2l-7 4l-6.8 6.2l-3.5 4.8l-4 9l-2 10.2l0 15.2l2 10l4 9l6 7.2l6.5 4.8l10.5 4.2l12.5 2l19.8 -1.8l8.5 -2.2l1.5 -1.2l0.5 -2l-1.2 -14.5l-1 -1.2l-17.8 1l-9.5 -1l-3 -1l-3.5 -2.5l-4 -6.8l-1.8 -12.5l0.2 -7.5l1.5 -9.5l1.8 -4l2.8 -2.2l8.5 -0.8l21 0.2l2.5 -1l0.8 -1.5l1 -14.5zM152.5 51.8l-68 117.2l-0.8 3.5l84.5 147.2l139.2 0l-0.2 -1.8l-152 -264.2l-1.8 -2zM715.2 0l-1 2.8l0.5 188l1.8 0.8l58.5 -0.5l0.8 -80.5l1 -1l48.2 0l1.2 1.2l0.5 80.2l61 0.2l0 -191.2l-60.8 0l-0.8 2.2l0 66.8l-2 1.5l-46.8 0l-1.5 -0.8l-0.5 -67.5l-0.8 -2.2zM693.5 0l-135.2 0l-0.8 2.2l0 187.5l1 1.5l59 -0.2l0.5 -72.5l1 -1.2l60.2 -0.2l1.8 -1.2l0.2 -35l-2 -1l-60.2 -0.2l-1 -1.2l0 -34l1 -1.5l1.5 -0.5l72.8 0l1 -1.2l0 -38.5zM405.5 0l-3 6.8l-39 122.5l-19.5 59l0.2 3l60 0l1.5 -2l8.5 -37l1.2 -2l2 -0.8l51.5 0.2l1.2 1.2l1.2 3.5l5 23.8l4 13l60.8 0l0.2 -3l-39.2 -125.5l-15 -50.5l-4.5 -12.2zM442.5 43.8l1.2 0.5l17.8 67l-2.8 1l-33.5 0l-1.8 -1.2l0.8 -4.2l16 -57.2z"/><path fill="#11B5EE" d="M56.5 220.5l-53 92.8l-3.5 4l0 2.5l114.2 0l-1 -4l-17 -28.5l-37.2 -65.5l-1.2 -1.2z"/></svg>';
+ /* NCCP s158 and reg 28L: the Credit Guide before credit assistance, and consent to electronic delivery (item 5). */
+ var CG_URL="https://afhfinance.com.au/credit-guide/",CG_VER="cg-2026-11";
+ var EDELIVERY="You agree to receive our Credit Guide and other documents electronically. We won't send paper copies, so check your email and messages. You can withdraw this consent at any time by contacting us.";
+ /* audit m9: the same licence details as the done page footer and the enquiry consent fine print */
+ var LICENCE="AFH Finance Pty Ltd, ACR 548852, an authorised credit representative of Access Lending Group Pty Ltd, ACL 531308";
+ var TAP_MS=20000;                                        /* audit N4: the tap creates the Credit Sense link, which can take 8 s */
+ var WAIT_FAST=20*60000,WAIT_MAX=120*60000;               /* poll every 3 s for 20 min, then every 15 s; pause at 2 h until the customer is back */
+ var BACKOFF=[3000,6000,12000,15000];                     /* network errors in a row: 3, 6, 12, then 15 s */
+ var STORE="afh_bc_check",KEEP=24*3600000;
+ var EV=/^lead_\d{13}_[a-z0-9]{1,12}$/,KEY=/^[0-9a-f]{32}$/;
+ /* reasons that mean "no bank check for this customer": route exactly as v16.9b (QA M2) */
+ var UNAVAILABLE=["not_verified","rate_limited","bad_event","calc_off","not_enabled","not_configured","no_url"];
+ /* the consent itself was refused: the call us screen (audit m6). "consent" also comes from the bc router's old path when
+    the step is switched off, so at the tap it is checked against the flag first (on: call us; off: v16.9b routing). */
+ var STOP=["consent","consent_record"];
+ var B=window.AFH_BC={on:false,off:false,late:false,cfg:null,st:"idle",prep:null,dOpen:false,detSeen:false,book:false,url:"",key:"",t0:0,err:"",sms:null,left:false,fallback:"",tapped:false,viewed:false,
+  fails:0,win:null,tab:"",page:"",resumed:"",noStore:false,bridge:false,keepSaid:false,
+  ok:false,rel:false,gate:false,held:[],gDebt:false,dLead:false,sf:false,wasHeld:false,told:false,
+  P:{state:"in_progress",next:"",first:"",lm:"",carries:false,gone:false,done:false,dead:false,t0:0,last:0,until:0,timer:0,busy:false,n404:0,nerr:0,polls:0,hold:false},t:{}};
+ var O={},GD0=null,SNAP=null,ENDSNAP=null;
+ function clean(v,n){return String(v==null?"x":v).replace(/[^a-z0-9_]/gi,"").slice(0,n||20);}
+ function esc(v){return String(v==null?"":v).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+ function post(url,body,ms){var ac=typeof AbortController!=="undefined"?new AbortController():null;var tm=setTimeout(function(){if(ac)ac.abort();},ms);
+  return fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body),credentials:"omit",cache:"no-store",signal:ac?ac.signal:undefined})
+   .then(function(r){var ra=null;try{ra=r.headers.get("Retry-After");}catch(e){ra=null;}
+    return r.json().catch(function(){return null;}).then(function(j){j=(j&&typeof j==="object")?j:{ok:false,reason:"server"};j.http=r.status;j.retry_after=ra;return j;});})
+   .catch(function(){return {ok:false,reason:"network"};}).then(function(j){clearTimeout(tm);return j;});}
+ /* Retry-After in seconds or as a date. Readable only when the response exposes it (Access-Control-Expose-Headers). */
+ function raMs(v){if(v==null||v==="")return 0;var n=Number(v);if(isFinite(n)&&n>=0)return n*1000;var d=Date.parse(v);return isFinite(d)?Math.max(0,d-Date.now()):0;}
+ function log(s,c){try{lmLog("bc."+s,c||0);}catch(e){}}
+
+ /* ── the stored check (QA B1). Own storage first; the AFH page's first party copy through the bridge. ── */
+ function okRec(r){var n=Date.now();return !!r&&typeof r==="object"&&EV.test(String(r.event_id))&&KEY.test(String(r.status_key))&&typeof r.started_at==="number"
+  &&isFinite(r.started_at)&&n-r.started_at<KEEP&&r.started_at<n+300000&&(!r.url||goodUrl(r.url));}
+ function load(){try{var s=window.localStorage.getItem(STORE);if(!s)return null;var r=null;try{r=JSON.parse(s);}catch(e){r=null;}
+   if(okRec(r))return r;window.localStorage.removeItem(STORE);return null;}catch(e){B.noStore=true;return null;}}
+ function save(r){try{window.localStorage.setItem(STORE,JSON.stringify(r));}catch(e){B.noStore=true;}}
+ function forget(){try{window.localStorage.removeItem(STORE);}catch(e){}}
+ function rec(){return {v:1,event_id:afhLeadEid(),status_key:B.key,started_at:B.t0,url:B.url};}
+ function framed(){try{return !!window.parent&&window.parent!==window;}catch(e){return false;}}
+ /* to the AFH page that framed us (afh-parent-bankcheck.js); only our two origins can receive it */
+ function toParent(m){if(!framed())return;HOME.forEach(function(o){try{window.parent.postMessage({afhBankCheck:m},o);}catch(e){}});}
+ function remember(){var r=rec();save(r);toParent({ref:r.event_id,key:r.status_key,t0:r.started_at,url:r.url});}
+ function clearRef(){forget();toParent({clear:true,ref:afhLeadEid()});}
+ window.addEventListener("message",function(e){var d=e.data;if(!d||typeof d!=="object"||!("afhBankCheckRef" in d))return;
+  if(HOME.indexOf(e.origin)<0||e.source!==window.parent)return;          /* only the AFH page that framed us */
+  B.bridge=true;                                                          /* the AFH page runs afh-parent-bankcheck.js */
+  if(typeof d.page==="string"&&/^https:\/\/(www\.)?afhfinance\.com\.au\/[A-Za-z0-9\/_.%~-]{0,280}$/.test(d.page))B.page=d.page;
+  var r=d.afhBankCheckRef;if(!r||typeof r!=="object")return;
+  var x={event_id:String(r.ref||""),status_key:String(r.key||""),started_at:Number(r.t0),url:typeof r.url==="string"?r.url:""};
+  if(okRec(x))resume(x,"parent");});
+ /* v21d RB1: the landing page answers every calculator view with afhParent. The first one after a resume (or with the
+    bank check screen up) is answered once with the current screen, in case the page missed it while loading. */
+ window.addEventListener("message",function(e){var d=e.data;if(!d||typeof d!=="object"||!d.afhParent||B.told||!B.on)return;
+  if(HOME.indexOf(e.origin)<0||e.source!==window.parent)return;if(view!=="bcwait"&&view!=="bankcheck")return;
+  B.told=true;try{afhPost({afhCalcView:{view:view,qi:qi,funnel:funnel,pp:0}});}catch(x){}});
+ /* v21d RB1: a check is live (or its screen is up): the landing page's question 1 must not restart the questions.
+    v16.9b's own message handler asks this before it acts on afhAnswer (build.mjs, bc answer guard). */
+ B.live=function(){try{if(view==="bankcheck"||view==="bcwait")return true;if(B.key&&!B.P.done)return true;if(!B.on&&!B.off)return !!load();}catch(e){}return false;};
+ function page(){return (B.page||String(location.origin+location.pathname)).slice(0,300);}
+
+ /* ── copy. The consent line and Details items 1 to 5 are byte for byte the v21b bc function's calcConsentText (the
+    function hashes its own copy, and bc_consent_texts holds the same text). Item 5 is the electronic delivery consent,
+    also shown beside the Credit Guide link (audit B3), so the three reg 28L(4) matters are visible before the tap. ── */
+ function C(k){return !!(B.cfg&&B.cfg.confirm&&B.cfg.confirm[k]===true);}
+ function flags(){return {days90:C("days90"),noEnquiry:C("no_enquiry")};}
+ function ver(){var f=flags();return "bc-consent-v3"+(f.days90?"-90d":"")+(f.noEnquiry?"-ne":"");}
+ function consentLine(f){return "I agree Credit Sense can collect "+(f.days90?"90 days of ":"")+"my bank transactions and give AFH Finance a report to assess my enquiry.";}
+ function consentDetails(f){return [
+  "Credit Sense collects "+(f.days90?"90 days of ":"")+"transactions and balances from the banks you log in to and gives AFH Finance a report. AFH never sees your login.",
+  "We use the report, including automated checks, to assess your enquiry and work out how we can help.",
+  "Bank transactions can show sensitive details, like health spending. At most, we count them in your spending totals.",
+  (f.noEnquiry?"This check doesn't put an enquiry on your credit file. ":"")+"If you later apply for a loan, the lender may check your credit file.",
+  EDELIVERY];}
+ /* consentText: what the bc function hashes (consent_hash) and what bc_consent_texts stores for the version. */
+ B.consentText=function(f){f=f||flags();return [consentLine(f),"How your bank check works"].concat(consentDetails(f).map(function(t,i){return (i+1)+". "+t;})).join("\n");};
+ B.serverText=B.consentText;
+ B.version=ver;
+
+ function first(){var n=String(contact.name||"").trim().split(/\s+/)[0]||"";return n?n.charAt(0).toUpperCase()+n.slice(1):"";}
+ function centrelinkOnly(){try{var s=st[funnel]||{};return funnel!=="business"&&(s.emp==="centrelink"||s.emp==="benefits");}catch(e){return false;}}
+ function count(){var n=0;try{n=match().list.length;}catch(e){n=0;}return (n<3||centrelinkOnly())?0:n;}
+ function mask(){var mob=String(contact.mobile||"").replace(/\D/g,"");return mob.length===10?"04xx xxx "+mob.slice(7):"your mobile";}
+ var ARROW='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+ var I={lock:'<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  shield:'<path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/>',
+  people:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+  bank:'<path d="M3 10h18M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18M12 3l9 5H3z"/>',
+  tab:'<rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 9h18"/><path d="M13 13h4v4"/><path d="M17 13l-5 5"/>',
+  phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/>',
+  help:'<circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/>',
+  tick:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  key:'<circle cx="7.5" cy="15.5" r="4"/><path d="M10.4 12.6 19 4M16 7l2.5 2.5M14 9l1.8 1.8"/>',
+  mobile:'<rect x="6.5" y="2.5" width="11" height="19" rx="2.6"/><path d="M11 18.2h2"/>',
+  save:'<path d="M15 20v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 3 18.5V20"/><circle cx="9" cy="8" r="3.5"/><path d="M19 8v6M16 11h6"/>'};
+ /* v23 F2: the trust trio's icons, the legal line, the outcome summary, the pay line */
+ I.doc='<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>';
+ I.eyeoff='<path d="M3 3l18 18"/><path d="M10.6 5.1A9.7 9.7 0 0 1 12 5c6 0 9.5 7 9.5 7a17 17 0 0 1-3.2 4.1M6.5 6.6C3.9 8.3 2.5 12 2.5 12S6 19 12 19c1.6 0 3-.4 4.3-1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>';
+ var PAY="We're paid by lenders, a broker fee may be added to your loan.";
+ function inApp(){try{return /FBAN|FBAV|FB_IAB|Instagram/.test(navigator.userAgent||"");}catch(e){return false;}}
+ var TK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+ /* v21c QM1: no storage in this frame and no bridge on the AFH page: nothing can bring the customer back to the check after
+    a reload, so say it once, before the tap. */
+ function canKeep(){if(B.bridge)return true;try{var k="afh_bc_probe";window.localStorage.setItem(k,"1");window.localStorage.removeItem(k);return true;}catch(e){B.noStore=true;return false;}}
+ function keep(){if(canKeep())return "";if(!B.keepSaid){B.keepSaid=true;log("keep_open");}return `<p class="bckeep" id="bcKeep">Keep this page open until your bank check is done.</p>`;}
+ function tel(num,label){return `<a class="bctel" href="tel:${num}">${label}</a>`;}   /* inline phone links, 44 px tall (QA minor 10) */
+ function lic(){return `<p class="bclic">${LICENCE}</p>`;}
+ /* v23 F4: one quiet legal line under every flag on screen: the phone (#bcQ), Privacy Policy and Credit Guide (bank check
+    only), the pay line (outcomes), the licence */
+ function legal(cg,pay){return `<div class="bclegal"><nav aria-label="Call AFH Finance"><a id="bcQ" href="tel:${PHONE}">${lmIcon(I.phone)}03 7031 6881</a></nav><p>${cg?`<span class="lgl"><a id="bcPriv" href="${PRIVACY_URL}" target="_blank" rel="noopener">Privacy Policy</a><a id="bcCg" href="${esc(cgUrl())}" target="_blank" rel="noopener">Credit Guide</a></span>`:""}${pay?pay+" ":""}${LICENCE}</p></div>`;}
+
+ /* teaser (replaces the Ready screen: a count with "may", no confetti). Audit M3: no promise about who calls or why. */
+ function mob(){var m=contact.mobile||"";try{m=smsvFmt(m)||m;}catch(e){}return m||"you";}
+ function kind(){return funnel==="car"?(typeof ASSET!=="undefined"&&ASSET==="caravan"?"caravan loan":"car loan"):funnel==="personal"?"personal loan":"business loan";}
+ function yrs(t){return t+(Number(t)===1?" year":" years");}
+ /* v23 F3: the calculator's own live preview maths (livePreview): the first matching lender's displayed rate range, the
+    customer's amount, term and balloon, as a weekly figure. No rate is shown, so no comparison rate is needed. */
+ function rep(){try{var s=st[funnel],L=match().list;if(!L.length||!s.amount||!s.term)return null;var d=disp(L[0].lo,L[0].hi);
+  return [fmt(weekly(s.amount,d[0],s.term,s.balloon||0)),fmt(weekly(s.amount,d[1],s.term,s.balloon||0))];}catch(e){return null;}}
+ function teaser(){var n=count(),s=st[funnel],r=rep();
+  return lmBar(1,8).replace('class="lmbar"','class="lmbar bcqbar"')+`<div class="card anim lmc bcx bctz2">
+  ${r?`<p class="bclbl">Your indicative repayment</p><p class="bcamt">${r[0]===r[1]?"About "+r[0]:r[0]+" to "+r[1]}<small> a week</small></p>`:""}
+  <p class="bcfor">${fmt(s.amount)} ${kind()}${funnel==="business"||!s.term?"":" over "+yrs(s.term)}</p>
+  <div class="bcglass"><span class="bcflow" aria-hidden="true"><span class="bcnode">${lmIcon(I.bank)}</span></span><b>${n?n+" lenders may suit you":"We compare 40+ lenders for you"}</b></div>
+  <button type="button" class="cta rdcta" onclick="afhTrack('CalcUnlockClick',{});view='details';render();">Continue ${ARROW}</button>
+  <p class="bcsafe2">${C("no_enquiry")?lmIcon(I.shield)+"No credit score impact":lmIcon(I.lock)+"No obligation"}</p>
+ </div>`;}
+
+ /* ── bank check screen ── */
+ function head(done){return `<div class="vfhead"><div class="lmsegs"><i class="lmseg ok"></i><i class="lmseg ok"></i><i class="lmseg ${done?"ok":"bccur"}"></i></div><div class="lmlabs"><span class="ok">Your answers ✓</span><span class="ok">Your details ✓</span><span class="${done?"ok":"cur"}">Bank check${done?" ✓":""}</span></div></div>`;}
+ function cgUrl(){var L=B.cfg&&B.cfg.links||{};return L.credit_guide||CG_URL;}
+ /* v21h (coordinator, 9 Nov): "Credit Guide" inside a Details item (item 5) is a link to the Credit Guide too. Presentation
+    only: the words, and so the hashed text and the shown text sha256, are unchanged */
+ function cgl(h){return h.replace("Credit Guide",'<a class="bccgl" href="'+esc(cgUrl())+'" target="_blank" rel="noopener">Credit Guide</a>');}
+ function links(){var L=B.cfg&&B.cfg.links||{},out=[];
+  if(L.collection)out.push(`<a href="${esc(L.collection)}" target="_blank" rel="noopener">Collection Notice</a>`);
+  out.push(`<a href="${PRIVACY_URL}" target="_blank" rel="noopener">Privacy Policy</a>`);
+  out.push(`<a href="${esc(cgUrl())}" target="_blank" rel="noopener">Credit Guide</a>`);
+  return out.join("");}
+ function act(){
+  if(B.st==="prep")return `<button type="button" class="cta bcgo" id="bcGo" disabled aria-busy="true"><span class="spin" aria-hidden="true"></span> Getting your secure link</button>`;
+  if(B.st==="stop")return `<div class="bcerr" role="alert"><b>We couldn't start your bank check</b><span>Call us on ${tel(PHONE,"03 7031 6881")} and a broker will help you with your next step.</span></div>
+   <a class="cta bcgo" id="bcCall" href="tel:${PHONE}">${lmIcon(I.phone)} Call AFH Finance</a>`;
+  if(B.st==="error"){
+   var sub=B.sms===true?`We've texted the link to ${mask()}.`:`Tap Try again, or call us on ${tel(PHONE,"03 7031 6881")}.`;
+   var btn=B.url?`<a class="cta bcgo" id="bcGo" href="${esc(B.url)}" target="_top" rel="noopener" onclick="AFH_BC.retry()">Try again ${ARROW}</a>`
+    :`<button type="button" class="cta bcgo" id="bcGo" onclick="AFH_BC.go()">Try again ${ARROW}</button>`;
+   return `<div class="bcerr" role="alert"><b>We couldn't open the bank check here</b><span>${sub}</span></div>${btn}`;}
+  return `<button type="button" class="cta bcgo" id="bcGo" onclick="AFH_BC.go()"${B.st==="going"?' aria-busy="true"':''}><span class="lk" aria-hidden="true">${lmIcon(I.lock)}</span>${LABEL} ${ARROW}</button>`;}
+ /* v21f B2: the quiet service line under the button (not in the stop and error states, which carry their own number) */
+ function q(){return `<p class="bcfine bcc" id="bcQ">Questions? Call ${tel(PHONE,"03 7031 6881")}</p>`;}
+ function overlay(){return `<div class="bcov" id="bcOv" role="status" aria-live="polite"${B.st==="going"?"":" hidden"}><span class="bclock">${lmIcon(I.lock)}</span>
+  <h3>Opening your secure bank check</h3><p>Your enquiry is saved with AFH Finance.</p>${C("wordmark")?'<span class="bcwm">Credit Sense</span>':""}<i class="vfspin" aria-hidden="true"></i></div>`;}
+ function book(k){
+  if(booked)return `<div class="r2book done bcbooked"><span class="r2bi ok">${TICK}</span><div><b>Call booked for ${esc(booked.day)}, ${esc(booked.time)}</b><small>A broker will call ${esc(mob())}.</small></div></div>`;
+  var days=bkDays();   /* v23 F6: always open; Book my call appears only once a day and a time are picked (never a dead button) */
+  return `<section class="bcglass bcpick" id="bcBook" aria-labelledby="bcBookH"><h3 id="bcBookH"><i aria-hidden="true">${ICON.phone}</i>Pick a call time</h3>
+  <div class="r2book" id="book"><div class="chips" role="group" aria-label="Day">${days.map(function(d){return `<button type="button" class="chip ${bk.day===d.k?'on':''}" aria-pressed="${bk.day===d.k}" onclick="AFH_BC.pick();bkSet('day','${d.k}')">${d.full}</button>`;}).join("")}</div>
+  ${bk.day?`<div class="chips" role="group" aria-label="Time">${bkSlots(bk.day).map(function(x){return `<button type="button" class="chip ${bk.time===x[1]?'on':''}" aria-pressed="${bk.time===x[1]}" onclick="bkSet('time','${x[1]}')">${x[1]}</button>`;}).join("")}</div>`:""}
+  ${bk.day&&bk.time?`<button type="button" class="cta" id="bcBookGo" onclick="bookCall()">${ICON.calendar} Book my call</button>`:""}</div></section>`;}
+ function trio(){return [C("read_only")?[I.doc,"Read only"]:null,[I.eyeoff,"We never see your login"],C("no_enquiry")?[I.shield,"No credit score impact"]:null]
+  .filter(Boolean).map(function(x){return '<li><i aria-hidden="true">'+lmIcon(x[0])+'</i>'+x[1]+'</li>';}).join("");}
+ /* v23 F7: what they get (the count with "may"), how it flows (bank, lock, AFH), the trust trio, the hashed line quieter,
+    one button, the legal line. The confirm gates stay: Read only and No credit score impact show only when confirmed. */
+ function screen(){var f=flags(),n=count();
+  if(!B.prep&&B.st==="idle")B.st="prep";
+  return `<div class="card anim lmc bcx" id="bcCard">${head(false)}
+  <h2 class="bch" id="bcH" tabindex="-1">${n?n+" lenders may suit you":"We compare 40+ lenders for you"}</h2>
+  <p class="bcsub bcwhy" id="bcWhy">${WHY}</p>   <!-- v21h (coordinator, decision 1): the why line Sep approved -->
+  <div class="bcglass bcglass2">
+   <div class="bcrow" aria-hidden="true"><span class="bcflow"><span class="bcnode">${lmIcon(I.bank)}</span><i></i><span class="bcnode bcsafe">${lmIcon(I.lock)}</span><i></i><span class="bcnode bcafh">${MARK}</span></span></div>
+   <ul class="bctrust bctrio">${trio()}</ul>
+  </div>
+  <p class="bccons" id="bcCons"><span id="bcLine">${consentLine(f)}</span> <button type="button" class="bcdet" id="bcDet" aria-expanded="${B.dOpen}" aria-controls="bcDetails" onclick="AFH_BC.det()">Details</button></p>
+  <div class="bcdetails" id="bcDetails"${B.dOpen?"":" hidden"}><h3>How your bank check works</h3><ol>${consentDetails(f).map(function(t,i){return "<li"+(i===4?' id="bcEd5"':"")+">"+cgl(esc(t))+"</li>";}).join("")}</ol><p class="bclinks">${links()}</p></div>
+  ${keep()}<div id="bcAct">${act()}</div>
+  <p id="bcLive" class="smsvsr" aria-live="polite"></p>
+  ${legal(true)}
+  ${overlay()}
+ </div>`;}                                                /* v21f B2: no booking alternative here (Sep: no skip); it is on the waiting and outcome screens */
+ function paint(){var a=document.getElementById("bcAct");if(a)a.innerHTML=act();var o=document.getElementById("bcOv");if(o)o.hidden=B.st!=="going";}
+ function say(t){var l=document.getElementById("bcLive");if(l)l.textContent=t;}
+
+ /* ── waiting screen and outcomes (view "bcwait"): the same states as the done page, driven only by bc/status ── */
+ function call(){return `<a class="bccall" href="tel:${PHONE}">${lmIcon(I.phone)} Questions? Call <b>03 7031 6881</b></a>`;}
+ function callCta(){return `<a class="cta bcgo" href="tel:${PHONE}">${lmIcon(I.phone)} Call AFH Finance</a><p class="bcfine bcc">03 7031 6881</p>`;}
+ /* v21c QM2: a quiet way out of an unfinished check. Clears only this browser's reference (here and on the AFH page); the
+    check itself carries on at the server, so a finished check still reaches the broker. */
+ function fresh(){return `<button type="button" class="bcnew" id="bcNew" onclick="AFH_BC.fresh()">New enquiry</button>`;}
+ function nm(pre){return B.P.first?pre+esc(B.P.first):"";}
+ /* v21f B4: "Continue my bank check" is the primary action on the waiting and 2 h screens (it replaces v21e's "Open it
+    again" link); target _top when the bank check ran in this window (no new tab) */
+ function cont(){return B.url?`<a class="cta bcgo" id="bcAgain" href="${esc(B.url)}" target="${B.tab==="top"?"_top":"_blank"}" rel="noopener" onclick="AFH_BC.again()">Continue bank check ${ARROW}</a>`:"";}
+ function steps(){var s=B.P.state,a=s==="in_progress"?"now":"done",b=s==="in_progress"?"":(s==="ready"?"done":"now"),c=s==="ready"?"done":"";
+  function li(cls,t){var sr=cls==="done"?"Done: ":cls==="now"?"In progress: ":"Next: ";return '<li class="'+cls+'"><i>'+(cls==="done"?TK:"")+'</i><span><span class="smsvsr">'+sr+'</span>'+t+'</span></li>';}
+  return '<ul class="bcsteps" aria-label="Your bank check">'+li(a,"Bank check received")+li(b,"Reading your statements")+li(c,"Your next step")+'</ul>';}
+ function tick(){return `<div class="bctick">${TK}</div>`;}
+ /* v23 F10: a real summary (the customer's own answers) and the contact card only once a call is booked */
+ function sum(){try{var s=st[funnel];if(!s||!s.amount||!contact.name)return "";var k=kind();
+  return '<ul class="bcsum" aria-label="Your enquiry"><li>'+k.charAt(0).toUpperCase()+k.slice(1)+'</li><li>'+fmt(s.amount)+'</li>'+(funnel==="business"||!s.term?"":'<li>'+yrs(s.term)+'</li>')+'</ul>';}catch(e){return "";}}
+ function saveNo(){return booked?`<a class="bcsave" id="bcSave" href="${VCF}" target="_blank" rel="noopener" download="AFH Finance.vcf">${lmIcon(I.save)}Save our number</a>`:"";}
+ var NEXT="A broker will call you about your next step.";      /* audit M3: true for every outcome, every check goes to a broker */
+ function outcome(){var P=B.P,n=P.state==="ready"&&!P.hold?P.next:"";
+  if(n==="broker")return ["keep",tick()+`<h2 class="lmh bcc" id="bcH" tabindex="-1">You're all set${nm(", ")}</h2>${sum()}<p class="bclead bcc">A broker will call you.</p>`,saveNo(),PAY];
+  if(n==="lead_market"&&P.lm)return ["lead_market",`<h2 class="lmh" id="bcH" tabindex="-1">Thanks${nm(", ")}</h2><div class="bcout">
+   <p class="bclead">Our lenders aren't the right fit for this loan. As you agreed, Lead Market, operated by Credit Sense, can show your enquiry to lenders and brokers who may help.</p>
+   ${P.carries?"<p>Your bank check carries over.</p>":""}
+   <a class="cta bcgo" href="${esc(P.lm)}" target="_top" rel="noopener">Continue to Lead Market ${ARROW}</a>
+   <p class="bcfine">AFH may be paid a fee. Questions? Call ${tel(PHONE,"03 7031 6881")}.</p></div>`,""];
+  if(n==="help")return ["help",`<h2 class="lmh" id="bcH" tabindex="-1">Thanks for checking${nm(", ")}</h2><div class="bcout">
+   <p class="bclead">A new loan may not be the best next step for you.</p>
+   <p>The National Debt Helpline offers free, independent financial counselling on ${tel("1800007007","1800 007 007")}.</p>
+   <a class="cta bcgo" href="tel:1800007007">${lmIcon(I.phone)} Call the National Debt Helpline</a>
+   <p>For essentials, a no interest loan from NILS may help.</p>
+   <a class="cta bcgo bcalt" href="tel:136457">${lmIcon(I.phone)} Call NILS on 13 64 57</a>
+   <p>Think we've got this wrong? Call us on ${tel(PHONE,"03 7031 6881")}.</p></div>`,""];
+  if(n)return ["later",tick()+`<h2 class="lmh bcc" id="bcH" tabindex="-1">You're all set${nm(", ")}</h2>${sum()}<p class="bclead bcc">A broker will call you.</p>`,saveNo(),PAY];
+  if(P.gone)return ["gone",`<div class="bcicon">${lmIcon(I.tab)}</div><h2 class="lmh bcc" id="bcH" tabindex="-1">Your enquiry is saved${nm(", ")}</h2><p class="bcsub bcc">Finished your bank check? ${NEXT}</p>`+(B.url?cont():callCta()),fresh()];
+  if(P.state==="in_progress")return ["waiting",`<div class="bcicon">${lmIcon(I.tab)}</div><h2 class="lmh bcc bcwt" id="bcH" tabindex="-1"><i class="vfspin" aria-hidden="true"></i>Finish your bank check</h2>
+   <p class="smsvsr">This page updates when it's done.</p>${cont()}`,fresh()];
+  return ["progress",tick()+`<h2 class="lmh bcc" id="bcH" tabindex="-1">Done${nm(", ")}. That's everything.</h2><p class="bcsub bcc">Your bank check is in. We're reading it now.</p>${steps()}`,""];}
+ var shown="";
+ /* the booking card needs the customer's details: not after a resume in a fresh page, where only the reference is known */
+ function bookable(s){return (s==="gone"||s==="progress"||s==="keep"||s==="later")&&!!contact.name;}   /* v21f F4: keep and later too */
+ function cardHtml(v){return `<div class="card anim lmc bcx bcw" id="bcCard" data-screen="${v[0]}" data-state="${esc(B.P.state)}" aria-live="polite">${head(v[0]!=="waiting"&&v[0]!=="gone")}${v[1]}</div>`;}
+ /* v22 P1-4: after the card and the booking card: the secondary action, "Start a new enquiry" (last control) and the licence */
+ function endHtml(v){return `<div class="bcend" id="bcEnd">${v[2]||""}${legal(false,v[3])}</div>`;}
+ function waitHtml(){var v=outcome();return cardHtml(v)+(bookable(v[0])?book(v[0]):"")+endHtml(v);}
+ function waitPaint(){if(view!=="bcwait")return;var v=outcome(),k=v[0]+"|"+B.P.state+"|"+B.P.first+"|"+B.P.carries;if(k===shown)return;var was=shown.split("|")[0],big=was!==v[0];shown=k;
+  var bkEl=document.getElementById("bcBook"),c=document.getElementById("bcCard");
+  if(bkEl&&c&&bookable(v[0])&&bookable(was)){c.outerHTML=cardHtml(v);var e=document.getElementById("bcEnd");if(e)e.outerHTML=endHtml(v);}else render();
+  if(big)focusH();}
+ /* the heading takes focus on a new screen (screen readers). v21c: that focus can fire the frame window's own focus event,
+    which must not count as the customer coming back (it undid the 2 h "Your enquiry is saved" screen at once). */
+ function focusH(){var h=document.getElementById("bcH");if(!h)return;B.sf=true;try{h.focus({preventScroll:true});}catch(e){}B.sf=false;}
+
+ /* bc/status: POST {event_id, status_key}. Never a query string. The state is only ever what bc/status says. */
+ function pollSoon(ms){clearTimeout(B.P.timer);B.P.timer=setTimeout(poll,Math.max(0,ms));}
+ function poll(){var P=B.P;clearTimeout(P.timer);P.timer=0;
+  if(view!=="bcwait"||P.done)return;
+  if(Date.now()-P.t0>WAIT_MAX){P.gone=true;log("wait_stop");waitPaint();return;}
+  if(P.busy)return;P.busy=true;P.last=Date.now();P.polls++;
+  post(STATUS,{event_id:afhLeadEid(),status_key:B.key},8000).then(function(j){P.busy=false;var wait=Date.now()-P.t0>WAIT_FAST?15000:3000;
+   if(j.reason==="network"&&!j.http){P.nerr++;wait=Math.max(wait,BACKOFF[Math.min(P.nerr,BACKOFF.length)-1]);}   /* QA minor 1 */
+   else if(j.http===429){P.nerr=0;var a=Math.max(raMs(j.retry_after),+j.poll_ms||0);wait=a>0?Math.min(120000,Math.max(3000,a)):30000;P.until=Date.now()+wait;}   /* QA minor 2: not even a wake polls before then */
+   else if(j.http===404){P.nerr=0;P.n404++;if(P.n404>=3)wait=15000;
+    if(B.resumed&&P.n404>=3){clearRef();P.gone=true;P.dead=true;log("resume_unknown");waitPaint();return;}}   /* a stored reference the server doesn't know: dropped for good */
+   else if(j.ok){P.n404=0;P.nerr=0;
+    if(typeof j.first==="string")P.first=j.first.slice(0,20);
+    if(typeof j.carries_over==="boolean")P.carries=j.carries_over;
+    if(["in_progress","reading","ready"].indexOf(j.state)>-1){if(j.state!==P.state)log("wait."+j.state);P.state=j.state;}
+    if(wait===3000)wait=Math.min(30000,Math.max(2000,+j.poll_ms||3000));
+    if(j.state==="ready"){
+     P.next=["broker","lead_market","help","later"].indexOf(j.next)>-1?j.next:"later";
+     if(P.next==="lead_market"){if(typeof j.lm_url==="string"&&/^https:\/\/(www\.)?afhfinance\.com\.au\/partner\/[A-Za-z0-9/_.?=&%-]*$/.test(j.lm_url))P.lm=j.lm_url;else P.next="later";}
+     log("outcome."+P.next);P.done=true;clearRef();                       /* final: the stored reference is cleared */
+     P.hold=true;waitPaint();setTimeout(function(){P.hold=false;waitPaint();},700);return;}   /* the last tick lands, then the outcome */
+    waitPaint();}
+   else{P.nerr++;wait=Math.max(wait,BACKOFF[Math.min(P.nerr,BACKOFF.length)-1]);}   /* 5xx or an unreadable answer: back off too */
+   if(view==="bcwait")pollSoon(wait);});}
+ function wait(now){B.st="wait";view="bcwait";var P=B.P;P.t0=Date.now();P.gone=false;P.busy=false;shown="";render();window.scrollTo(0,0);log("wait");pollSoon(now?0:3000);}
+ /* back on this tab or page: ask straight away (after the 2 h pause too: the customer is here again) */
+ function wake(){var P=B.P,now=Date.now();if(view!=="bcwait"||P.done||P.dead)return;
+  if(P.gone){P.gone=false;P.t0=now;log("wait_again");waitPaint();}
+  if(!P.busy)pollSoon(Math.max(0,1500-(now-P.last),P.until-now));}   /* at once, but never twice within 1.5 s or inside a 429 wait */
+
+ /* ── page life cycle (QA B1, Q6k and minors 5 and 6) ── */
+ function away(){B.left=true;clearTimeout(B.t.nav);}
+ function here(){B.left=false;
+  if(B.st==="going"&&B.url){clearTimeout(B.t.nav);B.tab=B.tab||"top";log("back_from_nav");wait(true);return;}   /* top level navigation left and came back, or never left */
+  wake();}
+ /* a page shown again from the back/forward cache: nothing in flight survives; resume the stored check if there is one */
+ function restored(){if(!B.on&&!B.key){var r0=load();if(r0)resume(r0,"local");return;}   /* step not in use: nothing else runs (flag off stays v16.9b) */
+  B.left=false;clearTimeout(B.t.nav);clearTimeout(B.t.prep);B.P.busy=false;log("restored");
+  if(!B.key){var r=load();if(r){resume(r,"local");return;}}
+  if(B.st==="going"){if(B.url){B.tab=B.tab||"top";wait(true);}else{B.st=B.tapped?"ready":B.st;paint();}return;}
+  if(view==="bcwait")wake();}
+ window.addEventListener("pagehide",away);
+ /* v21d RM1 (Sep): a Lead Market or ALC customer who gave their details and the AFH contact consent, then leaves the page
+    before the tap (no fallback): the held lead goes once, untagged, now, as a CORS simple keepalive request (v21e,
+    sendOnLeave), so it survives the page going away. Switching apps to read the code only hides the page
+    (visibilitychange): no release. v21f B1: inert (the lead goes at the details step and nothing is ever held). */
+ window.addEventListener("pagehide",function(){if(B.on&&!B.fallback&&!B.rel&&B.held.length)release("pagehide",false);});
+ window.addEventListener("pageshow",function(e){if(e&&e.persisted)restored();});
+ document.addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden")away();else here();});
+ window.addEventListener("focus",function(){if(!B.sf)here();});
+
+ /* ── flow ── */
+ function mount(){
+  if(view==="bcwait"){shown=outcome()[0]+"|"+B.P.state+"|"+B.P.first+"|"+B.P.carries;return;}
+  if(!B.viewed){B.viewed=true;log("view");focusH();}
+  if(!B.prep)prepare();}
+ function prepare(){B.st="prep";paint();
+  B.t.prep=setTimeout(function(){if(B.st==="prep"){B.st="ready";paint();log("prep_slow");}},5000);   /* no answer in 5 s: enable the button anyway */
+  B.prep=post(START,{action:"prepare",event_id:afhLeadEid()},8000).then(function(j){
+   clearTimeout(B.t.prep);
+   if(B.tapped||B.fallback||!B.on)return j;                 /* v21c: a late answer never overrides the tap's own answer */
+   if(j.ok&&j.url===null){fallback(j.reason||"no_url");return j;}
+   if(!j.ok&&(UNAVAILABLE.indexOf(j.reason)>-1||j.reason==="consent"||j.error==="event_id")){fallback(j.reason||j.error);return j;}   /* at prepare "consent" can only mean the step is off */
+   if(B.st==="prep"){B.st="ready";paint();}
+   if(!j.ok)log("prep_err."+String(j.reason||j.http||"x").replace(/[^a-z0-9_]/gi,"").slice(0,20));
+   return j;});}
+ /* QA M2: v16.9b's own routing for these answers, with every wrapper removed. This is what v16.9b's next() does after
+    the last question (Lead Market switch, ALC, small debts to Lead Market), then its results after the details. */
+ function route169(){try{clearTimeout(SMSV.timer);}catch(e){}
+  try{if(lmShouldSwitch()){lmStart();return;}
+   if(alcRoute()){alcStart();return;}
+   if((debtLow()||(SELL&&debtFunnel()))&&!afhKeepsDebt()&&LM.on&&!lm.declined){lmStart();return;}}catch(e){}
+  view="results";render();window.scrollTo(0,0);}
+ /* v21c m1: where v16.9b sends this customer, by v16.9b's own rules (the originals, not the step's wrappers): Lead Market
+    when it switched them during the questions (SNAP) or for a small debt, ALC for an ALC debt, otherwise AFH. */
+ function bound(){try{if(SNAP&&SNAP.f===funnel)return "lm";
+   if(alcEligible()&&!O.afhKeepsDebt())return "alc";
+   if((debtLow()||(SELL&&debtFunnel()))&&!O.afhKeepsDebt()&&LM.on&&!lm.declined)return "lm";}catch(e){}
+  return "afh";}
+ /* the calculator state at v16.9b's routing point: the answers, where the questions were, and which once only events ran */
+ function snap(){var s=st[funnel]||{};return {f:funnel,s:Object.assign({},s),qi:qi,pp:payPh,lq:lastQi,lf:lastFunnel,mx:afhMaxQi[funnel],dn:afhDone[funnel],seen:Object.assign({},afhSeen)};}
+ function unsnap(p){if(!p||p.f!==funnel)return;var s=st[funnel],k;for(k in s)if(!(k in p.s))delete s[k];Object.assign(s,p.s);
+  qi=p.qi;payPh=p.pp;lastQi=p.lq;lastFunnel=p.lf;
+  if(p.mx===undefined)delete afhMaxQi[funnel];else afhMaxQi[funnel]=p.mx;
+  if(p.dn===undefined)delete afhDone[funnel];else afhDone[funnel]=p.dn;
+  for(k in afhSeen)if(!(k in p.seen))delete afhSeen[k];}
+ /* v21c m1: a Lead Market or ALC customer never reached v16.9b's details step, so after a fallback nothing of it remains:
+    the answers given after v16.9b's switch point, the details, the enquiry consent, the SMS state and the booking chips. */
+ function reset169(b){unsnap(b==="lm"&&SNAP&&SNAP.f===funnel?SNAP:ENDSNAP);
+  contact.name="";contact.mobile="";contact.email="";for(var k in contact)if(k!=="name"&&k!=="mobile"&&k!=="email")delete contact[k];
+  gdv={};GS.gate=0;try{if(gdT.gate)clearTimeout(gdT.gate.t);delete gdT.gate;}catch(e){}
+  consent.contact=false;consent.marketing=false;consent.ts="";consent.page="";gatePassed=false;triedNext=false;
+  try{smsvReset();if(SMSV.io){SMSV.io.disconnect();SMSV.io=null;}SMSV.eid="";SMSV.preN=0;SMSV.chg=0;SMSV.chgErr="";SMSV.chgN=0;SMSV.want=0;SMSV.preH="";SMSV.preTr=null;SMSV.badN=[];SMSV.rf="";delete SMSV.chgVal;}catch(e){}
+  try{bk.day="";bk.time="";}catch(e){}}
+ /* QB1 (v21c): every way the step can end before the bank check starts comes here, from any screen up to the tap. */
+ function fallback(r){if(B.fallback||B.ok||!B.on)return;B.fallback=String(r||"x");log("fallback."+clean(B.fallback,24));
+  clearTimeout(B.t.nav);clearTimeout(B.t.prep);
+  /* v21d m-a: an enquiry that already went to AFH stays with AFH, as stop() keeps it: v16.9b's AFH results, never a Lead
+     Market or ALC referral on top. v21f B1: every lead goes at the details step (B.rel), so this is every fallback. */
+  var v=view,rel=B.rel,b=rel?"afh":bound(),go=["bankcheck","verify","unlocking","form"].indexOf(v)>-1;
+  B.held=[];                                              /* m1: the held lead is dropped; v16.9b never sent it */
+  uninstall();
+  if(b!=="afh")reset169(b);
+  if(!go)return;
+  if(b==="afh")try{aplCheck();}catch(e){}                  /* v16.9b checks the apply portal at the details step */
+  if(rel){view="results";render();window.scrollTo(0,0);return;}
+  route169();}
+ /* The bank check has really started (link released or texted), or the customer booked a call. bank_check:"on" only once
+    the check exists (ok). v21f B1: nothing is held any more (the lead went at the details step), so the queue below is
+    always empty; what remains is ok and the afh_keep Lead: an AFH debt enquiry gets it once its check starts (as v21e),
+    never a Lead Market bound customer (m-c); an ALC customer's $15 Lead already fired at the details step (F1). */
+ function release(why,ok){if(ok&&!B.ok)B.ok=true;var q=B.held;B.held=[];
+  if(!B.rel||q.length){B.rel=true;log("release."+why,q.length);}
+  q.forEach(function(c){try{if(why==="pagehide")sendOnLeave(c[0],c[1]);else O.sendLead(c[0],B.ok?Object.assign({bank_check:"on"},c[1]||{}):c[1],true);}catch(e){}});
+  if(B.ok&&B.gDebt&&!B.dLead&&!B.wasHeld&&bound()!=="lm"){B.dLead=true;try{if(!debtCentrelink())O.debtPixelLead("afh_keep",Math.max(15,leadQuality().value||0));}catch(e){}}}
+ /* v21e RD1 (QA recheck of v21d): sendLead posts JSON, a preflighted request, and Chromium drops a preflighted keepalive
+    request when the page goes away by a top level navigation (Back, reload, another page): only tab close delivered it.
+    For the pagehide release only, v16.9b's own sendLead runs as it is (the same data object, the same afhLead message,
+    no pixel), and while it runs its one Formspree request is reshaped into a CORS simple request: the same fields, form
+    encoded, Accept: application/json (Formspree answers as AJAX), keepalive. Every other sendLead call is untouched. */
+ function sendOnLeave(a,x){var real=window.fetch;
+  window.fetch=function(u,o){window.fetch=real;
+   try{if(typeof u==="string"&&u.indexOf("https://formspree.io/f/")===0&&o&&typeof o.body==="string"){var j=JSON.parse(o.body),f=new URLSearchParams();
+    Object.keys(j).forEach(function(k){var v=j[k];f.append(k,v===null||v===undefined?"":typeof v==="object"?JSON.stringify(v):String(v));});
+    return real.call(window,u,{method:"POST",keepalive:true,headers:{"Accept":"application/json","Content-Type":"application/x-www-form-urlencoded"},body:f});}}catch(e){}
+   return real.apply(window,arguments);};
+  try{return O.sendLead(a,x,true);}finally{window.fetch=real;}}
+ /* The new tab is opened in the tap itself (a popup opened after the network call would be blocked). It starts as an
+    AFH holding page with the opener link cut, and only goes to Credit Sense once bc/start has recorded the consent.
+    An Android WebView without multiple windows hands back the top window instead of a new one: that is not a tab. */
+ function isTop(w){try{return w===window.top||w===window||w===window.parent;}catch(e){return false;}}
+ function openTab(){var w=null;try{w=window.open("","_blank");}catch(e){w=null;}
+  if(!w)return null;
+  if(isTop(w)){log("tab_is_top");return null;}
+  try{w.opener=null;}catch(e){}
+  try{var d=w.document;d.open();d.write('<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>AFH Finance bank check</title></head>'
+   +'<style>@keyframes s{to{transform:rotate(360deg)}}i{display:block;width:26px;height:26px;margin:28px auto 18px;border-radius:50%;border:2.5px solid #DCD6FA;border-top-color:#4B2EDB;animation:s .8s linear infinite}@media (prefers-reduced-motion:reduce){i{animation:none}}p{margin:0 0 6px;font-size:14.5px;color:#434A55}</style>'
+   +'<body style="margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;color:#1E2329;text-align:center;background:radial-gradient(60% 40% at 100% 0%,rgba(109,84,232,.16),rgba(109,84,232,0) 70%),radial-gradient(55% 35% at 0% 100%,rgba(17,181,238,.16),rgba(17,181,238,0) 70%),#F6F6F9"><div>'+LOGO
+   +'<i></i><p style="font-size:18px;font-weight:700;color:#1E2329">Opening your secure bank check</p><p>This can take a few seconds.</p><p>When you&#39;re done, come back to AFH Finance.</p></div></body></html>');d.close();}catch(e){}
+  return w;}
+ function dropTab(w){try{if(w&&!w.closed)w.close();}catch(e){}}
+ function handoff(w){
+  if(w&&w.closed){B.tab="tab";log("tab_closed");wait(false);return;}       /* QA minor 6: the customer closed the holding tab; never move the AFH page */
+  if(w){var ok=false;try{w.location.replace(B.url);ok=true;}catch(e){try{w.location.href=B.url;ok=true;}catch(e2){ok=false;}}
+   if(ok){B.win=w;B.tab="tab";log("tab");wait(false);return;}}
+  B.tab="top";nav();}
+ /* Top level navigation from the frame: window.open(url,"_top") or top.location.href, both ADD a history entry (a cross
+    origin frame can't call top.location.assign; it never uses replace), so Back returns to the AFH page. */
+ function nav(){B.st="going";B.left=false;paint();
+  log("nav");var w=null;try{w=window.open(B.url,"_top");}catch(e){w=null;}
+  if(!w){try{window.top.location.href=B.url;}catch(e){}}
+  clearTimeout(B.t.nav);B.t.nav=setTimeout(function(){if(!B.left&&B.st==="going")fail("nav");},6000);}   /* cancelled by pagehide or the page going hidden */
+ function stop(r){if(!B.ok&&!B.rel&&bound()!=="afh"){fallback("stop_"+clean(r));return;}   /* v21c: v16.9b routing for Lead Market and ALC customers */
+  B.st="stop";B.err=r;log("stop."+String(r).replace(/[^a-z0-9_]/gi,"").slice(0,20));paint();say("We couldn't start your bank check");}
+ function fail(r){B.fails++;if(B.fails>=3){stop("tries");return;}
+  B.st="error";B.err=r;B.sms=null;log("fail."+String(r).replace(/[^a-z0-9_]/gi,"").slice(0,20));paint();say("We couldn't open the bank check here");
+  /* bc/start texts the link only when the consent record exists (a tap that timed out here may still have finished there) */
+  post(START,{action:"sms",event_id:afhLeadEid()},8000).then(function(j){B.sms=!!(j&&j.ok&&j.sent);if(B.sms){log("sms_sent");if(B.on)release("sms",true);}if(B.st==="error")paint();});}
+ function goodUrl(u){return typeof u==="string"&&/^https:\/\/creditsense\.com\.au\/(q\/[A-Za-z0-9_-]{2,64}|a\/[A-Za-z0-9_-]{2,40}\/\?[A-Za-z0-9_=&.-]{1,200})$/.test(u);}
+ function vis(id){try{var el=document.getElementById(id);if(!el||el.closest("[hidden]"))return false;var r=el.getBoundingClientRect();return r.width>0&&r.height>0&&getComputedStyle(el).visibility!=="hidden";}catch(e){return false;}}
+ B.go=function(){if(B.st==="going"||B.st==="prep"||B.st==="stop"||!B.on)return;
+  if(B.st==="wait"){wait(true);return;}                    /* QA M1: a check is running; never a dead button */
+  var w=inApp()?null:openTab();if(!w&&inApp())log("inapp");   /* v23 F19: Facebook and Instagram in app browsers: same window (nav), no tab to lose */                                        /* same tap: the only moment a new tab is allowed */
+  if(B.url){handoff(w);return;}
+  var body={event_id:afhLeadEid(),consent_version:ver(),consent_page:page(),details_opened:!!B.detSeen,button_label:LABEL,
+   credit_guide_shown:vis("bcCg"),credit_guide_version:CG_VER,edelivery_shown:vis("bcEd5")};   /* v21f F3: item 5 is on screen only with Details open (B3 superseded by N3) */
+  B.st="going";B.tapped=true;paint();log("tap",B.detSeen?1:0);
+  /* bc/start writes the consent record (version, sha256, timestamp, IP, user agent, details opened, button label, Credit
+     Guide and electronic delivery shown) before it releases the link: no consent record, no link, no Credit Sense. */
+  post(START,body,TAP_MS).then(function(j){
+   if(B.fallback||!B.on){dropTab(w);return;}
+   if(j.ok&&goodUrl(j.url)){B.url=j.url;B.key=(typeof j.status_key==="string"&&KEY.test(j.status_key))?j.status_key:"";B.t0=Date.now();if(B.key)remember();release("tap",true);handoff(w);return;}
+   dropTab(w);
+   if((j.ok&&j.url===null)||UNAVAILABLE.indexOf(j.reason)>-1||j.error==="event_id"){fallback(j.reason||j.error||"no_url");return;}
+   if(j.reason==="consent"){post(START,{action:"status"},4000).then(function(s){if(s&&s.ok===true&&s.on===true)stop("consent");else fallback("calc_off");});return;}
+   if(STOP.indexOf(j.reason)>-1||(!j.ok&&j.http>=400&&j.http<500)){stop(j.reason||j.http);return;}
+   fail(j.reason==="network"?"no_link":(j.reason||"server"));});};
+ B.retry=function(){B.st="going";B.left=false;paint();log("retry");clearTimeout(B.t.nav);B.t.nav=setTimeout(function(){if(!B.left&&B.st==="going")fail("nav");},6000);};
+ B.again=function(){log("again");setTimeout(wake,0);};
+ B.det=function(){B.dOpen=!B.dOpen;if(B.dOpen&&!B.detSeen){B.detSeen=true;log("details");}
+  var b=document.getElementById("bcDet"),d=document.getElementById("bcDetails"),e=document.getElementById("bcEd");if(b)b.setAttribute("aria-expanded",String(B.dOpen));if(d)d.hidden=!B.dOpen;
+  if(e)e.hidden=B.dOpen;};                                /* v21c m6: the electronic delivery sentence shows once (item 5 while Details is open) */
+ /* v21c QM2: "Start a new enquiry" on an unfinished check: forget the reference here and on the AFH page, then a fresh
+    calculator (question 1, a new enquiry id). Nothing is sent to the bank check server; the check is not cancelled. */
+ B.fresh=function(){var P=B.P;log("new_enquiry");P.done=true;P.dead=true;clearTimeout(P.timer);clearRef();
+  try{window.location.reload();}catch(e){try{uninstall();afhEid="";view=view0;qi=0;render();}catch(e2){}}};
+ B.pick=function(){if(!B.picked){B.picked=true;log("book_open");}};
+ B.bookT=function(el){if(el.getAttribute("data-auto")==="1"&&el.open){el.removeAttribute("data-auto");return;}   /* v22: the automatic open is not the customer's */
+  B.book=!!el.open;B.bookTouched=true;if(B.book)log("book_open");};
+
+ /* ── resume a stored check (QA B1): straight to the waiting or outcome screen, polling at once ── */
+ function resume(r,src){if(B.key||B.resumed||gatePassed)return;
+  B.resumed=src;afhEid=r.event_id;B.key=r.status_key;B.url=r.url||"";B.t0=r.started_at;B.tapped=true;B.tab="";B.ok=true;B.rel=true;
+  if(src!=="local")save(r);
+  if(!B.on&&!B.off){B.cfg=B.cfg||{confirm:{},links:{}};install();B.on=true;}
+  log("resume."+src);wait(true);}
+
+ /* ── install: only when the flag is on and the customer is still before the details screen ── */
+ function wrap(n,f){O[n]=window[n];window[n]=f;}
+ /* Credit score lines: only while Credit Sense has confirmed in writing that the check puts no enquiry on the file. */
+ function cs(t,plain){return C("no_enquiry")?t:plain;}
+ function install(){
+  /* no Lead Market switch during the questions; v21c m1: v16.9b's own switch point is kept (SNAP) for a fallback */
+  wrap("lmShouldSwitch",function(){if(view==="form"){var y=false;try{y=!!O.lmShouldSwitch();}catch(e){y=false;}
+    if(SNAP&&SNAP.f!==funnel)SNAP=null;
+    if(y&&!SNAP)SNAP=snap();else if(!y&&SNAP&&qi<=SNAP.qi)SNAP=null;}
+   return false;});
+  /* debt leads stay with AFH: no ALC, no Lead Market. At the details step v16.9b's own answer, so its pixel is v16.9b's. */
+  wrap("afhKeepsDebt",function(){return B.gate?O.afhKeepsDebt():true;});
+  wrap("submitGate",function(ev){B.gate=true;try{return O.submitGate(ev);}finally{B.gate=false;}});
+  /* v21f B1 (supersedes F1's line, same result): at the details step a Lead Market bound customer's debt pixel never fires
+     (m-c); an ALC bound customer keeps v16.9b's own submitGate decision (the $15 debt Lead, eventID the enquiry's, when
+     ALC would take the lead: F1); an AFH customer's as v16.9b (an afh_keep Lead, or none until the tap: release()). */
+  wrap("debtPixelLead",function(r,v){if(B.gate){B.gDebt=true;if(bound()==="lm")return;B.dLead=true;}return O.debtPixelLead(r,v);});
+  wrap("debtPixelOther",function(w){if(B.gate){B.gDebt=true;if(bound()==="lm")return;}return O.debtPixelOther(w);});
+  wrap("bookCall",function(){if(bk.day&&bk.time)release("book",false);return O.bookCall.apply(null,arguments);});
+  /* v21c m3: the AFH landing page treats the bank check and waiting screens as end screens, as v16.9b's results (once
+     details are sent, Back leaves the page). The landing page's history knows only v16.9b's view names. */
+  wrap("afhPost",function(o){try{var a=o&&o.afhCalcView;if(a&&(a.view==="bankcheck"||a.view==="bcwait"))o={afhCalcView:Object.assign({},a,{view:"results",qi:a.view==="bcwait"?-1:a.qi,bc:a.view})};}catch(e){}return O.afhPost(o);});
+  wrap("chooser",function(){return O.chooser().replace("Pick one to see your indicative repayments and lenders to compare.","Pick one to get started.")
+   .replace("No credit score impact · No obligation",cs("No credit score impact · No obligation","No obligation"));});
+  wrap("quickCalc",function(){return O.quickCalc().replace("No credit score impact · 2 minutes · No upfront cost",cs("No credit score impact · 2 minutes · No upfront cost","2 minutes · No upfront cost"));});   /* QA minor 8 */
+  wrap("form",function(){return O.form().replace("No credit score impact · No obligation",cs("No credit score impact · No obligation","No obligation"))   /* v21h: the base line is now "No credit score impact · No obligation" (Sep's banned phrase replaced in the shared base) */
+  .replace('onclick="next()">See my options ','onclick="next()">Continue ');});
+  wrap("creditStep",function(){var s=O.creditStep();s.sub=cs("Best guess is fine. Checking your options has no credit score impact.","Best guess is fine.");return s;});
+  wrap("analysing",function(){return O.analysing().replace("Working out your repayments","Getting your next step ready");});
+  wrap("readyScreen",teaser);
+  wrap("detailsGate",function(){return O.detailsGate().replace("Secure · No credit score impact · No obligation",cs("Secure · No credit score impact · No obligation","Secure · No obligation"));});   /* QA minor 8 (non guided gate) */
+  wrap("gdGate",function(){return O.gdGate().replace(/<h2>Where should we send your [^<]*<\/h2>/,"<h2>Where can your broker reach you?</h2>")
+   .replace("Secure · No credit score impact · No obligation",cs("Secure · No credit score impact · No obligation","Secure · No obligation"));});
+  wrap("gdStep",function(k,f,j){return O.gdStep(k,f,j).replace("We'll text you a code now. You'll need it to see your options.","We'll text you a code now to confirm it's you.");});
+  GD0={bar:GD.gate.bar,go:GD.gate.go};GD.gate.bar=["Your answers","Your details","Bank check"];   /* v23: the shared label (Agree and continue) stays */   /* v21f F5: the final details step only (gdGoLbl: earlier steps say Continue) */
+  wrap("smsvHead",function(ok){return O.smsvHead(ok).replace("Your options</span>","Bank check</span>");});
+  /* QA copy: no "Last step" before the bank check step */
+  wrap("smsvView",function(){return O.smsvView().replace("Opening your options…","Next, your secure bank check.")
+   .replace(/<h2 class="vft" id="vfT">Last step(?:, ([^<]*))?<\/h2>/,function(m,n){return '<h2 class="vft" id="vfT">'+(n?n+", confirm your mobile":"Confirm your mobile")+'</h2>';});});
+  wrap("smsvGate",function(){try{if(!smsvMob())return;if(SMSV.st==="idle")smsvStart(false);}catch(e){}});   /* no apply portal switch: the code is needed for the bank check */
+  /* QB1 (v21c): after "Unlocking" (the code step not open: SMS off, test mode, rate limited, blocked, not configured) or
+     the questions finished again after the details. Verified: the bank check. Anything else: the fallback, which
+     uninstalls the step and routes as v16.9b (Lead Market, ALC or the results); the caller then shows that view. */
+  wrap("smsvAfterUnlock",function(){var v=O.smsvAfterUnlock();if(v!=="results"||B.fallback)return v;
+   if(SMSV.st==="verified")return "bankcheck";
+   if(view==="form")ENDSNAP=snap();
+   fallback("sms_"+String(SMSV.st).replace(/[^a-z]/g,""));return view;});
+  wrap("smsvToResults",function(){if(view!=="verify")return;
+   if(SMSV.st==="verified"&&!B.fallback){clearTimeout(SMSV.timer);view="bankcheck";render();window.scrollTo(0,0);return;}
+   fallback("sms_"+String(SMSV.st).replace(/[^a-z]/g,""));});
+  wrap("results",function(){return view==="bankcheck"?screen():view==="bcwait"?waitHtml():O.results();});
+  /* QA M1: the funnel tabs are hidden on the bank check, waiting and outcome screens */
+  wrap("render",function(){if(view==="analysing")ENDSNAP=snap();   /* v16.9b's routing point after the last question */
+   O.render();var bv=view==="bankcheck"||view==="bcwait";try{var de=document.documentElement;de.classList.toggle("bcv",bv);de.classList.toggle("bcvw",view==="bcwait");}catch(e){}   /* v22 P1-7 */
+   if(bv){var t=document.getElementById("tabs");if(t)t.style.display="none";mount();}});
+  /* v21f B1 (council FIX-BRIEF-2): every route's details step lead goes now, untagged; nothing is held. A Lead Market
+     bound customer's leads never fire a Lead or QualifiedLead (m-c: noPixel). Tagged bank_check:"on" only once the check
+     exists (ok). */
+  wrap("sendLead",function(a,x,np){
+   if(!B.rel&&a==="viewed matches"){B.rel=true;log("captured."+bound());}
+   var nop=np||bound()==="lm";
+   return B.ok?O.sendLead(a,Object.assign({bank_check:"on"},x||{}),nop):O.sendLead(a,x,nop);});
+ }
+ /* QA M2: put back every v16.9b function exactly as it was (nothing of the step stays in the path). */
+ function uninstall(){if(!B.on)return;for(var n in O)if(Object.prototype.hasOwnProperty.call(O,n))window[n]=O[n];O={};
+  try{if(GD0){GD.gate.bar=GD0.bar;GD.gate.go=GD0.go;}}catch(e){}try{document.documentElement.classList.remove("bcv","bcvw");}catch(e){}B.on=false;B.off=true;log("uninstalled");}
+ function cfgOf(j){var c=j.confirm||{},L=j.links||{},u=function(v){return typeof v==="string"&&/^https:\/\/(www\.)?afhfinance\.com\.au\//.test(v)?v:"";};
+  return {confirm:{read_only:c.read_only===true,no_enquiry:c.no_enquiry===true,days90:c.days90===true,carries_over:c.carries_over===true,return_url:c.return_url===true,wordmark:c.wordmark===true},
+   links:{collection:u(L.collection),credit_guide:u(L.credit_guide)}};}
+ function activate(j){
+  if(B.on||B.late||B.off)return;
+  var ok=!gatePassed&&["chooser","quick","form","analysing","ready"].indexOf(view)>-1;
+  if(!ok){B.late=true;log("late");return;}
+  B.cfg=cfgOf(j);install();B.on=true;log("on");
+  toParent({get:true});                                   /* the AFH page's first party copy of a stored check, and its URL for consent_page */
+  /* Repaint the copy now unless the customer is typing (a repaint would drop the phone keyboard). */
+  var a=document.activeElement,typing=!!(a&&a.tagName==="INPUT"&&document.getElementById("screen").contains(a));
+  if(["chooser","quick","ready","form"].indexOf(view)>-1&&!typing)render();}
+ /* ── v21f F7 (council FIX-BRIEF-1): staged rollout. The flag stays one global switch; per enquiry the partner page, a
+    tester override and a share decide. BC_SHARE is set by build.mjs: index.html 0 (the upload: testers only, through
+    bc_force=1), index-share50.html 50, index-share100.html 100. The holdout is the flag off path exactly: nothing is
+    installed, nothing is sent but its one funnel line (bc.holdout). A stored check resumes in any arm (resume runs first).
+    - partner page (v16.9b's SELL, the frame URL's sell=lm): never installed (bc.sell_page);
+    - bc_force=1 or 0 in the calculator's own URL or the landing page's URL (afhCtx.url, from the page's first afhParent):
+      in stage or holdout (bc.forced, code 1 or 0);
+    - otherwise FNV 1a 32 bit of the enquiry id, mod 100, below BC_SHARE: in stage.
+    The status answer can come before the landing page's first afhParent: it waits for that message or 1.5 s, whichever
+    is first, and is used only while activate()'s own conditions still hold (never after the questions). ── */
+ var BC_SHARE=0/*BC_SHARE*/;
+ function fnv(s){var h=0x811c9dc5;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}return h>>>0;}
+ function forceOf(){var f="";try{f=new URLSearchParams(location.search).get("bc_force")||"";}catch(e){f="";}
+  if(f!=="1"&&f!=="0"){f="";try{var u=afhCtx&&afhCtx.url;if(typeof u==="string"&&u)f=new URL(u).searchParams.get("bc_force")||"";}catch(e){f="";}}
+  return f==="1"||f==="0"?f:"";}
+ B.bucket=function(id){return fnv(String(id))%100;};
+ function decide(){var j=B.pend;if(!j||B.decided)return;B.decided=true;B.pend=null;clearTimeout(B.pendT);
+  if(B.on||B.late||B.off)return;
+  if(gatePassed||["chooser","quick","form","analysing","ready"].indexOf(view)<0){B.late=true;log("late");return;}
+  if(SELL){B.arm="sell";log("sell_page");return;}
+  var f=forceOf();if(f)log("forced",f==="1"?1:0);
+  var inn=f?f==="1":B.bucket(afhLeadEid())<BC_SHARE;
+  B.arm=f?(inn?"forced_in":"forced_out"):(inn?"in":"out");
+  if(!inn){B.hold=true;log("holdout");return;}
+  activate(j);}
+ window.addEventListener("message",function(e){var d=e.data;if(!d||typeof d!=="object"||!d.afhParent)return;
+  if(HOME.indexOf(e.origin)<0||e.source!==window.parent)return;B.ps=true;if(B.pend)decide();});
+ /* a stored check on this device comes first; if this frame can't use storage, ask the AFH page */
+ var r0=load();if(r0)resume(r0,"local");else if(B.noStore)toParent({get:true});
+ post(START,{action:"status"},4000).then(function(j){if(j&&j.ok===true&&j.on===true){if(B.on&&B.resumed){B.cfg=cfgOf(j);return;}
+  B.pend=j;if(B.ps||window.parent===window)decide();else B.pendT=setTimeout(decide,1500);}});
+})();
+</script>
+<style id="afh-v24">
+/* v24 (FIX-BRIEF-7, 9 Nov 2026): every flow step fills the visible phone screen like a native app step. The core of the
+   step sits in the optical centre, the progress bar stays on top, legal text pins to the bottom of the stage. Scoped by
+   html[data-afhst] (set by the stage script below): t teaser, c consent, k code, b bank check, w waiting, o all set.
+   Without the attribute (every other view, or a script error) the v23 layout renders unchanged. */
+:root{--afh-stage:calc(100vh - 24px)}
+@supports (height:100svh){:root{--afh-stage:calc(100svh - 24px)}}
+html[data-afhst] .wrap{display:flex;flex-direction:column;min-height:var(--afh-stage);box-sizing:border-box}
+html[data-afhst] #screen{flex:1 0 auto;display:flex;flex-direction:column}
+html[data-afhst]:not([data-afhst="t"]) .wrap>footer{display:none}
+/* the two spacers: 5 above, 6 below (optical centre a touch above the middle); the code step 4 to 6 (keyboard) */
+html[data-afhst="t"] #screen::before,html[data-afhst="t"] #screen::after,
+html[data-afhst="c"] #gateForm::before,html[data-afhst="c"] #gateForm::after,
+html[data-afhst="k"] #screen>.card::before,html[data-afhst="k"] #screen>.card::after,
+html[data-afhst="b"] #bcCard::before,html[data-afhst="b"] #bcCard::after,
+html[data-afhst="w"] #screen::before,html[data-afhst="w"] #screen::after,
+html[data-afhst="o"] #screen::before,html[data-afhst="o"] #screen::after{content:"";display:block;flex:5 1 0;min-height:8px}
+html[data-afhst] #screen::after,html[data-afhst] #gateForm::after,html[data-afhst] #screen>.card::after,html[data-afhst] #bcCard::after{flex-grow:6}
+html[data-afhst="k"] #screen>.card::before{flex-grow:4}
+html[data-afhst="t"] #screen::before{flex-grow:6}
+html[data-afhst="t"] #screen::after{flex-grow:4}
+html[data-afhst="k"] #screen>.card::after{flex-grow:6}
+html[data-afhst="t"] #screen>.lmbar{order:-1}
+html[data-afhst="c"] #gdc-gate,html[data-afhst="k"] #screen>.card,html[data-afhst="b"] #bcCard{flex:1 0 auto;display:flex;flex-direction:column}
+html[data-afhst="w"] #bcEnd,html[data-afhst="o"] #bcEnd{order:1}
+html[data-afhst="c"] #gateForm{flex:1 0 auto;display:flex;flex-direction:column}
+html[data-afhst="c"] #gdc-gate>.gdhead,html[data-afhst="k"] #screen>.card>.vfhead,html[data-afhst="b"] #bcCard>.vfhead{order:-1;flex:none}
+html[data-afhst="c"] #gateForm>.afhlegal,html[data-afhst="b"] #bcCard>.bclegal{order:1}
+html[data-afhst] #screen>.card>*{flex-shrink:0}
+
+/* T teaser: the repayment is the hero, bigger, centred */
+html[data-afhst="t"] .bctz2{text-align:center}
+html[data-afhst="t"] .bclbl{font-size:14px;margin:0 0 6px}
+html[data-afhst="t"] .bcamt{font-size:clamp(34px,11.2vw,46px);line-height:1.04}
+html[data-afhst="t"] .bcamt small{display:block;margin-top:4px;font-size:17px;letter-spacing:0}
+html[data-afhst="t"] .bcfor{font-size:16px;margin:10px 0 22px}
+html[data-afhst="t"] .bctz2 .bcglass{padding:14px 16px;margin:0 0 20px;gap:12px}
+html[data-afhst="t"] .bctz2 .bcglass b{font-size:16px}
+html[data-afhst="t"] .bctz2 .bcnode{width:40px;height:40px;border-radius:12px}
+html[data-afhst="t"] .bctz2 .bcnode svg{width:20px;height:20px}
+html[data-afhst="t"] .wrap>footer{margin-top:0;padding-top:12px;font-size:11.5px;line-height:1.5;color:#5B6370}
+
+/* C consent: the sentence alone in the centre, the icon above it, one muted line, then the button */
+html[data-afhst="c"] .afhcard{background:none;box-shadow:none;padding:0;margin:0 0 20px;text-align:center}
+html[data-afhst="c"] .afhq{flex-direction:column;align-items:center;gap:16px}
+html[data-afhst="c"] .afhic{width:60px;height:60px;border-radius:19px;box-shadow:0 12px 26px -12px rgba(30,35,41,.55)}
+html[data-afhst="c"] .afhic svg{width:28px;height:28px}
+html[data-afhst="c"] .afhq .gdq{padding:0;font-size:clamp(24px,7.2vw,29px);line-height:1.18;letter-spacing:-.025em;text-align:center;max-width:15em}
+html[data-afhst="c"] .afhed{margin:12px 0 0;padding:0;border:0;font-size:13px;line-height:1.5;color:#5B6370;text-align:center}
+html[data-afhst="c"] .afhdet{margin:0 0 16px}
+/* Details open: the icon steps aside so the button stays above the fold */
+html[data-afhst="c"] .afhv2:has(.afhdet:not([hidden])) .afhic{display:none}
+html[data-afhst="c"] .afhopt{margin:4px 0 0;font-size:13px;color:#5B6370}
+html[data-afhst="c"] .afhlegal{margin:12px 0 0;font-size:11px;line-height:1.45}
+html[data-afhst="c"] .afhlegal a{min-height:44px}
+
+/* K code: the code block in the upper middle, above where the iOS keyboard opens */
+html[data-afhst="k"] .vfy .vfi{width:60px;height:60px;border-radius:19px;margin:0 auto 16px}
+html[data-afhst="k"] .vfy .vft{font-size:clamp(24px,7.2vw,29px)}
+
+/* B bank check: the count, then the bank to AFH Finance row as the hero (bigger icons), the trust trio as icon tiles */
+html[data-afhst="b"] #bcCard .bch{text-align:center;font-size:clamp(25px,7.2vw,29px);line-height:1.08;margin:0 0 12px}
+html[data-afhst="b"] .bcglass2{padding:16px 8px 12px;margin:0}
+html[data-afhst="b"] .bcglass2 .bcrow{justify-content:center;margin:0 0 12px;padding:0 0 12px}
+html[data-afhst="b"] .bcrow .bcflow i{width:26px;margin:0 6px;border-top-width:2.5px}
+html[data-afhst="b"] .bcrow .bcnode{width:48px;height:48px;border-radius:15px}
+html[data-afhst="b"] .bcrow .bcnode svg{width:24px;height:24px}
+html[data-afhst="b"] .bcrow .bcnode.bcsafe{width:56px;height:56px;border-radius:18px}
+html[data-afhst="b"] .bcrow .bcnode.bcsafe svg{width:28px;height:28px}
+html[data-afhst="b"] .bcrow .bcnode.bcafh svg{width:28px;height:25px}
+html[data-afhst="b"] .bctrio{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:8px}
+html[data-afhst="b"] .bctrio li{flex-direction:column;justify-content:flex-start;gap:7px;text-align:center;font-size:12.5px;line-height:1.3;font-weight:650}
+html[data-afhst="b"] .bctrio li i{width:36px;height:36px;border-radius:12px}
+html[data-afhst="b"] .bctrio li i svg{width:20px;height:20px}
+html[data-afhst="b"] #bcCons{text-align:center;font-size:12.5px;margin:12px 0 10px}
+/* the legal line, one quiet block: phone, Privacy Policy and Credit Guide on one row, then the licence */
+html[data-afhst] .bclegal{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:0 10px;margin:6px 0 0;font-size:11px;line-height:1.45}
+html[data-afhst] .bclegal nav{margin:0}
+html[data-afhst] .bclegal p{display:contents}
+html[data-afhst] .bclegal .lgl{display:inline-flex;gap:0 10px}
+html[data-afhst] .bclegal nav a svg{width:13px;height:13px}
+html[data-afhst] .bclegal nav a,html[data-afhst] .bclegal .lgl a{min-height:44px;font-size:12px;white-space:nowrap}
+
+/* W waiting and O all set: centred, the orb and the tick a little larger */
+html[data-afhst="w"] .bcorb{width:72px;height:72px}
+html[data-afhst="o"] .bctick{width:76px;height:76px}
+html[data-afhst="w"] #bcEnd,html[data-afhst="o"] #bcEnd{margin-top:12px}
+
+/* motion: one 200 ms rise between steps; nothing when reduced motion is asked for */
+@keyframes afhRise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+html[data-afhst] #screen>.card{animation:afhRise .2s ease-out both}
+@media (prefers-reduced-motion:reduce){html[data-afhst] #screen>.card{animation:none}}
+</style>
+<script>/* v24 stage (FIX-BRIEF-7 J1). Framed: the stage is the landing page's visible height, which no landing page sends
+   today, so it is learned here: first from the screen (0.79 of screen height, the in-app and Safari share), then from an
+   IntersectionObserver on a full-frame sentinel, which reports the frame's visible band in the top-level viewport even
+   across origins (frame top above the viewport and bottom below it = the exact viewport height; top in view and bottom
+   below = the band below the frame top). Stage = band less 41 px (the frame's 17 px top offset after the page's own
+   scroll, plus the 24 px the auto-height adds), 460 to 760 px. The new stage applies only when the step changes and never
+   while a text field has focus, so the iOS keyboard and the toolbar can't make anything jump. Not framed: CSS 100svh. */
+(function(){try{
+ var R=document.documentElement,scr=document.getElementById("screen");if(!scr)return;
+ var framed=window.parent!==window,cur=0,vx=0,vl=0,last="";
+ function kind(){
+  if(scr.querySelector(".bctz2"))return "t";
+  if(scr.querySelector("#gdc-gate.gdcz"))return "c";
+  if(scr.querySelector(".card.vfy"))return "k";
+  if(scr.querySelector("#bcCard #bcGo"))return "b";
+  if(scr.querySelector("#bcAgain"))return "w";
+  if(scr.querySelector(".bctick"))return "o";
+  return "";}
+ function guess(){var s=Math.min(screen.height||0,screen.availHeight||screen.height||0)||700;return Math.round(s*.79);}
+ function target(){var v=vx||Math.max(guess(),vl);return Math.max(460,Math.min(760,v-41));}
+ function typing(){var a=document.activeElement;return !!a&&(a.tagName==="TEXTAREA"||a.tagName==="SELECT"||(a.tagName==="INPUT"&&!/^(checkbox|radio|button|submit)$/.test(a.type)));}
+ function apply(){if(!framed)return;var t=target();if(Math.abs(t-cur)>=8&&!typing()){cur=t;R.style.setProperty("--afh-stage",cur+"px");}}
+ function paint(){var k=kind(),c=scr.firstElementChild,key=k+"|"+(c?c.id+"|"+c.className:"");
+  if(k){if(R.getAttribute("data-afhst")!==k)R.setAttribute("data-afhst",k);}else if(R.hasAttribute("data-afhst"))R.removeAttribute("data-afhst");
+  if(key!==last){last=key;apply();}}
+ if(framed){cur=target();R.style.setProperty("--afh-stage",cur+"px");}
+ paint();
+ new MutationObserver(paint).observe(scr,{childList:true,subtree:true,attributes:true,attributeFilter:["class"]});
+ if(framed&&window.IntersectionObserver){
+  var s=document.createElement("div");s.setAttribute("aria-hidden","true");
+  s.style.cssText="position:fixed;left:0;top:0;width:1px;height:100%;opacity:0;pointer-events:none;z-index:-1";
+  R.appendChild(s); /* outside body: the auto-height script measures body's children only */
+  var th=[];for(var i=0;i<=50;i++)th.push(i/50);
+  new IntersectionObserver(function(es){var e=es[es.length-1],b=e.boundingClientRect,r=e.intersectionRect;
+   if(!r||r.height<240||typing())return;
+   var top=r.top-b.top,clip=(r.bottom-b.top)<b.height-1;
+   if(top>1&&clip)vx=Math.round(r.height);else if(clip)vl=Math.max(vl,Math.round(r.height));},{threshold:th}).observe(s);}
+ window.__afhStage=function(){return {kind:R.getAttribute("data-afhst")||"",stage:cur,vx:vx,vl:vl,guess:guess()};};
+}catch(e){}})();</script>
 <script>
 /* Embedded auto-height: tell the parent page how tall we are so the iframe never clips a step. */
 (function(){
