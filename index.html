@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AFH Finance Loan Calculator</title>
-<!-- AFH-CALC-VERSION: 2026-11-09-v21h-bankcheck share 50 (base 2026-11-06-v16.9b) -->
+<!-- AFH-CALC-VERSION: 2026-11-11-v26-bankcheck share 50 (base 2026-11-06-v16.9b) -->
 <!-- Meta Pixel Code: standalone loads its own pixel; embedded relays every event to the host page's pixel (one pixel, no duplicate PageView) -->
 <script>
 (function(){
@@ -3850,6 +3850,13 @@ afhPost({afhCalcReady:true,v:16});
    <a class="cta bcgo bcalt" href="tel:136457">${lmIcon(I.phone)} Call NILS on 13 64 57</a>
    <p>Think we've got this wrong? Call us on ${tel(PHONE,"03 7031 6881")}.</p></div>`,""];
   if(n)return ["later",tick()+`<h2 class="lmh bcc" id="bcH" tabindex="-1">Thanks${nm(", ")}</h2>${sum()}<p class="bclead bcc">A broker will call you.</p>`,saveNo(),PAY];
+  /* v26: Credit Sense ended the attempt (wrong login, or the bank's site failed). "Try again" gets a fresh link to the same
+     application (bc/start action retry); never the old link, which would reopen the error. */
+  if(P.state==="retry")return ["retry",`<div class="bcicon" aria-hidden="true">${lmIcon(I.bank)}<span class="bcbdg">${lmIcon(I.lock)}</span></div>`
+   +(P.why==="login"?`<h2 class="lmh bcc" id="bcH" tabindex="-1">Your bank didn't accept that login</h2><p class="bcsub bcc">Use the username and password for your bank's website, not your app PIN.</p>`
+    :`<h2 class="lmh bcc" id="bcH" tabindex="-1">Your bank's site had a hiccup</h2><p class="bcsub bcc">It's not you. Please try again.</p>`)
+   +(P.rerr?`<p class="bcsub bcc" role="alert">We couldn't open it just now. Try again, or call us on ${tel(PHONE,"03 7031 6881")}.</p>`:"")
+   +`<button type="button" class="cta bcgo" id="bcRedo" onclick="AFH_BC.redo()"${P.redo?' aria-busy="true"':''}>Try again ${ARROW}</button>${no()}`,fresh()];
   if(P.gone)return ["gone",`<div class="bcicon" aria-hidden="true">${lmIcon(I.bank)}<span class="bcbdg">${lmIcon(I.lock)}</span></div><h2 class="lmh bcc" id="bcH" tabindex="-1">Your enquiry is saved${nm(", ")}</h2><p class="bcsub bcc">Finished your bank check? ${NEXT}</p>`+(B.url?cont()+no():callCta()),fresh()];
   if(P.state==="in_progress")return ["waiting",`<div class="bcicon bcbusy" aria-hidden="true">${lmIcon(I.bank)}<span class="bcbdg">${lmIcon(I.lock)}</span></div><h2 class="lmh bcc bcwt" id="bcH" tabindex="-1">Finish your <span class="bcnb">bank check</span></h2>
    <p class="bcstat bcc" id="bcStat">This page updates when it's done.</p>${cont()}${B.url?no():""}`,fresh()];
@@ -3857,7 +3864,7 @@ afhPost({afhCalcReady:true,v:16});
  var shown="";
  /* the booking card needs the customer's details: not after a resume in a fresh page, where only the reference is known */
  function bookable(s){return (s==="gone"||s==="progress"||s==="keep"||s==="later")&&!!contact.name;}   /* v21f F4: keep and later too */
- function cardHtml(v){return `<div class="card anim lmc bcx bcw" id="bcCard" data-screen="${v[0]}" data-state="${esc(B.P.state)}" aria-live="polite">${head(v[0]!=="waiting"&&v[0]!=="gone")}${v[1]}</div>`;}
+ function cardHtml(v){return `<div class="card anim lmc bcx bcw" id="bcCard" data-screen="${v[0]}" data-state="${esc(B.P.state)}" aria-live="polite">${head(v[0]!=="waiting"&&v[0]!=="gone"&&v[0]!=="retry")}${v[1]}</div>`;}
  /* v22 P1-4: after the card and the booking card: the secondary action, "Start a new enquiry" (last control) and the licence */
  function endHtml(v){return `<div class="bcend" id="bcEnd">${v[2]||""}${legal(false,v[3])}</div>`;}
  function waitHtml(){var v=outcome();return cardHtml(v)+(v[0]==="keep"||v[0]==="later"?lendHtml("top"):"")+(bookable(v[0])?book(v[0]):"")+endHtml(v);}
@@ -3883,7 +3890,7 @@ afhPost({afhCalcReady:true,v:16});
    else if(j.ok){P.n404=0;P.nerr=0;
     if(typeof j.first==="string")P.first=j.first.slice(0,20);
     if(typeof j.carries_over==="boolean")P.carries=j.carries_over;
-    if(["in_progress","reading","ready"].indexOf(j.state)>-1){if(j.state!==P.state)log("wait."+j.state);P.state=j.state;}
+    if(["in_progress","reading","ready","retry"].indexOf(j.state)>-1){if(j.state!==P.state)log("wait."+j.state);P.state=j.state;P.why=j.why==="login"?"login":"bank";}
     if(wait===3000)wait=Math.min(30000,Math.max(2000,+j.poll_ms||3000));
     if(j.state==="ready"){
      P.next=["broker","lead_market","help","later"].indexOf(j.next)>-1?j.next:"later";
@@ -4049,6 +4056,13 @@ afhPost({afhCalcReady:true,v:16});
    fail(j.reason==="network"?"no_link":(j.reason||"server"));});};
  B.retry=function(){B.st="going";B.left=false;paint();log("retry");clearTimeout(B.t.nav);B.t.nav=setTimeout(function(){if(!B.left&&B.st==="going")fail("nav");},6000);};
  B.again=function(){log("again");setTimeout(wake,0);};
+ B.redo=function(){var P=B.P;if(P.redo||!B.key)return;P.redo=true;P.rerr=false;log("redo");shown="";waitPaint();
+  var w=inApp()?null:openTab();
+  post(START,{action:"retry",event_id:afhLeadEid(),status_key:B.key},TAP_MS).then(function(j){P.redo=false;
+   if(j&&j.ok&&goodUrl(j.url)){B.url=j.url;P.state="in_progress";P.why="";P.gone=false;P.t0=Date.now();try{remember();}catch(e){}handoff(w);return;}
+   dropTab(w);log("redo_fail."+clean(j&&(j.reason||j.http)));
+   if(!(j&&(j.reason==="attempt_limit"||j.reason==="not_error"))){P.rerr=true;say("We couldn't open the bank check again");}
+   shown="";waitPaint();pollSoon(0);});};
  B.det=function(){B.dOpen=!B.dOpen;if(B.dOpen&&!B.detSeen){B.detSeen=true;log("details");}
   var b=document.getElementById("bcDet"),d=document.getElementById("bcDetails"),e=document.getElementById("bcEd");if(b)b.setAttribute("aria-expanded",String(B.dOpen));if(d)d.hidden=!B.dOpen;
   if(e)e.hidden=B.dOpen;};                                /* v21c m6: the electronic delivery sentence shows once (item 5 while Details is open) */
