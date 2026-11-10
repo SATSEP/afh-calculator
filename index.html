@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AFH Finance - Loan Calculator</title>
-<!-- AFH-CALC-VERSION: 2026-11-09-v21h-bankcheck (base 2026-11-06-v16.9b) -->
+<title>AFH Finance Loan Calculator</title>
+<!-- AFH-CALC-VERSION: 2026-11-09-v21h-bankcheck share 50 (base 2026-11-06-v16.9b) -->
 <!-- Meta Pixel Code: standalone loads its own pixel; embedded relays every event to the host page's pixel (one pixel, no duplicate PageView) -->
 <script>
 (function(){
@@ -1241,7 +1241,14 @@ html.afh-framed body.embed footer p+p{display:none}   /* framed in an AFH page: 
 }
 </style>
 <style id="afh-v15">.r2fine.r2warn{margin-top:8px;color:var(--ink-2);font-weight:600}</style>
-<style id="afh-v16">.prechips{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 14px}.prechips .pcl{display:inline-flex;align-items:center;gap:5px;margin-right:2px;font-size:12px;font-weight:750;letter-spacing:.05em;text-transform:uppercase;color:var(--mute)}.prechips .pcl svg{width:14px;height:14px;color:var(--ok,#0B7552)}.pch{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:6px 10px 6px 12px;border:1.5px solid var(--line-2);border-radius:999px;background:#fff;color:var(--ink);font:inherit;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;cursor:pointer;transition:border-color .15s,background-color .15s,transform .12s var(--ease)}.pch svg{width:14px;height:14px;color:var(--brand)}.pch.on{border-color:var(--brand);background:var(--sel);box-shadow:inset 0 0 0 1px var(--brand)}.pch:active{transform:scale(.96)}.pch:focus-visible{outline:3px solid var(--brand-2);outline-offset:2px}@media (hover:hover){.pch:hover{border-color:var(--brand)}}@media (prefers-reduced-motion:reduce){.pch{transition:none}}</style>
+<style id="afh-v16">/* v25cfix m6 (tester panel): every chip and small button is a 44 px target */
+.gdchip,.vfpc,.r2edit,.binfo-toggle{min-height:44px}
+/* v25cfix m5: "$157 to $180 a week" is longer than "$157–180/week": the range may wrap rather than overflow */
+.pvval.rng,.r2v{white-space:normal}.pvval.rng i,.r2v i.r2dash{margin:0}
+/* v25cfix (design council check, 10 Nov): with the longer "$134 to $155" a lender row's second line ("Fits your loan
+   amount") was cut with an ellipsis at 360 px; it wraps instead (the results rows and the bank check lender list) */
+.r2in small{white-space:normal;overflow:visible;text-overflow:clip}
+.prechips{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 14px}.prechips .pcl{display:inline-flex;align-items:center;gap:5px;margin-right:2px;font-size:12px;font-weight:750;letter-spacing:.05em;text-transform:uppercase;color:var(--mute)}.prechips .pcl svg{width:14px;height:14px;color:var(--ok,#0B7552)}.pch{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:6px 10px 6px 12px;border:1.5px solid var(--line-2);border-radius:999px;background:#fff;color:var(--ink);font:inherit;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;cursor:pointer;transition:border-color .15s,background-color .15s,transform .12s var(--ease)}.pch svg{width:14px;height:14px;color:var(--brand)}.pch.on{border-color:var(--brand);background:var(--sel);box-shadow:inset 0 0 0 1px var(--brand)}.pch:active{transform:scale(.96)}.pch:focus-visible{outline:3px solid var(--brand-2);outline-offset:2px}@media (hover:hover){.pch:hover{border-color:var(--brand)}}@media (prefers-reduced-motion:reduce){.pch{transition:none}}</style>
 <style id="afh-bc">
 /* v21 bank check step: used only when the remote flag is on (every class starts with bc)
    v22 (design panel FIX-BRIEF-4, 9 Nov 2026): one design language for the flag on screens. Charcoal ink from the logo
@@ -1466,6 +1473,40 @@ html[data-afhcmp][data-afhz="b"] #bcCard .bch+.bcwhy{margin:-4px 0 10px}
 /* v25b: the decline screen keeps the all set layout with a phone (the glass orb of the waiting screen), not the tick */
 .bctick.bcph{color:#3A1FB8;background:radial-gradient(circle at 30% 25%,#fff,rgba(255,255,255,.6) 60%),linear-gradient(140deg,rgba(17,181,238,.35),rgba(109,84,232,.35));box-shadow:inset 0 1px 0 #fff,0 0 0 1px rgba(30,35,41,.07),0 14px 30px -14px rgba(45,27,140,.45)}
 .bctick.bcph svg{width:32px;height:32px}
+/* v25c (coordinator, Sep approved, 10 Nov 2026): the lender list of the flag off results (v16.9b's .r2list rows, the same
+   data, order and maths) on the Thanks and decline screens, under the heading, before the call time picker, with the
+   results screen's fine print and comparison rate warning whenever rows show. Thanks (after the bank check, the reward):
+   the first 3 rows and "See all N lenders". Decline: closed, "See N lenders to compare", so it doesn't compete with the
+   booking or the way back to the bank check. The toggle is the v25 disclosure pill ("Hide" while open). On Thanks, once a
+   time is picked on a screen too short for Book my call at the zone (v25 compact), the 3 rows step aside like the tick. */
+.bclend{margin:16px 0 0}
+.bclend .r2sec{margin:0 2px;justify-content:center}
+/* closed (decline): the pill names the list, so its title is for screen readers only (fewer words on screen) */
+.bclend.closed .r2sec{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.bclend.closed #bcLendMore{margin-top:0}
+.bclend .r2list{margin-top:12px}
+.bclend .r2list[hidden]{display:none}
+.bclend .r2fine{margin:10px 2px 0}
+.bclend .r2fine.r2warn{margin-top:6px}
+.bclend .r2item{animation:none}
+#bcLendMore{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;margin:10px auto 0;padding:0 18px;border:0;border-radius:999px;background:#F6F4FE;box-shadow:inset 0 0 0 1px rgba(75,46,219,.14);color:#3A1FB8;font:inherit;font-size:13.5px;font-weight:700;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background-color .15s ease}
+#bcLendMore:active{background:#ECE8FD}
+#bcLendMore:focus-visible{outline:2px solid #4B2EDB;outline-offset:2px}
+#bcLendMore::after{content:"";flex:none;width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(45deg);transition:transform .2s ease}
+#bcLendMore[aria-expanded="true"]{font-size:0}
+#bcLendMore[aria-expanded="true"]::before{content:"Hide";font-size:13.5px}
+#bcLendMore[aria-expanded="true"]::after{transform:translateY(2px) rotate(-135deg)}
+@media (prefers-reduced-motion:reduce){#bcLendMore,#bcLendMore::after{transition:none}}
+html[data-afhcmp][data-afhz="o"] .bclend.top #bcLendL,html[data-afhcmp][data-afhz="o"] .bclend.top .r2fine{display:none}
+/* compact (a time picked on a short screen): the closed or 3 row list keeps only its pill, which names the list */
+html[data-afhcmp][data-afhz="o"] .bclend:not(.all){margin-top:6px}
+html[data-afhcmp][data-afhz="o"] .bclend:not(.all) .r2sec{display:none}
+html[data-afhcmp][data-afhz="o"] .bclend:not(.all) #bcLendMore{margin-top:0}
+/* v25c (Sep: the bank check is the main goal): "Do the bank check now" is a clear outline button right under the booking */
+#bcUndo{background:#fff;color:#3A1FB8;box-shadow:inset 0 0 0 1.5px #CFC8F6;margin:12px 0 0}
+#bcUndo:focus-visible{outline:2px solid #4B2EDB;outline-offset:2px}
+/* v25cfix m2 (tester panel): on a slow network the "Opening your secure bank check" overlay showed the text beneath it */
+#bcOv.bcov{background:#F4F3FA;-webkit-backdrop-filter:none;backdrop-filter:none}
 /* v21h: the Credit Guide link inside Details item 5 (44 px tall, in the sentence) */
 /* v25b: a short stage (under 600 px: the Facebook 360x740 in app view, about 585 px) keeps the teaser's Indicative only
    footer whole on the first screen */
@@ -1481,7 +1522,7 @@ html[data-afhzs="s"][data-afhz="t"] .wrap>footer,html[data-afhzs="s"][data-afhz=
   <!-- per-lender enquiry modal removed: a broker calls every lead back -->
 
   <footer role="none">
-    <p><b style="color:var(--charcoal)">Indicative only.</b> Not an offer of finance. Actual rates, comparison rates (* incl. estimated fees) and repayments depend on the lender's assessment.</p>
+    <p><b style="color:var(--charcoal)">Indicative only.</b> Not an offer of finance. Actual rates, fees and repayments depend on the lender's assessment.</p>
     <p style="margin-top:10px;color:var(--muteSoft);font-weight:700">AFH Finance · 03 7031 6881 · Finance Made Easy.</p>
   </footer>
 </div>
@@ -1775,7 +1816,9 @@ const CARAVAN_LENDERS=["Liberty","Pepper","Latitude","AFS"];
 function carPool(){return ASSET==="caravan"?DATA.car.filter(l=>CARAVAN_LENDERS.indexOf(l.name)>=0):DATA.car;}
 function evBlock(){if(ASSET==="caravan")return "";
  return `<div class="qlabel">${ICON.bolt} Is this an electric vehicle?</div><div class="grid">${tile('ev','yes','sun','bolt','Yes, electric','')}${tile('ev','no','slate','fuel','Petrol / diesel','')}</div>`;}
-function assetTypeOpts(s){return A('opts').map(([l,v])=>`<option value="${v}" ${s.carType===v?'selected':''}>${l}</option>`).join('');}
+/* v25cfix m5 (Sep: no hyphens or dashes in customer copy): what the customer reads only; the value and the CRM label stay */
+function afhDsp(t){return String(t).replace(/([A-Za-z])-(?=[A-Za-z])/g,"$1 ");}
+function assetTypeOpts(s){return A('opts').map(([l,v])=>`<option value="${v}" ${s.carType===v?'selected':''}>${afhDsp(l)}</option>`).join('');}
 let PICK=(URLTYPE&&TABMAP[URLTYPE])?TABMAP[URLTYPE]:((LOCKTAB&&TABMAP[LOCKTAB])?TABMAP[LOCKTAB]:null); // funnel explicitly chosen via URL, else null
 let funnel=PICK||"car",view=(QUICK?"quick":(PICK?"form":"chooser")),qi=0,lastQi=-1,lastFunnel="";  // no ?type/?tab -> show chooser first (don't default to car)
 let contact={name:"",mobile:"",email:""},leadSent=false,triedNext=false;
@@ -1889,10 +1932,10 @@ function carSteps(){const s=st.car;const isCar=ASSET!=="caravan";const L=[];
   render:()=>`<div class="rows two">${ro('found','yes',A('icon'),'Yes, found it',"Dealer or private")}${ro('found','no','search','Still looking','Get set first')}</div>`});
  if(s.found==="no"){
   L.push({id:"type",icon:"search",secs:4,t:"What are you after?",sub:"Best guess is fine.",auto:"carType",need:()=>s.carType?[]:["a "+A('noun')+" type"],
-   render:()=>`<div class="rows two">${A('opts').filter(o=>o[1]).map(([l,v])=>ro('carType',v,'',l,'')).join('')}</div>`});
+   render:()=>`<div class="rows two">${A('opts').filter(o=>o[1]).map(([l,v])=>ro('carType',v,'',afhDsp(l),'')).join('')}</div>`});
  }else{
   L.push({id:"cond",icon:"sparkle",secs:4,t:()=>A('condQ'),auto:"cond",need:()=>s.cond?[]:["the condition"],
-   render:()=>`<div class="rows">${ro('cond','new','sparkle','New','Straight from the dealer')}${ro('cond','demo','cartag','Demo','Ex-demonstrator, low kms')}${ro('cond','used','gauge2','Used','Dealer or private sale')}</div>`});
+   render:()=>`<div class="rows">${ro('cond','new','sparkle','New','Straight from the dealer')}${ro('cond','demo','cartag','Demo','Ex demonstrator, low kms')}${ro('cond','used','gauge2','Used','Dealer or private sale')}</div>`});
   if(isCar)L.push({id:"ev",icon:"bolt",secs:4,t:"Is it electric or hybrid?",auto:"ev",need:()=>s.ev?[]:["whether it's electric"],
    render:()=>`<div class="rows two">${ro('ev','yes','bolt','Electric / hybrid','')}${ro('ev','no','fuel','Petrol / diesel','')}</div>`});
  }
@@ -1917,21 +1960,21 @@ function businessSteps(){const s=st[funnel];return[
    ${rowtile('sub','asset','blue','truck','Vehicle or equipment','Cars, trucks, machinery')}
    ${rowtile('sub','cashflow','green','cash','Working capital','Cash flow, stock, expenses')}
    ${rowtile('sub','any','slate','help','Not sure','Show me all options')}`},
- {t:"Your finance",pre:"fin",render:()=>(preBizHide()?"":amountTerm())+(st.business.sub!=="cashflow"?`<div class="qlabel">${ICON.lock} Secured or unsecured?</div>${securedInfo('secinfoB')}${rowtile("bizSecured","secured","green","lock","Secured","Against the asset - lower rate")}${rowtile("bizSecured","unsecured","blue","doc","Unsecured","No asset security")}`:"")+((st.business.sub!=="cashflow"&&st.business.bizSecured==="secured"&&!preBizBalHide())?balloonBox():"")+livePreview()},
+ {t:"Your finance",pre:"fin",render:()=>(preBizHide()?"":amountTerm())+(st.business.sub!=="cashflow"?`<div class="qlabel">${ICON.lock} Secured or unsecured?</div>${securedInfo('secinfoB')}${rowtile("bizSecured","secured","green","lock","Secured","Against the asset, lower rate")}${rowtile("bizSecured","unsecured","blue","doc","Unsecured","No asset security")}`:"")+((st.business.sub!=="cashflow"&&st.business.bizSecured==="secured"&&!preBizBalHide())?balloonBox():"")+livePreview()},
  {t:"About your business",render:()=>`
    <div class="qlabel">${ICON.building} Business structure</div>
    <select class="field" onchange="setA('structure',this.value)">${['Sole trader|sole','Company|company','Partnership|partnership','Trust|trust'].map(o=>{const[l,v]=o.split('|');return `<option value="${v}" ${s.structure===v?'selected':''}>${l}</option>`}).join('')}</select>
    <div class="qlabel">${ICON.building} How long has the ABN been registered?</div>
-   <div class="grid">${tile('abn',6,'blue','sparkle','Under 1 yr','')}${tile('abn',18,'blue','trending','1–2 yrs','')}${tile('abn',36,'blue','building','2–4 yrs','')}${tile('abn',48,'green','check','4+ yrs','')}</div>
+   <div class="grid">${tile('abn',6,'blue','sparkle','Under 1 yr','')}${tile('abn',18,'blue','trending','1 to 2 yrs','')}${tile('abn',36,'blue','building','2 to 4 yrs','')}${tile('abn',48,'green','check','4+ yrs','')}</div>
    <div class="qlabel">${ICON.doc} Registered for GST?</div>
-   <div class="grid">${tile('gst',0,'slate','x','Not registered','')}${tile('gst',6,'blue','doc','Under 1 yr','')}${tile('gst',18,'blue','doc','1–2 yrs','')}${tile('gst',30,'green','check','2+ yrs','')}</div>`},
+   <div class="grid">${tile('gst',0,'slate','x','Not registered','')}${tile('gst',6,'blue','doc','Under 1 yr','')}${tile('gst',18,'blue','doc','1 to 2 yrs','')}${tile('gst',30,'green','check','2+ yrs','')}</div>`},
  {t:"Business strength",render:()=>`
    <div class="qlabel">${ICON.trending} Annual turnover</div>
-   <div class="grid">${tile('turn',50000,'blue','cash','Under $100k','')}${tile('turn',175000,'blue','cash','$100k–250k','')}${tile('turn',375000,'green','cash','$250k–500k','')}${tile('turn',600000,'green','building','$500k+','')}</div>
+   <div class="grid">${tile('turn',50000,'blue','cash','Under $100k','')}${tile('turn',175000,'blue','cash','$100k to $250k','')}${tile('turn',375000,'green','cash','$250k to $500k','')}${tile('turn',600000,'green','building','$500k+','')}</div>
    <div class="qlabel">${ICON.home} Does a director own property?</div>
    <div class="grid three">${tile('property','owner','green','home','Yes','')}${tile('property','spouse','blue','home','Spouse owns','')}${tile('property','none','slate','x','No','')}</div>
    <div class="qlabel">${ICON.doc} Financials available?</div>
-   <div class="grid">${tile('doc','yes','green','check','Yes, up to date','')}${tile('doc','no','sun','doc','Prefer low-doc','')}</div>`},
+   <div class="grid">${tile('doc','yes','green','check','Yes, up to date','')}${tile('doc','no','sun','doc','Prefer low doc','')}</div>`},
 ];}
 
 
@@ -2000,8 +2043,8 @@ function personSteps(noEmp){const s=st[funnel];const L=[];
  return L;}
 function empSteps(){const s=st[funnel];const L=[];
  L.push({id:"employment",icon:"briefcase",secs:4,t:"How are you employed?",auto:"emp",need:()=>s._emp?[]:["your employment"],
-  render:()=>`<div class="rows two">${roX('emp','fulltime','briefcase','Full-time','')}${roX('emp','parttime','clock','Part-time','')}${roX('emp','casual','calendar','Casual','')}${roX('emp','self','building','Self-employed','')}${roX('emp','centrelink','cash','Centrelink','')}</div>`});
- L.push({id:"pay",icon:"wallet",secs:8,t:"What's your take-home pay?",sub:"After tax. Your payslip amount is perfect.",need:()=>s.wage?[]:["your take-home pay"],
+  render:()=>`<div class="rows two">${roX('emp','fulltime','briefcase','Full time','')}${roX('emp','parttime','clock','Part time','')}${roX('emp','casual','calendar','Casual','')}${roX('emp','self','building','Self employed','')}${roX('emp','centrelink','cash','Centrelink','')}</div>`});
+ L.push({id:"pay",icon:"wallet",secs:8,t:"What's your take home pay?",sub:"After tax. Your payslip amount is perfect.",need:()=>s.wage?[]:["your take home pay"],
   render:()=>GUIDED_DETAILS?gdPay():`<div class="wagebox"><span class="pre">$</span><input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done" placeholder="1,200" value="${s.wage?Number(s.wage).toLocaleString('en-AU'):''}" oninput="wageIn(this)" aria-label="Take-home pay"></div>
   ${segA('wageFreq',[['weekly','Weekly'],['fortnightly','Fortnightly'],['monthly','Monthly']])}
   <div class="helper" id="wageHelper" style="margin-top:10px">${wageHelperText()}</div>`});
@@ -2060,7 +2103,7 @@ function balloonMaxDollar(){const s=st[funnel];const pct=balloonMaxPct();return 
 
 function balloonBox(){const s=st[funnel];const cap=balloonMaxPct();const maxBalloon=balloonMaxDollar();
  if(cap<=0){if(s.balloon>0)st[funnel].balloon=0;
-   return `<div class="hl"><div class="ht">Balloon payment</div><div class="hs">${s.term>=7?"Balloon payments aren't available on 7-year terms. Choose a shorter term to add one.":"A balloon isn't available for this option."}</div></div>`;}
+   return `<div class="hl"><div class="ht">Balloon payment</div><div class="hs">${s.term>=7?"Balloon payments aren't available on 7 year terms. Choose a shorter term to add one.":"A balloon isn't available for this option."}</div></div>`;}
  // clamp existing balloon to the new cap
  if(s.balloon>maxBalloon)st[funnel].balloon=maxBalloon;
  return `<div class="hl"><div class="ht">Add a balloon payment?</div>
@@ -2069,7 +2112,7 @@ function balloonBox(){const s=st[funnel];const cap=balloonMaxPct();const maxBall
     <div class="binfo-row"><span class="binfo-num">1</span><div><b>A balloon is a chunk of the loan you set aside</b> to pay at the very end, instead of spreading all of it across your weekly repayments.</div></div>
     <div class="binfo-row"><span class="binfo-num">2</span><div><b>Your weekly repayments drop now</b>, because you're only paying off the rest of the loan week to week.</div></div>
     <div class="binfo-row"><span class="binfo-num">3</span><div><b>At the end of the ${s.term} years you settle the balloon</b>, pay it out, refinance it into a new term, or sell/trade the car to cover it.</div></div>
-    <div class="binfo-foot">Max ${cap}% of the loan on a ${s.term}-year term</div>
+    <div class="binfo-foot">Max ${cap}% of the loan on a ${s.term} year term</div>
   </div></div>
   <div class="grid">${tile('balloon',0,'slate','x','No balloon','')}<div class="tile ${s.balloon>0?'on g-blue':''}" data-c="blue" onclick="setBalloon(${maxBalloon||5000})"><div class="chk">${ICON.check}</div><div class="ti">${ICON.trending}</div><div class="tt">With balloon</div><div class="ts">Lower weekly</div></div></div>
   ${s.balloon>0?balloonSlider():''}</div>`;}
@@ -2078,7 +2121,7 @@ function balloonSlider(){const s=st[funnel];const cap=balloonMaxPct();const maxB
   <input type="range" min="0" max="${maxBalloon}" step="500" value="${s.balloon}" oninput="balloonSlide(this.value);paintRange(this)" aria-label="Balloon amount">
   <div class="ends"><span>$0</span><span>${fmtK(maxBalloon)} (${cap}%)</span></div>
   <div class="bvnums" id="balloonNums">${balloonNums()}</div></div>`;}
-function balloonNums(){const s=st[funnel];return `<div class="bfinal">${ICON.clock}<span>One final payment of <b>${fmt(s.balloon)}</b> is due at the end of your ${s.term}-year term.</span></div>`;}
+function balloonNums(){const s=st[funnel];return `<div class="bfinal">${ICON.clock}<span>One final payment of <b>${fmt(s.balloon)}</b> is due at the end of your ${s.term} year term.</span></div>`;}
 
 function setBalloon(v){st[funnel].balloon=v;render();}
 function toggleBalloonInfo(e){e.stopPropagation();const el=document.getElementById('binfo');if(!el)return;const open=el.classList.toggle('open');const btn=e.currentTarget;if(btn)btn.textContent=open?'Hide':'How does it work?';}
@@ -2095,7 +2138,7 @@ function balloonSlide(v){st[funnel].balloon=+v;const s=st[funnel];const pct=s.am
  const el=document.getElementById('balloonval');if(el)el.innerHTML=`${fmt(+v)} <span style="font-size:14px;color:var(--mute);font-weight:700">(${pct}%)</span>`;
  const n=document.getElementById('balloonNums');if(n)n.innerHTML=balloonNums();refreshPreview();}
 
-function creditGrid(){const s=st[funnel];const opts=[['4','star','Excellent','800+','sun'],['3','thumb','Good','600–800','green'],['2','minus','Average','500–600','blue'],['1','thumbdown','Below average','Below 500','pink'],['0','help','Unsure','Not sure','slate']];
+function creditGrid(){const s=st[funnel];const opts=[['4','star','Excellent','800+','sun'],['3','thumb','Good','600 to 800','green'],['2','minus','Average','500 to 600','blue'],['1','thumbdown','Below average','Below 500','pink'],['0','help','Unsure','Not sure','slate']];
  return `<div class="grid three">`+opts.map(([v,i,t,sb,g])=>{const on=(s.credit==+v&&s._cp!=0)||(v==='0'&&s._cp===0);return `<div class="tile ${on?'on g-'+g:''}" data-c="${g}" onclick="setCredit(${v})"><div class="chk">${ICON.check}</div><div class="ti">${ICON[i]}</div><div class="tt">${t}</div><div class="ts">${sb}</div></div>`}).join('')+`</div>`;}
 function setCredit(v){afhStart();st[funnel]._cp=v;st[funnel].credit=v===0?2:v;render();if(lmArm())return;maybeAuto("_cp");}
 
@@ -2103,15 +2146,15 @@ function paydayQ(){const s=st[funnel];return `<div class="qlabel" style="margin-
   <div class="examples">e.g. Wallet Wizard, MyPayNow, Cash Converters</div>
   <div class="grid">${tile('payday','no','green','check','No','')}${tile('payday','yes','pink','minus','Yes','')}</div>`;}
 const VISA_SUBCLASSES={
- temp:[["Select subclass...",""],["482 - Temporary Skill Shortage","482"],["485 - Temporary Graduate","485"],["186 - Employer Nomination","186"],["189 - Skilled Independent","189"],["190 - Skilled Nominated","190"],["491 - Skilled Work Regional","491"],["494 - Skilled Employer Sponsored","494"],["188 - Business Innovation & Investment","188"],["500 - Student","500"],["820/801 - Partner","820"],["417/462 - Working Holiday","417"],["457 - Skilled (legacy)","457"],["444 - NZ Special Category","444"],["Other / not sure","other"]],
+ temp:[["Select subclass...",""],["482 Temporary Skill Shortage","482"],["485 Temporary Graduate","485"],["186 Employer Nomination","186"],["189 Skilled Independent","189"],["190 Skilled Nominated","190"],["491 Skilled Work Regional","491"],["494 Skilled Employer Sponsored","494"],["188 Business Innovation & Investment","188"],["500 Student","500"],["820/801 Partner","820"],["417/462 Working Holiday","417"],["457 Skilled (legacy)","457"],["444 NZ Special Category","444"],["Other / not sure","other"]],
  bridging:[["Select type...",""],["Bridging A (010)","010"],["Bridging B (020)","020"],["Bridging C (030)","030"],["Other bridging","other"]]
 };
 function residencyBlock(){const s=st[funnel];return `
   <div class="qlabel">${ICON.home} Residential status</div>
   <select class="field" onchange="setA('res',this.value)">${['Home owner|owner','Renting|renter','Boarding / with family|boarding'].map(o=>{const[l,v]=o.split('|');return `<option value="${v}" ${s.res===v?'selected':''}>${l}</option>`}).join('')}</select>
   <div class="qlabel">${ICON.clock} How long at this address?</div>
-  <select class="field" onchange="setA('resLen',this.value)">${[['Select...',''],['Less than 6 months','lt6'],['6–12 months','6to12'],['1–2 years','1to2'],['2–5 years','2to5'],['5+ years','5plus']].map(([l,v])=>`<option value="${v}" ${s.resLen===v?'selected':''}>${l}</option>`).join('')}</select>
-  ${s.resLen==="lt6"?`<div class="helper">Less than 6 months at your address is fine - some lenders may ask for your previous address too. A broker can guide you.</div>`:''}
+  <select class="field" onchange="setA('resLen',this.value)">${[['Select...',''],['Less than 6 months','lt6'],['6 to 12 months','6to12'],['1 to 2 years','1to2'],['2 to 5 years','2to5'],['5+ years','5plus']].map(([l,v])=>`<option value="${v}" ${s.resLen===v?'selected':''}>${l}</option>`).join('')}</select>
+  ${s.resLen==="lt6"?`<div class="helper">Less than 6 months at your address is fine. Some lenders may ask for your previous address too. A broker can guide you.</div>`:''}
   <div class="qlabel">${ICON.shield} Residency status</div>
   <select class="field" onchange="setA('visa',this.value)">${['Australian citizen|citizen','Permanent resident|pr','Temporary visa|temp','Bridging visa|bridging'].map(o=>{const[l,v]=o.split('|');return `<option value="${v}" ${s.visa===v?'selected':''}>${l}</option>`}).join('')}</select>
   ${(s.visa==="temp"||s.visa==="bridging")?visaDetail():''}`;}
@@ -2124,13 +2167,13 @@ function visaDetail(){const s=st[funnel];const subs=VISA_SUBCLASSES[s.visa]||[];
 function visaHelper(){const s=st[funnel];if(!s.visaExpiry)return `<div class="helper">Lenders need your loan to finish before your visa expires.</div>`;
  const now=new Date();const exp=new Date(s.visaExpiry+"-01");const months=Math.round((exp-now)/(1000*60*60*24*30.44));
  const termMonths=s.term*12;
- if(months<=0)return `<div class="helper" style="background:var(--pinkSoft);color:#b8275a">⚠️ This visa appears to have expired. Most lenders can't proceed - please check the date.</div>`;
- if(months<termMonths+1)return `<div class="helper" style="background:var(--sunSoft);color:#b8791a">Your visa has about <b>${months} months</b> left, but your ${s.term}-year loan needs ${termMonths}+. Lenders may require a shorter term or evidence of a visa extension. A broker can help structure this.</div>`;
- return `<div class="helper">Your visa has about <b>${months} months</b> remaining - comfortably longer than your ${s.term}-year loan. ✓</div>`;}
+ if(months<=0)return `<div class="helper" style="background:var(--pinkSoft);color:#b8275a">⚠️ This visa appears to have expired. Most lenders can't proceed. Please check the date.</div>`;
+ if(months<termMonths+1)return `<div class="helper" style="background:var(--sunSoft);color:#b8791a">Your visa has about <b>${months} months</b> left, but your ${s.term} year loan needs ${termMonths}+. Lenders may require a shorter term or evidence of a visa extension. A broker can help structure this.</div>`;
+ return `<div class="helper">Your visa has about <b>${months} months</b> remaining, comfortably longer than your ${s.term} year loan. ✓</div>`;}
 function employmentBlock(){const s=st[funnel];return `
   <div class="qlabel">${ICON.briefcase} Employment status</div>
-  <select class="field" onchange="setA('emp',this.value)">${['Full-time|fulltime','Part-time|parttime','Casual|casual','Self-employed|self','Centrelink|centrelink'].map(o=>{const[l,v]=o.split('|');return `<option value="${v}" ${s.emp===v?'selected':''}>${l}</option>`}).join('')}</select>
-  <div class="qlabel">${ICON.dollar} Your take-home pay (after tax)</div>
+  <select class="field" onchange="setA('emp',this.value)">${['Full time|fulltime','Part time|parttime','Casual|casual','Self employed|self','Centrelink|centrelink'].map(o=>{const[l,v]=o.split('|');return `<option value="${v}" ${s.emp===v?'selected':''}>${l}</option>`}).join('')}</select>
+  <div class="qlabel">${ICON.dollar} Your take home pay (after tax)</div>
   <div class="tworow"><div class="inwrap"><span class="pre">$</span><input class="field" type="text" inputmode="numeric" placeholder="e.g. 1200" value="${s.wage||''}" oninput="wageIn(this)"></div>
   <select class="field" onchange="setA('wageFreq',this.value)">${['Weekly|weekly','Fortnightly|fortnightly','Monthly|monthly','Yearly|annually'].map(o=>{const[l,v]=o.split('|');return `<option value="${v}" ${s.wageFreq===v?'selected':''}>${l}</option>`}).join('')}</select></div>
   <div class="helper" id="wageHelper">${wageHelperText()}</div>`;}
@@ -2138,7 +2181,7 @@ function wageHelperText(){const s=st[funnel];if(!s.wage)return "";
  const netAnnual=annualWage(s.wage,s.wageFreq);   // after-tax, annualised
  const grossAnnual=grossFromNet(netAnnual);       // before-tax (ATO 2025-26)
  st[funnel].income=grossAnnual;                   // matcher uses gross
- return `Take-home <b>${fmt(netAnnual)}</b>/yr after tax ≈ <b>${fmt(grossAnnual)}</b>/yr before tax.`;}
+ return `Take home <b>${fmt(netAnnual)}</b>/yr after tax ≈ <b>${fmt(grossAnnual)}</b>/yr before tax.`;}
 function pcIn(el){const v=el.value.replace(/[^0-9]/g,"").slice(0,4);el.value=v;st[funnel].postcode=v;el.parentNode.classList.toggle('ok',v.length===4);
  if(v.length===4){const S=steps();if(S[qi]&&S[qi].id==="postcode"){clearTimeout(autoT);autoT=setTimeout(function(){if(view==="form"&&steps()[qi].id==="postcode"){el.blur();next();}},450);}}}
 function wageIn(el){const v=+el.value.replace(/[^0-9]/g,'')||0;st[funnel].wage=v;
@@ -2153,10 +2196,10 @@ function livePreview(){const s=st[funnel];let{list}=match();
    let pool=funnel==="car"?carPool():funnel==="personal"?DATA.personal:(s.sub==="cashflow"?DATA.bizC:s.sub==="asset"?DATA.bizA:DATA.bizA.concat(DATA.bizC));
    let alt=pool.filter(l=>s.amount>=l.min&&s.amount<=l.max).sort((a,b)=>a.lo-b.lo);
    if(alt.length){const c=alt[0];const[rl,rh]=disp(c.lo,c.hi);const ef=Math.min(s.term,c.term);const w=weekly(s.amount,rl,ef,s.balloon||0),w2=weekly(s.amount,rh,ef,s.balloon||0);
-     return `<div class="preview"><div class="pvtop"><div><div class="pvlabel">Estimated repayment range</div><div class="pvval rng">${fmt(w)}<i>–</i>${fmt(w2).replace('$','')}<span>/week</span></div></div></div><div class="pvsub">Indicative only · adjust term to ${c.term} yr or less for these lenders</div></div>`;}
+     return `<div class="preview"><div class="pvtop"><div><div class="pvlabel">Estimated repayment range</div><div class="pvval rng">${fmt(w)}<i> to </i>${fmt(w2)}<span> a week</span></div></div></div><div class="pvsub">Indicative only · adjust term to ${c.term} yr or less for these lenders</div></div>`;}
    return `<div class="preview"><div class="pvlabel">Estimated repayment</div><div class="pvval" style="font-size:22px">Adjust your amount</div><div class="pvsub">to see your estimate</div></div>`;}
  const cheapest=list[0];const[rlo,rhi]=disp(cheapest.lo,cheapest.hi);const w=weekly(s.amount,rlo,s.term,s.balloon||0),w2=weekly(s.amount,rhi,s.term,s.balloon||0);
- return `<div class="preview"><div class="pvtop"><div><div class="pvlabel">Estimated repayment range</div><div class="pvval rng" id="pvval">${fmt(w)}<i>–</i>${fmt(w2).replace('$','')}<span>/week</span></div></div></div>
+ return `<div class="preview"><div class="pvtop"><div><div class="pvlabel">Estimated repayment range</div><div class="pvval rng" id="pvval">${fmt(w)}<i> to </i>${fmt(w2)}<span> a week</span></div></div></div>
   <div class="pvsub">Indicative only · ${list.length} lender${list.length>1?'s':''} to compare · ${s.term} yr on ${fmt(s.amount)}${s.balloon>0?' · balloon '+fmt(s.balloon):''}. Your final repayment depends on the rate the lender offers you.</div></div>`;}
 
 function steps(){return funnel==="car"?carSteps():funnel==="personal"?personalSteps():businessSteps();}
@@ -2168,7 +2211,7 @@ function chooser(){return `<div class="card anim chooser">
    <div class="qsub" style="text-align:center">Pick one to see your indicative repayments and lenders to compare.</div>
    <div class="grid choosergrid">
      ${chooserTile('car','car','Car & Asset','New, used, EV or equipment')}
-     ${chooserTile('caravan','truck','Caravan','Pop-top, full van or camper')}
+     ${chooserTile('caravan','truck','Caravan','Pop top, full van or camper')}
      ${chooserTile('personal','card','Personal','Debt, travel, medical & more')}
      ${chooserTile('business','briefcase','Business','Equipment & working capital')}
    </div>
@@ -2200,12 +2243,12 @@ function missingFields(){const s=st[funnel];const m=[];
    if(qi===0){if(!s.found)m.push("whether you've found the "+A('noun'));}
    else if(qi===1){if(s.found==="no"){if(!s.knowType)m.push("whether you know the type of "+A('noun'));}else{if(!s.cond)m.push("the "+A('noun')+"'s condition");if(ASSET!=="caravan"&&!s.ev)m.push("whether it's electric");}}
    else if(qi===4){if(!s.resLen)m.push("how long at your address");if(s.visa==="temp"||s.visa==="bridging"){if(!s.visaSub)m.push("your visa subclass");if(!s.visaExpiry)m.push("your visa expiry");}}
-   else if(qi===5){if(!s.wage)m.push("your take-home pay");}
+   else if(qi===5){if(!s.wage)m.push("your take home pay");}
  }
  if(funnel==="personal"){const S=steps();const stp=S[qi];const title=typeof stp.t==="function"?stp.t():stp.t;
    if(title==="What's the loan for?"){if(!s.purpose)m.push("what the loan is for");}
    else if(title==="A bit about you"){if(!s.resLen)m.push("how long at your address");if(s.visa==="temp"||s.visa==="bridging"){if(!s.visaSub)m.push("your visa subclass");if(!s.visaExpiry)m.push("your visa expiry");}}
-   else if(title==="Work & income"){if(!s.wage)m.push("your take-home pay");}
+   else if(title==="Work & income"){if(!s.wage)m.push("your take home pay");}
  }
  if(funnel==="business"){
    if(qi===0){if(!s.sub)m.push("what you need finance for");}
@@ -2234,20 +2277,18 @@ function results(){const s=st[funnel];const{list,fallback,capped,nearmiss}=match
  if(list.length){const l=list[0],p=pay(l);const fits=fitBadges(l,funnel,s);const tags=fits.concat(l.tags.filter(tagOK)).slice(0,3);
   h+=`<div class="r2best"><div class="r2rib">${ICON.star} Top of your list</div>
    <div class="r2lh"><span class="r2logo${LG(l)?' img':''}">${LG(l)||l.name[0]}</span><div class="r2nm"><h3>${l.name}</h3><span class="r2ok">${TICK} Based on your answers</span></div></div>
-   <div class="r2pay"><span class="r2l">Estimated repayment range</span><div class="r2v">${fmt(p.lo)}<i class="r2dash">–</i>${fmt(p.hi).replace('$','')}<small>/${F[1]}</small></div><span class="r2r">Indicative estimate. Where you land in this range depends on the rate the lender offers you.</span></div>
-   <div class="r2rates"><div><span>Interest rate p.a.</span><b>from ${p.rlo.toFixed(2)}%</b></div><div><span>Comparison rate p.a.*</span><b>from ${p.clo.toFixed(2)}%</b></div></div>
+   <div class="r2pay"><span class="r2l">Estimated repayment range</span><div class="r2v">${fmt(p.lo)}<i class="r2dash"> to </i>${fmt(p.hi)}<small> a ${F[1]}</small></div><span class="r2r">Indicative estimate. Where you land in this range depends on the rate the lender offers you.</span></div>
    <div class="r2tags">${tags.map((t,i)=>`<span class="${i<fits.length?'fit':''}">${i<fits.length?TICK:''}${t}</span>`).join('')}</div></div>`;}
  aplCheck();h+=`<div id="aplSlot">${applyCard()}</div>`+bookingCard();
  if(list.length>1){h+=`<div class="r2sec">More options <span>${list.length-1}</span></div><div class="r2list">`;
   list.slice(1,showAll?99:6).forEach((l,i)=>{const p=pay(l);const fit=fitBadges(l,funnel,s)[0]||l.tags.filter(tagOK)[0]||"";
-   h+=`<div class="r2item" style="animation-delay:${Math.min(i,8)*50}ms"><span class="r2logo sm${LG(l)?' img':''}">${LG(l)||l.name[0]}</span><div class="r2in"><b>${l.name}</b><small>${fit}</small><em>from ${p.rlo.toFixed(2)}% p.a. · comp. ${p.clo.toFixed(2)}%*</em></div><div class="r2ip"><b>${fmt(p.lo)}–${fmt(p.hi).replace('$','')}</b><small>/${F[2]}</small></div></div>`;});
+   h+=`<div class="r2item" style="animation-delay:${Math.min(i,8)*50}ms"><span class="r2logo sm${LG(l)?' img':''}">${LG(l)||l.name[0]}</span><div class="r2in"><b>${l.name}</b><small>${fit}</small></div><div class="r2ip"><b>${fmt(p.lo)} to ${fmt(p.hi)}</b><small>/${F[2]}</small></div></div>`;});
   h+=`</div>`;if(!showAll&&list.length>6)h+=`<button type="button" class="r2more" onclick="showAll=true;render()">Show ${list.length-6} more options</button>`;}
  if(capped&&capped.length){h+=`<div class="r2sec">Also on our panel</div><div class="r2list">`;
   capped.slice(0,6).forEach(l=>{h+=`<div class="r2item"><span class="r2logo sm mute${LG(l)?' img':''}">${LG(l)||l.name[0]}</span><div class="r2in"><b>${l.name}</b><small>Lends up to ${fmt(l.max)}</small></div></div>`;});h+=`</div>`;}
  if(nearmiss&&nearmiss.length){h+=`<div class="r2sec">Might still qualify</div><div class="r2list">`;
   nearmiss.slice(0,5).forEach(o=>{h+=`<div class="r2item"><span class="r2logo sm mute${LG(o.l)?' img':''}">${LG(o.l)||o.l.name[0]}</span><div class="r2in"><b>${o.l.name}</b><small>${o.reasons.length?'Usually wants '+o.reasons.join(' & '):'Close fit'}</small></div></div>`;});h+=`</div>`;}
- h+=`<p class="r2fine">Repayments are indicative estimates shown as a range, based on the details you entered and each lender's typical rate range. They are not a quote or an offer of finance. Your actual rate, fees and repayments are set by the lender after a full assessment, and your broker will confirm them before you commit. *Comparison rates include estimated fees.</p>`;
- if(list.length)h+=`<p class="r2fine r2warn">WARNING: This comparison rate is true only for the examples given and may not include all fees and charges. Different terms, fees or other loan amounts might result in a different comparison rate.</p>`;
+ h+=`<p class="r2fine">Repayments are indicative estimates shown as a range, based on the details you entered and each lender's typical rate range. Estimates exclude fees. They are not a quote or an offer of finance. Your actual rate, fees and repayments are set by the lender after a full assessment, and your broker will confirm them before you commit.</p>`;
  return h;}
 
 // ⬇️ PASTE YOUR FORMSPREE FORM ID HERE (e.g. "xeoqwabc") - from formspree.io
@@ -2587,7 +2628,7 @@ function gdPay(){const s=st[funnel];const help=wageHelperText();
  if(!payPh)return `<div class="wagebox gdwage"><span class="pre">$</span><input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="next" placeholder="1,200" value="${s.wage?Number(s.wage).toLocaleString('en-AU'):''}" oninput="wageIn(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();gdPayA();}" aria-label="Take-home pay"></div>
   <div class="helper" id="wageHelper" hidden>${help}</div>`;
  const opts=[["weekly","Weekly"],["fortnightly","Fortnightly"],["monthly","Monthly"]];
- return `<div class="gdtrail gdpaytrail"><button type="button" class="gdchip${gdMotion()?' pop':''}" onclick="gdPayEdit()"><span class="gdsr">Change your pay: </span>${TICK}<span class="gdcv">${fmt(s.wage)} take-home</span></button></div>
+ return `<div class="gdtrail gdpaytrail"><button type="button" class="gdchip${gdMotion()?' pop':''}" onclick="gdPayEdit()"><span class="gdsr">Change your pay: </span>${TICK}<span class="gdcv">${fmt(s.wage)} take home</span></button></div>
   <p class="gdq" id="gdpayq" tabindex="-1">Is that weekly, fortnightly or monthly?</p>
   <div class="rows gdfreq${gdMotion()?' gdin':''}" role="group" aria-labelledby="gdpayq">${opts.map(([v,l])=>{const on=s._wf&&s.wageFreq===v;
    return `<button type="button" class="ro ${on?'on':''}" onclick="gdPayPick('${v}')" aria-pressed="${!!on}"><span class="rt"><b>${l}</b><small>${fmt(annualWage(s.wage,v))} a year after tax</small></span><span class="rc">${TICK}</span></button>`;}).join('')}</div>
@@ -3542,7 +3583,8 @@ afhPost({afhCalcReady:true,v:16});
    - v21d (QA recheck RB1): while a check is live (or the bank check screen is up) the landing page's first question
      (afhAnswer) is ignored, and after a resume the landing page is told once more which screen is up so it can show the
      calculator (it hides it behind its own question 1 card on a reload or a Back).
-   No personal information in any URL or in storage. */
+   No personal information in any URL or in localStorage. v25cfix B1: the contact details and answers are kept in
+   sessionStorage for this tab only, for a same window bank check (Facebook, Instagram), and cleared at the outcome. */
 (function(){
  var FNB="https://gqgykllxzotrqfiyzkax.supabase.co/functions/v1/bc/";
  var START=FNB+"start",STATUS=FNB+"status";
@@ -3610,8 +3652,28 @@ afhPost({afhCalcReady:true,v:16});
  function framed(){try{return !!window.parent&&window.parent!==window;}catch(e){return false;}}
  /* to the AFH page that framed us (afh-parent-bankcheck.js); only our two origins can receive it */
  function toParent(m){if(!framed())return;HOME.forEach(function(o){try{window.parent.postMessage({afhBankCheck:m},o);}catch(e){}});}
- function remember(){var r=rec();save(r);toParent({ref:r.event_id,key:r.status_key,t0:r.started_at,url:r.url});}
- function clearRef(){forget();toParent({clear:true,ref:afhLeadEid()});}
+ function remember(){ssSave();var r=rec();save(r);toParent({ref:r.event_id,key:r.status_key,t0:r.started_at,url:r.url});}
+ function clearRef(){forget();ssClear();toParent({clear:true,ref:afhLeadEid()});}
+ /* v25cfix B1 (tester panel, 10 Nov 2026): Facebook and Instagram open Credit Sense in the same window, so back on the AFH
+    page this frame reloads with only the stored reference: no name, no answers, so Thanks had no lenders and no booking.
+    The session record keeps what those screens and the booking lead need: the contact details, the funnel, the answers
+    (st[funnel] without contact fields), the repayment frequency, the asset and how far the questions went. sessionStorage
+    only (it dies with the tab), keyed by the enquiry id; written when the lead goes (before the tap) and when the check
+    reference is stored; cleared with the reference (the outcome, New enquiry, decline), a decline and an uninstall.
+    Storage blocked, another tab or a different enquiry: no record, the screens as before (no booking that cannot reach
+    the CRM with a name). The full name is kept: the CRM keeps a stored name only when the field arrives empty. */
+ var SS="afh_bc_session";
+ function ssSave(){try{if(!contact.name)return;var s=Object.assign({},st[funnel]||{});delete s.name;delete s.mobile;delete s.email;
+   window.sessionStorage.setItem(SS,JSON.stringify({v:1,event_id:afhLeadEid(),t:Date.now(),c:{name:String(contact.name),mobile:String(contact.mobile||""),email:String(contact.email||"")},
+    f:funnel,s:s,rf:repayFreq,rfs:!!repayFreqSet,a:ASSET,mx:afhMaxQi[funnel],dn:!!afhDone[funnel]}));}catch(e){}}
+ function ssClear(){try{window.sessionStorage.removeItem(SS);}catch(e){}}
+ function ssLoad(id){try{var r=JSON.parse(window.sessionStorage.getItem(SS)||"null");
+   if(!r||r.v!==1||r.event_id!==id||typeof r.t!=="number"||Date.now()-r.t>KEEP||!r.c||typeof r.c.name!=="string"||!r.c.name.trim()||typeof r.c.mobile!=="string"||typeof r.c.email!=="string")return null;
+   if(["car","personal","business"].indexOf(r.f)<0||!r.s||typeof r.s!=="object")return null;return r;}catch(e){return null;}}
+ function ssRestore(id){var r=ssLoad(id);if(!r)return false;
+  try{if(r.a==="car"||r.a==="caravan")ASSET=r.a;funnel=r.f;Object.assign(st[r.f],r.s);if(FREQ[r.rf]){repayFreq=r.rf;repayFreqSet=!!r.rfs;}
+   if(typeof r.mx==="number")afhMaxQi[r.f]=r.mx;if(r.dn===true)afhDone[r.f]=true;
+   contact.name=r.c.name;contact.mobile=r.c.mobile;contact.email=r.c.email;B.rs=true;return true;}catch(e){return false;}}
  window.addEventListener("message",function(e){var d=e.data;if(!d||typeof d!=="object"||!("afhBankCheckRef" in d))return;
   if(HOME.indexOf(e.origin)<0||e.source!==window.parent)return;          /* only the AFH page that framed us */
   B.bridge=true;                                                          /* the AFH page runs afh-parent-bankcheck.js */
@@ -3719,11 +3781,11 @@ afhPost({afhCalcReady:true,v:16});
   return `<button type="button" class="cta bcgo" id="bcGo" onclick="AFH_BC.go()"${B.st==="going"?' aria-busy="true"':''}><span class="lk" aria-hidden="true">${lmIcon(I.lock)}</span>${LABEL} ${ARROW}</button>${B.st==="going"?"":no()}`;}
  /* v25b (coordinator, Sep approved, 9 Nov 2026): the quiet secondary under the primary. Before the tap "Not now"; once
     a check was started (the waiting screen, the error state) "instead". Never a second primary, no extra words. */
- function no(){return `<button type="button" class="bcno" id="bcNo" onclick="AFH_BC.decline()">${B.tapped?"Have a broker call me instead":"Not now, have a broker call me"}</button>`;}
+ function no(){return `<button type="button" class="bcno" id="bcNo" onclick="AFH_BC.decline()">${B.tapped?"Call me instead":"Not now"}</button>`;}
  /* v21f B2: the quiet service line under the button (not in the stop and error states, which carry their own number) */
  function q(){return `<p class="bcfine bcc" id="bcQ">Questions? Call ${tel(PHONE,"03 7031 6881")}</p>`;}
- function overlay(){return `<div class="bcov" id="bcOv" role="status" aria-live="polite"${B.st==="going"?"":" hidden"}><span class="bclock">${lmIcon(I.lock)}</span>
-  <h3>Opening your secure bank check</h3><p>Your enquiry is saved with AFH Finance.</p>${C("wordmark")?'<span class="bcwm">Credit Sense</span>':""}<i class="vfspin" aria-hidden="true"></i></div>`;}
+ function overlay(){return `<div class="bcov" id="bcOv" role="status" aria-live="polite"${B.st==="going"?"":" hidden"}><span class="bclock bcbusy" aria-hidden="true">${lmIcon(I.lock)}</span>
+  <h3>Opening your secure <span class="bcnb">bank check</span></h3><p>Your enquiry is saved with AFH Finance.</p>${C("wordmark")?'<span class="bcwm">Credit Sense</span>':""}</div>`;}
  function book(k){
   if(booked)return `<div class="r2book done bcbooked"><span class="r2bi ok">${TICK}</span><div><b>Call booked for ${esc(booked.day)}, ${esc(booked.time)}</b><small>A broker will call ${esc(mob())}.</small></div></div>`;
   var days=bkDays();   /* v23 F6: always open; Book my call appears only once a day and a time are picked (never a dead button) */
@@ -3788,20 +3850,20 @@ afhPost({afhCalcReady:true,v:16});
    <a class="cta bcgo bcalt" href="tel:136457">${lmIcon(I.phone)} Call NILS on 13 64 57</a>
    <p>Think we've got this wrong? Call us on ${tel(PHONE,"03 7031 6881")}.</p></div>`,""];
   if(n)return ["later",tick()+`<h2 class="lmh bcc" id="bcH" tabindex="-1">Thanks${nm(", ")}</h2>${sum()}<p class="bclead bcc">A broker will call you.</p>`,saveNo(),PAY];
-  if(P.gone)return ["gone",`<div class="bcicon">${lmIcon(I.tab)}</div><h2 class="lmh bcc" id="bcH" tabindex="-1">Your enquiry is saved${nm(", ")}</h2><p class="bcsub bcc">Finished your bank check? ${NEXT}</p>`+(B.url?cont()+no():callCta()),fresh()];
-  if(P.state==="in_progress")return ["waiting",`<div class="bcicon">${lmIcon(I.tab)}</div><h2 class="lmh bcc bcwt" id="bcH" tabindex="-1"><i class="vfspin" aria-hidden="true"></i>Finish your bank check</h2>
-   <p class="smsvsr">This page updates when it's done.</p>${cont()}${B.url?no():""}`,fresh()];
-  return ["progress",tick()+`<h2 class="lmh bcc" id="bcH" tabindex="-1">Done${nm(", ")}. That's everything.</h2><p class="bcsub bcc">Your bank check is in. We're reading it now.</p>${steps()}`,""];}
+  if(P.gone)return ["gone",`<div class="bcicon" aria-hidden="true">${lmIcon(I.bank)}<span class="bcbdg">${lmIcon(I.lock)}</span></div><h2 class="lmh bcc" id="bcH" tabindex="-1">Your enquiry is saved${nm(", ")}</h2><p class="bcsub bcc">Finished your bank check? ${NEXT}</p>`+(B.url?cont()+no():callCta()),fresh()];
+  if(P.state==="in_progress")return ["waiting",`<div class="bcicon bcbusy" aria-hidden="true">${lmIcon(I.bank)}<span class="bcbdg">${lmIcon(I.lock)}</span></div><h2 class="lmh bcc bcwt" id="bcH" tabindex="-1">Finish your <span class="bcnb">bank check</span></h2>
+   <p class="bcstat bcc" id="bcStat">This page updates when it's done.</p>${cont()}${B.url?no():""}`,fresh()];
+  return ["progress",tick()+`<h2 class="lmh bcc" id="bcH" tabindex="-1">Thanks${nm(", ")}</h2><p class="bcsub bcc">Your bank check is in. We're reading it now.</p>${steps()}`,""];}
  var shown="";
  /* the booking card needs the customer's details: not after a resume in a fresh page, where only the reference is known */
  function bookable(s){return (s==="gone"||s==="progress"||s==="keep"||s==="later")&&!!contact.name;}   /* v21f F4: keep and later too */
  function cardHtml(v){return `<div class="card anim lmc bcx bcw" id="bcCard" data-screen="${v[0]}" data-state="${esc(B.P.state)}" aria-live="polite">${head(v[0]!=="waiting"&&v[0]!=="gone")}${v[1]}</div>`;}
  /* v22 P1-4: after the card and the booking card: the secondary action, "Start a new enquiry" (last control) and the licence */
  function endHtml(v){return `<div class="bcend" id="bcEnd">${v[2]||""}${legal(false,v[3])}</div>`;}
- function waitHtml(){var v=outcome();return cardHtml(v)+(bookable(v[0])?book(v[0]):"")+endHtml(v);}
+ function waitHtml(){var v=outcome();return cardHtml(v)+(v[0]==="keep"||v[0]==="later"?lendHtml("top"):"")+(bookable(v[0])?book(v[0]):"")+endHtml(v);}
  function waitPaint(){if(view!=="bcwait")return;var v=outcome(),k=v[0]+"|"+B.P.state+"|"+B.P.first+"|"+B.P.carries;if(k===shown)return;var was=shown.split("|")[0],big=was!==v[0];shown=k;
   var bkEl=document.getElementById("bcBook"),c=document.getElementById("bcCard");
-  if(bkEl&&c&&bookable(v[0])&&bookable(was)){c.outerHTML=cardHtml(v);var e=document.getElementById("bcEnd");if(e)e.outerHTML=endHtml(v);}else render();
+  if(bkEl&&c&&bookable(v[0])&&bookable(was)&&!((v[0]==="keep"||v[0]==="later")&&!document.getElementById("bcLend")&&lendHtml())){c.outerHTML=cardHtml(v);var e=document.getElementById("bcEnd");if(e)e.outerHTML=endHtml(v);}else render();
   if(big)focusH();}
  /* the heading takes focus on a new screen (screen readers). v21c: that focus can fire the frame window's own focus event,
     which must not count as the customer coming back (it undid the 2 h "Your enquiry is saved" screen at once). */
@@ -3944,9 +4006,9 @@ afhPost({afhCalcReady:true,v:16});
   if(isTop(w)){log("tab_is_top");return null;}
   try{w.opener=null;}catch(e){}
   try{var d=w.document;d.open();d.write('<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>AFH Finance bank check</title></head>'
-   +'<style>@keyframes s{to{transform:rotate(360deg)}}i{display:block;width:26px;height:26px;margin:28px auto 18px;border-radius:50%;border:2.5px solid #DCD6FA;border-top-color:#4B2EDB;animation:s .8s linear infinite}@media (prefers-reduced-motion:reduce){i{animation:none}}p{margin:0 0 6px;font-size:14.5px;color:#434A55}</style>'
+   +'<style>@keyframes s{to{transform:rotate(360deg)}}i{position:relative;display:grid;place-items:center;width:72px;height:72px;margin:32px auto 24px;border-radius:50%;color:#1E2329;background:radial-gradient(circle at 30% 25%,#fff,rgba(255,255,255,.6) 60%),linear-gradient(140deg,rgba(17,181,238,.35),rgba(109,84,232,.35));box-shadow:inset 0 1px 0 #fff,0 0 0 1px rgba(30,35,41,.07),0 14px 30px -14px rgba(45,27,140,.45)}i:before{content:"";position:absolute;inset:-8px;border-radius:50%;background:conic-gradient(rgba(75,46,219,0) 0 50%,#4B2EDB),#E9E6FB;-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));animation:s 1.1s linear infinite}i svg{width:30px;height:30px}@media (prefers-reduced-motion:reduce){i:before{animation:none}}p{margin:0 0 6px;font-size:14.5px;color:#434A55}</style>'
    +'<body style="margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;color:#1E2329;text-align:center;background:radial-gradient(60% 40% at 100% 0%,rgba(109,84,232,.16),rgba(109,84,232,0) 70%),radial-gradient(55% 35% at 0% 100%,rgba(17,181,238,.16),rgba(17,181,238,0) 70%),#F6F6F9"><div>'+LOGO
-   +'<i></i><p style="font-size:18px;font-weight:700;color:#1E2329">Opening your secure bank check</p><p>This can take a few seconds.</p><p>When you&#39;re done, come back to AFH Finance.</p></div></body></html>');d.close();}catch(e){}
+   +'<i>'+lmIcon(I.lock)+'</i><p style="font-size:18px;font-weight:700;color:#1E2329">Opening your secure bank check</p><p>This can take a few seconds.</p><p>When you&#39;re done, come back to AFH Finance.</p></div></body></html>');d.close();}catch(e){}
   return w;}
  function dropTab(w){try{if(w&&!w.closed)w.close();}catch(e){}}
  function handoff(w){
@@ -4001,14 +4063,32 @@ afhPost({afhCalcReady:true,v:16});
     call is booked with v16.9b's own booking (bkSet, bookCall), the flag off arm's path: untagged, as no check exists
     for this browser (B.ok false before the tap). */
  B.decline=function(){if(!B.on||view==="bcno"||B.st==="going")return;var after=!!B.tapped;B.no=after?"after":"before";
-  log(after?"decline.after":"decline");if(after)clearRef();B.nf=true;view="bcno";render();window.scrollTo(0,0);};
+  log(after?"decline.after":"decline");if(after)clearRef();else ssClear();B.nf=true;view="bcno";render();window.scrollTo(0,0);};
  /* "Do the bank check now": back to the bank check screen, as it was (Agree records the consent and opens the link as
     usual; after a started check, Agree goes back to the waiting screen and its reference is stored again) */
  B.undecline=function(){if(!B.on||view!=="bcno")return;log("undecline");if(B.no==="after"&&B.key&&!B.P.done)remember();B.no="";
   view="bankcheck";render();window.scrollTo(0,0);focusH();};
  function noHtml(){var f=first()||B.P.first||"";
   return `<div class="card anim lmc bcx bcw" id="bcCard" data-screen="declined" aria-live="polite"><div class="bctick bcph" aria-hidden="true">${lmIcon(I.phone)}</div><h2 class="lmh bcc" id="bcH" tabindex="-1">No problem${f?", "+esc(f):""}</h2><p class="bclead bcc">A broker will call you.</p></div>`
-   +(contact.name?book("declined"):"")+`<div class="bcend" id="bcEnd">${saveNo()}<button type="button" class="bcno" id="bcUndo" onclick="AFH_BC.undecline()">Do the bank check now</button>${legal(false,PAY)}</div>`;}
+   +lendHtml("closed")+(contact.name?book("declined"):"")+`<button type="button" class="cta" id="bcUndo" onclick="AFH_BC.undecline()">Do the bank check now</button><div class="bcend" id="bcEnd">${saveNo()}${legal(false,PAY)}</div>`;}
+ /* v25c: the lender list of v16.9b's results screen (results(): match().list in its order, disp(), weekly(), perF(), the
+    repayment frequency, fitBadges(), tagOK(), LG()), as its "More options" rows (no top card, no ranking words), titled
+    "Lenders to compare"; the range reads "to" (the project copy rule: no dashes). Its fine print and comparison rate
+    warning show whenever rows show, word for word. States: "closed" (decline: "See N lenders to compare"), "top" (Thanks:
+    3 rows, "See all N lenders"), "all" ("Hide"). No pixel, no lead, no request but the lender logos. */
+ var LFINE="Repayments are indicative estimates shown as a range, based on the details you entered and each lender's typical rate range. Estimates exclude fees. They are not a quote or an offer of finance. Your actual rate, fees and repayments are set by the lender after a full assessment, and your broker will confirm them before you commit.";   /* v25clegal: no rate or comparison rate is shown, so no WARNING */
+ function lendHtml(d){if(!contact.name)return "";   /* the answers are this page's own, or the session record's (B1) */
+  var L=[];try{L=match().list||[];}catch(e){L=[];}if(!L.length)return "";
+  var s=st[funnel],F=FREQ[repayFreq],n=L.length;if(d)B.lend0=d;var m=B.lendAll?"all":(B.lend0||"top");if(m==="top"&&n<=3)m="all";
+  function pay(l){var r=disp(l.lo,l.hi);return {rlo:r[0],lo:perF(weekly(s.amount,r[0],s.term,s.balloon||0)),hi:perF(weekly(s.amount,r[1],s.term,s.balloon||0))};}
+  var rows=m==="closed"?"":L.slice(0,m==="top"?3:99).map(function(l){var p=pay(l),fit=fitBadges(l,funnel,s)[0]||l.tags.filter(tagOK)[0]||"";
+   return `<div class="r2item"><span class="r2logo sm${LG(l)?' img':''}">${LG(l)||l.name[0]}</span><div class="r2in"><b>${l.name}</b><small>${fit}</small></div><div class="r2ip"><b>${fmt(p.lo)} to ${fmt(p.hi)}</b><small>/${F[2]}</small></div></div>`;}).join("");
+  var pill=m==="closed"?`See ${n} lender${n===1?"":"s"} to compare`:`See all ${n} lenders`,tog=(m!=="all"||B.lendAll)?`<button type="button" id="bcLendMore" aria-expanded="${m==="all"}" aria-controls="bcLendL" onclick="AFH_BC.lend()">${pill}</button>`:"";
+  return `<section class="bclend ${m}" id="bcLend" aria-labelledby="bcLendH"><h3 class="r2sec" id="bcLendH">Lenders to compare <span>${n}</span></h3>
+   ${m==="closed"?tog:""}<div class="r2list" id="bcLendL"${m==="closed"?" hidden":""}>${rows}</div>${m==="closed"?"":tog+`<p class="r2fine">${LFINE}</p>`}</section>`;}
+ /* the pill: open every lender, or back to the screen's own state; only the section is redrawn (the chips and focus stay) */
+ B.lend=function(){B.lendAll=!B.lendAll;if(B.lendAll)log("lenders_all");var x=document.getElementById("bcLend");if(!x)return;x.outerHTML=lendHtml();
+  var b=document.getElementById("bcLendMore");if(b)try{b.focus({preventScroll:true});}catch(e){}};
  B.bookT=function(el){if(el.getAttribute("data-auto")==="1"&&el.open){el.removeAttribute("data-auto");return;}   /* v22: the automatic open is not the customer's */
   B.book=!!el.open;B.bookTouched=true;if(B.book)log("book_open");};
 
@@ -4017,7 +4097,7 @@ afhPost({afhCalcReady:true,v:16});
   B.resumed=src;afhEid=r.event_id;B.key=r.status_key;B.url=r.url||"";B.t0=r.started_at;B.tapped=true;B.tab="";B.ok=true;B.rel=true;
   if(src!=="local")save(r);
   if(!B.on&&!B.off){B.cfg=B.cfg||{confirm:{},links:{}};install();B.on=true;}
-  log("resume."+src);wait(true);}
+  var rs=ssRestore(r.event_id);log("resume."+src,rs?1:0);wait(true);}
 
  /* ── install: only when the flag is on and the customer is still before the details screen ── */
  function wrap(n,f){O[n]=window[n];window[n]=f;}
@@ -4077,13 +4157,17 @@ afhPost({afhCalcReady:true,v:16});
   /* v21f B1 (council FIX-BRIEF-2): every route's details step lead goes now, untagged; nothing is held. A Lead Market
      bound customer's leads never fire a Lead or QualifiedLead (m-c: noPixel). Tagged bank_check:"on" only once the check
      exists (ok). */
+  /* v25cfix B1: after a resume this page never saw the consent: every consent field is left out (the CRM keeps a stored
+     consent field unless one arrives, even empty), so the booking lead never overwrites the consent record */
+  wrap("consentFields",function(){return B.resumed?{}:O.consentFields();});
   wrap("sendLead",function(a,x,np){
    if(!B.rel&&a==="viewed matches"){B.rel=true;log("captured."+bound());}
+   if(!B.tapped)ssSave();
    var nop=np||bound()==="lm";
    return B.ok?O.sendLead(a,Object.assign({bank_check:"on"},x||{}),nop):O.sendLead(a,x,nop);});
  }
  /* QA M2: put back every v16.9b function exactly as it was (nothing of the step stays in the path). */
- function uninstall(){if(!B.on)return;for(var n in O)if(Object.prototype.hasOwnProperty.call(O,n))window[n]=O[n];O={};
+ function uninstall(){if(!B.on)return;ssClear();for(var n in O)if(Object.prototype.hasOwnProperty.call(O,n))window[n]=O[n];O={};
   try{if(GD0){GD.gate.bar=GD0.bar;GD.gate.go=GD0.go;}}catch(e){}try{document.documentElement.classList.remove("bcv","bcvw");}catch(e){}B.on=false;B.off=true;log("uninstalled");}
  function cfgOf(j){var c=j.confirm||{},L=j.links||{},u=function(v){return typeof v==="string"&&/^https:\/\/(www\.)?afhfinance\.com\.au\//.test(v)?v:"";};
   return {confirm:{read_only:c.read_only===true,no_enquiry:c.no_enquiry===true,days90:c.days90===true,carries_over:c.carries_over===true,return_url:c.return_url===true,wordmark:c.wordmark===true},
@@ -4107,7 +4191,7 @@ afhPost({afhCalcReady:true,v:16});
     - otherwise FNV 1a 32 bit of the enquiry id, mod 100, below BC_SHARE: in stage.
     The status answer can come before the landing page's first afhParent: it waits for that message or 1.5 s, whichever
     is first, and is used only while activate()'s own conditions still hold (never after the questions). ── */
- var BC_SHARE=0/*BC_SHARE*/;
+ var BC_SHARE=50/*BC_SHARE*/;
  function fnv(s){var h=0x811c9dc5;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}return h>>>0;}
  function forceOf(){var f="";try{f=new URLSearchParams(location.search).get("bc_force")||"";}catch(e){f="";}
   if(f!=="1"&&f!=="0"){f="";try{var u=afhCtx&&afhCtx.url;if(typeof u==="string"&&u)f=new URL(u).searchParams.get("bc_force")||"";}catch(e){f="";}}
@@ -4461,6 +4545,66 @@ window.afhX=function(b){var p=document.getElementById(b.getAttribute("aria-contr
  solve();
  window.__afhZone=function(){return {kind:R.getAttribute("data-afhz")||"",zs:zs,zy:zs?Math.round(zs-(zs<600?64:ZB)-BH):0,cmp:R.hasAttribute("data-afhcmp"),sp:R.style.getPropertyValue("--afh-sp"),dmax:R.style.getPropertyValue("--afh-dmax")};};
 }catch(e){}})();</script>
+<style id="afh-v25d">
+/* v25cdesign (design council, 10 Nov 2026): one calm system for the bank check screens, layered last. Bank check
+   selectors only (the flag off arm never renders them). Rhythm 4, 8, 12, 20, 24; one hero size (72); one loading ring;
+   motion 150 to 250 ms, the ring 1.1 s a turn, none with reduced motion. */
+/* L: the loading ring. A brand comet on a faint track, 8 px outside the hero (the overlay lock, the waiting bank); the
+   same ring, small, in the Agree button and on the reading step. Replaces every stray ring spinner. */
+@keyframes bcring{to{transform:rotate(1turn)}}
+.bcbusy::before,.bcgo .spin,.bcsteps li.now i{background:conic-gradient(rgba(75,46,219,0) 0 50%,#4B2EDB),#E9E6FB;
+ -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2.5px));animation:bcring 1.1s linear infinite}
+.bcbusy::before{content:"";position:absolute;inset:-8px;border-radius:50%}
+.bcgo .spin{flex:none;border:0;background:conic-gradient(rgba(255,255,255,0) 0 45%,#fff),rgba(255,255,255,.3)}
+.bcsteps li.now i{border:0}
+.bcgo[disabled][aria-busy="true"]{opacity:.9}
+.bcwt .vfspin,.bcov .vfspin{display:none}
+/* H: one hero. 72 px, the brand glass orb (waiting, saved, overlay, decline) or the green tick (done); a charcoal lock
+   badge marks the bank as secure (the same lock as the bank check screen's bank to AFH row) */
+.bcw>.bcicon,.bcw>.bctick,.bcov .bclock{position:relative;flex:none;width:72px;height:72px;margin:0 auto 20px}
+.bcw>.bcicon svg,.bcov .bclock svg{width:30px;height:30px}
+.bcw>.bctick:not(.bcph){box-shadow:0 0 0 8px rgba(15,159,110,.1),0 14px 28px -14px rgba(15,159,110,.55)}
+.bcw>.bctick svg{width:34px;height:34px}
+.bcbdg{position:absolute;right:-4px;bottom:-4px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#1E2329;color:#fff;box-shadow:0 0 0 3px #fff}
+.bcicon .bcbdg svg{width:14px;height:14px}
+/* T: type and rhythm. Centred, balanced headings (no orphan, "bank check" kept together), one short line under the
+   heading in one style, then the action */
+.bcnb{white-space:nowrap}
+#bcCard.bcw{gap:0}
+.bcw>.vfhead{margin:0 0 24px}
+.bcw>h2.lmh{margin:0;text-wrap:balance}
+.bcw .bcwt{display:block}
+.bcstat,.bcw>.bcsub,.bcw>.bclead{margin:8px 0 0;font-size:15px;line-height:1.45;font-weight:500;color:#434A55;text-wrap:balance}
+.bcstat{min-height:1.45em}
+.bcw>.bcsum{order:1;margin:16px 0 0}
+.bcw>.bcsum li{padding:6px 12px;background:#F6F4FE;box-shadow:none;font-size:13.5px;font-weight:600;color:#434A55}
+.bcw>.bcsteps{margin:20px 0 0}
+.bcw>.bcout{margin:12px 0 0}
+.bcw>.cta{margin-top:24px}
+.bcw>.bcfine{margin-top:8px}
+.bcx .bcerr{text-align:center;align-items:center}
+.bcx h2,.bcx h3,.bcov h3{text-wrap:balance}
+/* P: placement. On the waiting and saved screens the progress bar stays at the top of the card; the v25 zone space
+   moves inside the card, split above the hero and above the button, so Continue keeps its zone y (the sum is the same) */
+html[data-afhz="w"] #screen::before{flex:0 0 0px!important}
+html[data-afhz="w"] #bcCard>.vfhead{order:-1}
+html[data-afhz="w"] #bcCard::before{content:"";display:block;flex:0 0 calc(var(--afh-sp,0px)*.55)}
+html[data-afhz="w"] #bcAgain{margin-top:calc(24px + var(--afh-sp,0px)*.45)}
+/* the overlay: solid (no blur), the lock orb with the ring, one heading, one line */
+.bcov{gap:0;padding:32px 24px;background:#F4F3FA;-webkit-backdrop-filter:none;backdrop-filter:none}
+.bcov .bclock{margin:0 0 24px}
+.bcov h3{margin:0;font-size:22px;line-height:1.2}
+.bcov p{margin:8px 0 0;font-size:15px;line-height:1.45;color:#434A55}
+.bcov .bcwm{margin-top:16px}
+/* S: secondary actions. Under the primary, one quiet text button (Not now, Call me instead); below the card, one
+   quieter tertiary (New enquiry). 44 px, no underline until hover or focus, a visible focus ring. */
+.bcno{font-size:15px}
+.bcw>.bcno{margin-top:4px}
+.bcnew{font-size:14px;color:#5B6370;text-decoration:none;border-radius:10px}
+.bcnew:focus-visible{text-decoration:underline;text-underline-offset:3px}
+@media (hover:hover){.bcnew:hover{text-decoration:underline;text-underline-offset:3px}}
+@media (prefers-reduced-motion:reduce){.bcbusy::before,.bcgo .spin,.bcsteps li.now i{animation:none}}
+</style>
 <script>
 /* Embedded auto-height: tell the parent page how tall we are so the iframe never clips a step. */
 (function(){
