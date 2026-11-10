@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AFH Finance Loan Calculator</title>
-<!-- AFH-CALC-VERSION: 2026-11-11-v26-bankcheck share 50 (base 2026-11-06-v16.9b) -->
+<!-- AFH-CALC-VERSION: 2026-11-11-v27-bankcheck share 50 (base 2026-11-06-v16.9b) -->
 <!-- Meta Pixel Code: standalone loads its own pixel; embedded relays every event to the host page's pixel (one pixel, no duplicate PageView) -->
 <script>
 (function(){
@@ -2666,8 +2666,8 @@ function submitGate(ev){ev.preventDefault();const f=ev.target;
  try{render();}catch(err){console.error("render error",err);}
  window.scrollTo({top:0,behavior:'smooth'});
  const dbt=debtFunnel();try{sendLead("viewed matches",undefined,dbt);}catch(err){console.error("lead send error",err);}try{smsvGate();}catch(e){}  // send AFTER, never blocks
- /* $15 Lead only for a debt lead ALC will pay for. ALC paused or at its limit means no one pays for it, so it isn't a Lead.
-    If the ALC check itself failed (network), the broker sends it on from the CRM, so it still counts. */
+ /* v27: a $15 Lead when ALC will take it (or the ALC check failed and a broker sends it on); an $8 Lead from debtPixelOther
+    when ALC is closed or off, the amount is under its minimum, or the customer declined ALC. Centrelink: nothing. */
  if(dbt){if(debtCentrelink())debtPixelOther('centrelink');else if(afhKeepsDebt())debtPixelLead('afh_keep',Math.max(15,leadQuality().value||0));else if(alc.declined)debtPixelOther('declined_alc');else if((+st.personal.amount||0)<alc.min)debtPixelOther('below_min');else if(!ALC.on||alc.state==="closed")debtPixelOther('alc_closed');else debtPixelLead('afh');}
  return false;}
 
@@ -2808,8 +2808,11 @@ function lmSubmit(ev){ev.preventDefault();if(lm.sent)return false;const f=ev.tar
  afhTrack('ReferConsent',{});lmLog('submit');
  /* AFH keeps its own copy of the lead, tagged as referred, before anything leaves for Lead Market. */
  try{sendLead("referred to lead market",{consent_wording:LM_WORDING,lm_consent:"yes",lm_consent_wording:LM_WORDING,lm_consent_timestamp:lm.ts,lm_route:"lead market",date_of_birth:lmDobIso(contact.dob),centrelink_payment:(LM_BENEFITS.find(b=>b[0]===lm.benefit)||["",""])[1]},true);  /* v18: no Lead for Lead Market referrals (Meta or Google) */}catch(e){}
- lmRelay();
- if(debtFunnel())debtPixelOther('lead_market');
+ /* v27: a debt referral to Lead Market is an $8 Lead on the normal pages (debtPixelOther; the sell page keeps its own
+    CompleteRegistration in lmRelay). It waits for the relay's answer so a refused duplicate (lm.stop) sends nothing; a
+    relay that failed for a technical reason still counts, AFH has the enquiry. */
+ const lmR=lmRelay();
+ if(debtFunnel())lmR.then(function(){if(!lm.stop)debtPixelOther('lead_market');});
  view=lm.stop?"lmstop":"lmbank";render();window.scrollTo(0,0);lmLog('bank_screen');return false;}
 /* v16.8b: relay.php refused the send (409 duplicate: the same person is sold, recalled, withdrawn, with ALC or with a partner
    broker in the last 30 days). No SMS code on this path (Sep, 6 Nov), so not_verified is only a fallback message. */
@@ -2929,8 +2932,8 @@ function alcSubmit(ev){ev.preventDefault();const f=ev.target;if(!alcValid(f))ret
   .then(function(){
    /* AFH always keeps its own copy. If ALC didn't take it, an AFH broker calls instead. */
    try{sendLead(alc.ok?"referred to ALC":"debt consolidation callback (ALC unavailable)",{consent_wording:ALC_WORDING,consent_version:"afh-alc-v1",alc_consent:"yes",alc_consent_timestamp:alc.ts,alc_ref:alc.ref,alc_route:alc.ok?"sent":"failed"},true);}catch(e){}
-   /* $15 Lead only when ALC took it, or the hand-off failed for a technical reason and a broker sends it on.
-      ALC refusing it (closed, not eligible, already with ALC, sold through Lead Market) is never a Lead. */
+   /* $15 Lead when ALC took it, or the hand-off failed for a technical reason and a broker sends it on. v27: ALC answering
+      "closed" is the $8 Lead (debtPixelOther); its other refusals (not eligible, already with ALC or a partner) send nothing. */
    if(debtCentrelink())debtPixelOther('centrelink');else if(alc.ok&&alc.repeat)debtPixelOther('repeat');else if(alc.ok)debtPixelLead('alc');
    else if(ALC_REFUSED[alc.err])debtPixelOther(alc.err==="with_partner"?"with_partner":"alc_"+alc.err);else debtPixelLead('alc_fallback');
    view="alcdone";render();window.scrollTo(0,0);});
@@ -2950,19 +2953,34 @@ function alcDone(){const first=(contact.name||"").trim().split(/\s+/)[0]||"";
   <div class="lmtls">${step(1,'They review your details','Your answers are already with them.',1)}${step(2,'They call you','Keep your phone nearby. They may call from a number you don\'t know.',0)}${step(3,'You decide','Talk through your options. There\'s no obligation to go ahead.',0,1)}</div>
   <div class="lmfine">AFH Finance referred you to Australian Lending Centre and may receive a fee. Questions? Call 03 7031 6881.</div></div>`;}
 /* ── Meta signal for debt consolidation ─────────────────────────────────────────
-   All debt consolidation goes to ALC, so Meta should learn from leads ALC actually takes.
-   Lead (value $15) fires only when ALC accepts. Every other debt outcome fires
-   nothing to Meta (the CRM records the outcome). */
+   v27 (11 Nov 2026): ALC is closed, so the old rule (Lead only when ALC accepts) sent Meta no debt Lead at all.
+   The rule now, on the normal pages: every genuine debt consolidation enquiry that is not Centrelink sends exactly ONE
+   standard Lead, with the enquiry's own eventID (afhLeadEid) and a lead_route label:
+     alc / afh / alc_fallback  $15 (ALC takes it, or a broker sends it on)        afh_keep  max($15, quality value)
+     alc_closed, below_min, declined_alc, lead_market  $8 (DEBT_OTHER_VALUE)
+   Nothing is sent for Centrelink, for a repeat (repeat, with_partner, a Lead Market duplicate) or for ALC's other refusals.
+   One Lead per enquiry: debtPixelSend remembers the eventID it sent, so a customer who passes through more than one of
+   these paths (details step, Lead Market form, bank check start) is counted once and the first route wins.
+   The Lead goes at submit, as every other Lead in this file does; it does not wait for the SMS code.
+   The sell page (sell=lm) is unchanged: CompleteRegistration only, from debtPixelLead, and nothing from debtPixelOther. */
 function debtPixelUD(){try{const nm=(contact.name||"").trim().toLowerCase().split(/\s+/);let ph=(contact.mobile||"").replace(/[^0-9]/g,"");if(ph.indexOf("0")===0)ph="61"+ph.slice(1);
  const ud={em:(contact.email||"").trim().toLowerCase(),ph:ph,fn:nm[0]||"",ln:nm.length>1?nm[nm.length-1]:"",country:"au"};const pc=st.personal.postcode||"";if(pc)ud.zp=pc;fbq('init','1029171376262400',ud);}catch(e){}}
 /* v9: on the sell page (sell=lm) partner referrals go to Meta as CompleteRegistration, never Lead, so the AFH campaigns'
    Lead optimisation never learns from Lead Market referrals. The sell campaign optimises for CompleteRegistration. */
-function debtPixelLead(route,val){if(typeof fbq!=="function")return;debtPixelUD();
+let debtLeadSent="";const DEBT_OTHER_VALUE=8,DEBT_OTHER_LEAD={alc_closed:1,below_min:1,declined_alc:1,lead_market:1};
+function debtPixelLead(route,val){debtPixelSend(route,val);}
+function debtPixelSend(route,val){if(typeof fbq!=="function")return;
+ if(!SELL){const id=afhLeadEid();if(debtLeadSent===id)return;debtLeadSent=id;}   /* v27: never two Leads for one enquiry */
+ debtPixelUD();
  try{fbq('track',SELL?'CompleteRegistration':'Lead',{content_name:'Debt consolidation loan',content_category:'Personal',value:(val||15),currency:'AUD',lead_route:route||'alc',funnel:'personal',loan_purpose:'debt',loan_amount:+st.personal.amount||0},{eventID:afhLeadEid()});}catch(e){}}
 function debtPixelOther(why){
- /* v7: debt enquiries ALC doesn't pay for send nothing to Meta. A new custom event would be blocked by Meta
-    and raise a warning, and the CRM already records the outcome. */
- return;}
+ /* v27: a debt enquiry ALC did not take is still a Lead ($8) when it is one of DEBT_OTHER_LEAD: ALC closed or off, under
+    ALC's minimum, the customer declined ALC, or it went to Lead Market. Not on the sell page, not Centrelink, and every
+    other reason (centrelink, repeat, with_partner, ALC's other refusals) still sends nothing. It calls debtPixelSend, not
+    debtPixelLead, so the bank check's wrapper of debtPixelLead (Lead Market bound: no $15 Lead at the details step)
+    does not stop it. */
+ if(SELL||!DEBT_OTHER_LEAD[why]||!debtFunnel()||debtCentrelink())return;
+ debtPixelSend(why,DEBT_OTHER_VALUE);}
 /* Declining keeps them with AFH: the normal matches screen and AFH's own consent. */
 function alcDecline(){alc.declined=true;afhTrack('HandoffDecline',{});
  if(contact.name&&consent.contact){view="results";}else{view="ready";afhOnce('ready','CalcResultsReady',{});}
@@ -3987,7 +4005,9 @@ afhPost({afhCalcReady:true,v:16});
  /* The bank check has really started (link released or texted), or the customer booked a call. bank_check:"on" only once
     the check exists (ok). v21f B1: nothing is held any more (the lead went at the details step), so the queue below is
     always empty; what remains is ok and the afh_keep Lead: an AFH debt enquiry gets it once its check starts (as v21e),
-    never a Lead Market bound customer (m-c); an ALC customer's $15 Lead already fired at the details step (F1). */
+    never a Lead Market bound customer (m-c); an ALC customer's $15 Lead already fired at the details step (F1).
+    v27: when the details step already sent this enquiry's $8 Lead (ALC closed, under the minimum, declined), debtPixelSend
+    sends nothing here: one Lead per enquiry, the first one stands. */
  function release(why,ok){if(ok&&!B.ok)B.ok=true;var q=B.held;B.held=[];
   if(!B.rel||q.length){B.rel=true;log("release."+why,q.length);}
   q.forEach(function(c){try{if(why==="pagehide")sendOnLeave(c[0],c[1]);else O.sendLead(c[0],B.ok?Object.assign({bank_check:"on"},c[1]||{}):c[1],true);}catch(e){}});
@@ -4126,11 +4146,11 @@ afhPost({afhCalcReady:true,v:16});
   /* debt leads stay with AFH: no ALC, no Lead Market. At the details step v16.9b's own answer, so its pixel is v16.9b's. */
   wrap("afhKeepsDebt",function(){return B.gate?O.afhKeepsDebt():true;});
   wrap("submitGate",function(ev){B.gate=true;try{return O.submitGate(ev);}finally{B.gate=false;}});
-  /* v21f B1 (supersedes F1's line, same result): at the details step a Lead Market bound customer's debt pixel never fires
-     (m-c); an ALC bound customer keeps v16.9b's own submitGate decision (the $15 debt Lead, eventID the enquiry's, when
+  /* v21f B1 (supersedes F1's line, same result): at the details step a Lead Market bound customer's $15 debt Lead never
+     fires (m-c; v27: their $8 Lead from debtPixelOther does, as for every other customer); an ALC bound customer keeps v16.9b's own submitGate decision (the $15 debt Lead, eventID the enquiry's, when
      ALC would take the lead: F1); an AFH customer's as v16.9b (an afh_keep Lead, or none until the tap: release()). */
   wrap("debtPixelLead",function(r,v){if(B.gate){B.gDebt=true;if(bound()==="lm")return;B.dLead=true;}return O.debtPixelLead(r,v);});
-  wrap("debtPixelOther",function(w){if(B.gate){B.gDebt=true;if(bound()==="lm")return;}return O.debtPixelOther(w);});
+  wrap("debtPixelOther",function(w){if(B.gate)B.gDebt=true;return O.debtPixelOther(w);});
   wrap("bookCall",function(){if(bk.day&&bk.time)release("book",false);return O.bookCall.apply(null,arguments);});
   /* v21c m3: the AFH landing page treats the bank check and waiting screens as end screens, as v16.9b's results (once
      details are sent, Back leaves the page). The landing page's history knows only v16.9b's view names. */
