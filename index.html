@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AFH Finance Loan Calculator</title>
-<!-- AFH-CALC-VERSION: 2026-11-11-v27-bankcheck share 50 (base 2026-11-06-v16.9b) -->
+<!-- AFH-CALC-VERSION: 2026-11-11-v29b-bankcheck share 50 (base 2026-11-06-v16.9b) -->
 <!-- Meta Pixel Code: standalone loads its own pixel; embedded relays every event to the host page's pixel (one pixel, no duplicate PageView) -->
 <script>
 (function(){
@@ -1822,6 +1822,13 @@ function assetTypeOpts(s){return A('opts').map(([l,v])=>`<option value="${v}" ${
 let PICK=(URLTYPE&&TABMAP[URLTYPE])?TABMAP[URLTYPE]:((LOCKTAB&&TABMAP[LOCKTAB])?TABMAP[LOCKTAB]:null); // funnel explicitly chosen via URL, else null
 let funnel=PICK||"car",view=(QUICK?"quick":(PICK?"form":"chooser")),qi=0,lastQi=-1,lastFunnel="";  // no ?type/?tab -> show chooser first (don't default to car)
 let contact={name:"",mobile:"",email:""},leadSent=false,triedNext=false;
+/* v29: free text is cleaned as it is stored: no < > " ` or control characters, whitespace collapsed, 80 characters (an
+   email keeps the 254 a valid address can have). contact.name, .mobile and .email are accessors, so every writer (typing,
+   the three submit handlers, the session record) goes through it. The trailing space of a name being typed is kept; the
+   submit handlers trim. */
+function afhClean(v,n){return String(v==null?"":v).replace(/\s+/g," ").replace(/[<>"`\u0000-\u001F\u007F-\u009F]/g,"").replace(/ {2,}/g," ").replace(/^ /,"").slice(0,n||80);}
+(function(){const raw={name:"",mobile:"",email:""},cap={name:80,mobile:80,email:254};
+ Object.keys(raw).forEach(function(k){Object.defineProperty(contact,k,{enumerable:true,configurable:false,get:function(){return raw[k];},set:function(v){raw[k]=afhClean(v,cap[k]);}});});})();
 /* v9: remember how far the form got, so a lead routed out mid-form (e.g. 3+ payday loans at question 4)
    is not recorded with default answers to questions it never saw. */
 let afhMaxQi={},afhDone={};
@@ -1833,6 +1840,7 @@ let st={
  business:{sub:null,amount:80000,term:5,balloon:0,bizSecured:"secured",structure:"company",abn:48,gst:30,turn:600000,property:"owner",doc:"yes"}
 };
 const fmt=n=>"$"+Math.round(n).toLocaleString("en-AU");
+const afhYrs=t=>t+(Number(t)===1?" year":" years");   /* v29: "1 year" */
 const fmtK=n=>n>=1000?"$"+(n/1000).toFixed(n%1000?1:0)+"k":"$"+n;
 function weekly(a,r,m,balloon){const x=r/100/12,n=m*12;const bal=balloon||0;
  const mo=x===0?(a-bal)/n:((a-bal*Math.pow(1+x,-n))*x)/(1-Math.pow(1+x,-n));return mo*12/52;}
@@ -2019,12 +2027,12 @@ function loanSteps(){const s=st[funnel];const L=[];const debt=funnel==="personal
  }else{s.secured="unsecured";}
  return L;}
 function balChoice(c){afhStart();const s=st[funnel];s._bal=c;if(c==='no'){s.balloon=0;s._balNo=1;render();maybeAuto("_balNo");}else{s.balloon=s.balloon||balloonMaxDollar();render();}}
-function creditStep(){const s=st[funnel];return {id:"credit",icon:"gauge",secs:4,t:"How would you rate your credit?",sub:"Best guess. Checking your options has no credit score impact.",auto:"_cp",need:()=>[],
+function creditStep(){const s=st[funnel];return {id:"credit",icon:"gauge",secs:4,t:"How would you rate your credit?",sub:"Best guess. Checking your options has no credit score impact.",auto:"_cp",need:()=>s._cp!==undefined?[]:["your credit rating"],
  render:()=>{const sel=(v)=>(s._cp!==undefined&&String(s._cp)===String(v));
   const o=[[4,'star','Excellent',''],[3,'thumb','Good',''],[2,'minus','Average',''],[1,'thumbdown','Rebuilding','Past defaults or issues'],[0,'help',"Not sure",'']];
   return `<div class="rows">${o.map(([v,i,t,sb])=>`<button type="button" class="ro ${sel(v)?'on':''}" onclick="setCredit(${v})"><span class="ri">${ICON[i]}</span><span class="rt"><b>${t}</b><small>${sb}</small></span><span class="rc">${TICK}</span></button>`).join('')}</div>`;}};}
-function paydayStep(){return {id:"payday",icon:"cash",secs:4,t:"Any payday loans right now?",sub:"e.g. Wallet Wizard, MyPayNow. Afterpay, Zip and other buy now, pay later don't count.",auto:"payday",need:()=>[],
- render:()=>`<div class="rows two">${ro('payday','no','check','No','')}${ro('payday','yes','minus','Yes','')}</div>`};}
+function paydayStep(){return {id:"payday",icon:"cash",secs:4,t:"Any payday loans right now?",sub:"e.g. Wallet Wizard, MyPayNow. Afterpay, Zip and other buy now, pay later don't count.",auto:"payday",need:()=>st[funnel]._payday?[]:["an answer"],
+ render:()=>`<div class="rows two">${roX('payday','no','check','No','')}${roX('payday','yes','minus','Yes','')}</div>`};}
 function paydayCountStep(){return {id:"paydayn",icon:"cash",secs:3,t:"How many payday loans do you have?",sub:"Only count payday lenders. Afterpay, Zip and other buy now, pay later don't count.",auto:"paydayN",need:()=>st[funnel].paydayN?[]:["how many payday loans"],
  render:()=>`<div class="rows two">${ro('paydayN','1','','1','')}${ro('paydayN','2','','2','')}${ro('paydayN','3','','3','')}${ro('paydayN','3+','','More than 3','')}</div>`};}
 const RES_LBL={owner:"Home owner",renter:"Renting",boarding:"Boarding / with family"};
@@ -2073,7 +2081,7 @@ function amountTerm(){const s=st[funnel];const b=amtBounds();
   <input type="range" id="amtrange" min="${b.min}" max="${b.max}" step="500" value="${s.amount}" oninput="amtSlide(this.value);paintRange(this)" aria-label="Loan amount">
   <div class="ends"><span>${fmtK(b.min)}</span><span>${fmtK(b.max)}</span></div></div>
   <div class="qlabel">Over how many years?</div>
-  <div class="terms">${[1,2,3,4,5,6,7].map(y=>`<button type="button" class="chip ${s.term===y?'on':''}" onclick="setA('term',${y})" aria-label="${y} years">${y}</button>`).join('')}</div>`;}
+  <div class="terms">${[1,2,3,4,5,6,7].map(y=>`<button type="button" class="chip ${s.term===y?'on':''}" onclick="setA('term',${y})" aria-label="${afhYrs(y)}">${y}</button>`).join('')}</div>`;}
 function amtStep(d){const s=st[funnel];const b=amtBounds();const inc=s.amount<20000?1000:s.amount<100000?2500:5000;
  let n=d>0?Math.floor(s.amount/inc)*inc+inc:Math.ceil(s.amount/inc)*inc-inc;n=Math.max(b.min,Math.min(b.max,n));
  const r=document.getElementById('amtrange');if(r){r.value=n;paintRange(r);}amtSlide(n);afhStart();}
@@ -2111,7 +2119,7 @@ function balloonBox(){const s=st[funnel];const cap=balloonMaxPct();const maxBall
   <div class="binfo" id="binfo"><div class="binfo-inner">
     <div class="binfo-row"><span class="binfo-num">1</span><div><b>A balloon is a chunk of the loan you set aside</b> to pay at the very end, instead of spreading all of it across your weekly repayments.</div></div>
     <div class="binfo-row"><span class="binfo-num">2</span><div><b>Your weekly repayments drop now</b>, because you're only paying off the rest of the loan week to week.</div></div>
-    <div class="binfo-row"><span class="binfo-num">3</span><div><b>At the end of the ${s.term} years you settle the balloon</b>, pay it out, refinance it into a new term, or sell/trade the car to cover it.</div></div>
+    <div class="binfo-row"><span class="binfo-num">3</span><div><b>At the end of the ${afhYrs(s.term)} you settle the balloon</b>, pay it out, refinance it into a new term, or sell/trade the car to cover it.</div></div>
     <div class="binfo-foot">Max ${cap}% of the loan on a ${s.term} year term</div>
   </div></div>
   <div class="grid">${tile('balloon',0,'slate','x','No balloon','')}<div class="tile ${s.balloon>0?'on g-blue':''}" data-c="blue" onclick="setBalloon(${maxBalloon||5000})"><div class="chk">${ICON.check}</div><div class="ti">${ICON.trending}</div><div class="tt">With balloon</div><div class="ts">Lower weekly</div></div></div>
@@ -2217,7 +2225,7 @@ function chooser(){return `<div class="card anim chooser">
    </div>
    <div class="trust" style="justify-content:center;margin-top:14px">${ICON.shield} No credit score impact \u00b7 No obligation</div>
  </div>`;}
-function chooserTile(f,ic,title,sub){return `<div class="tile choosertile" onclick="setFunnel('${f}')"><div class="ti">${ICON[ic]}</div><div class="tt">${title}</div><div class="ts">${sub}</div></div>`;}
+function chooserTile(f,ic,title,sub){return `<div class="tile choosertile" role="button" tabindex="0" onclick="setFunnel('${f}')" onkeydown="if(event.key==='Enter'||event.key===' '||event.key==='Spacebar'){event.preventDefault();setFunnel('${f}');}"><div class="ti">${ICON[ic]}</div><div class="tt">${title}</div><div class="ts">${sub}</div></div>`;}
 function setFunnel(f){if(f==="caravan"){ASSET="caravan";f="car";}else if(f==="car"){ASSET="car";}funnel=f;view="form";qi=0;triedNext=false;signalParent("form");render();}
 
 function stepNeed(step){return step&&step.need?step.need():missingFields();}
@@ -2271,7 +2279,7 @@ function results(){const s=st[funnel];const{list,fallback,capped,nearmiss}=match
  const pay=l=>{const[rlo,rhi]=disp(l.lo,l.hi);return{rlo,rhi,lo:perF(weekly(s.amount,rlo,s.term,s.balloon||0)),hi:perF(weekly(s.amount,rhi,s.term,s.balloon||0)),clo:rlo+0.9};};
  let h=`<div class="r2hero"><div class="r2top"><span class="r2eb">${TICK} Options for ${first}</span><button type="button" class="r2edit" onclick="goForm()">Edit answers</button></div>
   <h2>${list.length?`${list.length} lender${list.length===1?'':'s'} to compare`:'Your broker will find your options'}</h2>
-  <div class="r2pills"><span>${badge}</span><span>${fmt(s.amount)}</span><span>${s.term} years</span>${s.balloon>0?`<span>Balloon ${fmt(s.balloon)}</span>`:''}</div></div>
+  <div class="r2pills"><span>${badge}</span><span>${fmt(s.amount)}</span><span>${afhYrs(s.term)}</span>${s.balloon>0?`<span>Balloon ${fmt(s.balloon)}</span>`:''}</div></div>
   <div class="r2freq" role="tablist">${Object.keys(FREQ).map(k=>`<button type="button" role="tab" class="${repayFreq===k?'on':''}" onclick="setFreq('${k}')">${k[0].toUpperCase()+k.slice(1)}</button>`).join('')}</div>`;
  if(fallback)h+=`<div class="r2note">${ICON.help} These are the closest options. Your broker will confirm the best fit.</div>`;
  if(list.length){const l=list[0],p=pay(l);const fits=fitBadges(l,funnel,s);const tags=fits.concat(l.tags.filter(tagOK)).slice(0,3);
@@ -2313,7 +2321,7 @@ function readyScreen(){const{list}=match();const n=list.length;
   <div class="rdeb">Your results are ready</div>
   <h2 class="rdtitle">${n?`<span id="cnt" data-n="${n}">0</span> lender${n!==1?'s':''} to compare`:'Your options are ready'}</h2>
   <p class="rdsub">Personalised to your loan, credit and income.</p>
-  <div class="rdpills"><span>${ICON.dollar} ${fmt(st[funnel].amount)}</span><span>${ICON.calendar} ${st[funnel].term} years</span><span>${ICON.shield} No credit score impact</span></div>
+  <div class="rdpills"><span>${ICON.dollar} ${fmt(st[funnel].amount)}</span><span>${ICON.calendar} ${afhYrs(st[funnel].term)}</span><span>${ICON.shield} No credit score impact</span></div>
   <button type="button" class="cta rdcta" onclick="afhTrack('CalcUnlockClick',{});view='details';render();">See my personalised options <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
   <div class="rdnote">No cost to check · No obligation</div><div class="rdsms">${ICON.phone}<span>We'll text a code to confirm your mobile</span></div>
  </div>`;}
@@ -2355,7 +2363,7 @@ function bookCall(){if(!bk.day||!bk.time)return;const d=bkDays().find(x=>x.k===b
 function bookingCard(){
  if(booked)return `<div class="r2book done"><span class="r2bi ok">${TICK}</span><div><b>Call booked for ${booked.day}, ${booked.time}</b><small>A specialist broker will call ${contact.mobile||'you'}. Need us sooner? <a href="tel:${PHONE}">Call 03 7031 6881</a></small></div></div>`;
  const days=bkDays();
- return `<div class="r2book" id="book"><div class="r2bh"><span class="r2bi">${ICON.phone}</span><div>${apl.on?`<b>Rather talk it through first?</b><small>Book a 10 minute call with a specialist broker.</small>`:`<b>Talk to a specialist broker</b><small>A quick 10 minute call to confirm your best option and lock it in.</small>`}</div></div>
+ return `<div class="r2book" id="book"><div class="r2bh"><span class="r2bi">${ICON.phone}</span><div>${apl.on?`<b>Rather talk it through first?</b><small>Book a 10 minute call with a specialist broker.</small>`:`<b>Talk to a specialist broker</b><small>A quick 10 minute call to go through your options.</small>`}</div></div>
   <div class="r2lbl">Pick a day</div><div class="chips">${days.map(d=>`<button type="button" class="chip ${bk.day===d.k?'on':''}" onclick="bkSet('day','${d.k}')">${d.l}</button>`).join('')}</div>
   ${bk.day?`<div class="r2lbl">Pick a time</div><div class="chips">${bkSlots(bk.day).map(([h,t])=>`<button type="button" class="chip ${bk.time===t?'on':''}" onclick="bkSet('time','${t}')">${t}</button>`).join('')}</div>`:''}
   <button type="button" class="cta" ${bk.day&&bk.time?'':'disabled'} onclick="bookCall()">${ICON.calendar} Book my call</button>
@@ -2444,7 +2452,7 @@ function gdFirst(){const n=String(gdVal("name")).trim().split(/\s+/)[0]||"";retu
 /* The v10 rules, field by field (gateValid, lmValid, alcValid). */
 function gdMobOK(v){const m=GATE_FORGIVING?afhMob(v):String(v||"").replace(/[^0-9+]/g,'').replace(/^\+?61/,'0');return /^04\d{8}$/.test(m);}
 function gdRule(k,f,v){v=String(v==null?"":v);
- if(f==="name")return k==="gate"?v.trim().length>=2:v.trim().split(/\s+/).filter(Boolean).length>=2;
+ if(f==="name"){v=afhClean(v);return k==="gate"?v.trim().length>=2:v.trim().split(/\s+/).filter(Boolean).length>=2;}
  if(f==="mobile")return gdMobOK(v)&&!(k==="gate"&&smsvIsBad(afhMob(v)));
  if(f==="email")return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim());
  if(f==="dob")return !!lmDobIso(v.trim());
@@ -2650,7 +2658,7 @@ function afhMob(v){let d=String(v||"").replace(/[^0-9+]/g,"").replace(/^\+/,"");
  if(d.length===9&&d.charAt(0)==="4")d="0"+d;return /^04\d{8}$/.test(d)?d:"";}
 function gateValid(f){const g=k=>((f.elements&&f.elements[k])||f[k]||{}).value||"";let ok=true,first=null;
  const bad=(id)=>{const el=document.getElementById(id);if(el){el.classList.add('bad');if(!first)first=el;}ok=false;};
- if(g('name').trim().length<2)bad('fl-name');
+ if(afhClean(g('name')).trim().length<2)bad('fl-name');
  const mob=GATE_FORGIVING?afhMob(g('mobile')):g('mobile').replace(/[^0-9+]/g,'').replace(/^\+?61/,'0');if(!/^04\d{8}$/.test(mob))bad('fl-mobile');
  else if(smsvIsBad(afhMob(mob))){bad('fl-mobile');const w=document.getElementById('fl-mobile'),e=w&&w.querySelector('.gderr,em'),i=w&&w.querySelector('input');if(e)e.textContent=smsvBadMsg();if(i)i.setAttribute('aria-invalid','true');}
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(g('email').trim()))bad('fl-email');
@@ -2661,7 +2669,7 @@ function submitGate(ev){ev.preventDefault();const f=ev.target;
  consentAgree();   /* v23 S3: no tick box; reaching here means the customer tapped Agree and continue on the consent step */
  if(!afhConsentOK()){if(GATE_FORGIVING)afhTrack('CalcGateError',{field:'consent'});if(CALC_STEP_LOG)lmLog('g.err.consent',0);return false;}   // no consent, no lead
  const gv=k=>{const el=(f.elements&&f.elements[k])||f[k];return(el&&el.value!=null)?el.value:"";};
- contact.name=gv('name');contact.mobile=(GATE_FORGIVING&&afhMob(gv('mobile')))||gv('mobile');contact.email=gv('email');if(CALC_STEP_LOG)lmLog('g.submit',0);gatePassed=true;
+ contact.name=afhClean(gv('name')).trim();contact.mobile=(GATE_FORGIVING&&afhMob(gv('mobile')))||gv('mobile');contact.email=gv('email');if(CALC_STEP_LOG)lmLog('g.submit',0);gatePassed=true;
  view=smsvSubmitView();if(view==="unlocking")setTimeout(function(){if(view==="unlocking"){view=smsvAfterUnlock();render();window.scrollTo(0,0);}},1400);
  try{render();}catch(err){console.error("render error",err);}
  window.scrollTo({top:0,behavior:'smooth'});
@@ -2803,7 +2811,7 @@ function lmValid(f){let ok=true;const g=k=>(f.elements[k]&&f.elements[k].value||
  if(!lm.consent){const r=document.getElementById('lmRow'),e=document.getElementById('lmErr');if(r)r.classList.add('is-error');if(e)e.classList.add('is-shown');if(ok&&CALC_STEP_LOG)lmLog('lm.err.consent',0);ok=false;}
  return ok;}
 function lmSubmit(ev){ev.preventDefault();if(lm.sent)return false;const f=ev.target;if(!lmValid(f))return false;lm.sent=true;
- contact.name=f.elements.name.value.trim();contact.mobile=(GATE_FORGIVING&&afhMob(f.elements.mobile.value))||f.elements.mobile.value.trim();contact.email=f.elements.email.value.trim();contact.dob=f.elements.dob.value.trim();
+ contact.name=f.elements.name.value.trim();contact.mobile=(GATE_FORGIVING&&afhMob(f.elements.mobile.value))||f.elements.mobile.value.trim();contact.email=f.elements.email.value.trim();contact.dob=afhClean(f.elements.dob.value,10).trim();
  consent.contact=true;consent.ts=lm.ts;
  afhTrack('ReferConsent',{});lmLog('submit');
  /* AFH keeps its own copy of the lead, tagged as referred, before anything leaves for Lead Market. */
@@ -2972,7 +2980,7 @@ function debtPixelLead(route,val){debtPixelSend(route,val);}
 function debtPixelSend(route,val){if(typeof fbq!=="function")return;
  if(!SELL){const id=afhLeadEid();if(debtLeadSent===id)return;debtLeadSent=id;}   /* v27: never two Leads for one enquiry */
  debtPixelUD();
- try{fbq('track',SELL?'CompleteRegistration':'Lead',{content_name:'Debt consolidation loan',content_category:'Personal',value:(val||15),currency:'AUD',lead_route:route||'alc',funnel:'personal',loan_purpose:'debt',loan_amount:+st.personal.amount||0},{eventID:afhLeadEid()});}catch(e){}}
+ try{fbq('track',SELL?'CompleteRegistration':'Lead',{content_name:'Debt consolidation loan',content_category:'Personal',value:(val||15),currency:'AUD',lead_route:route||'alc',funnel:'personal',loan_amount:+st.personal.amount||0},{eventID:afhLeadEid()});}catch(e){}}
 function debtPixelOther(why){
  /* v27: a debt enquiry ALC did not take is still a Lead ($8) when it is one of DEBT_OTHER_LEAD: ALC closed or off, under
     ALC's minimum, the customer declined ALC, or it went to Lead Market. Not on the sell page, not Centrelink, and every
@@ -3075,7 +3083,7 @@ function buildLeadDetails(){const s=st[funnel];const out={};
  out["Loan type"]=funnel==="car"?A('badge'):{personal:"Personal",business:"Business"}[funnel];
  out["Amount requested"]=money(s.amount);
  if(s.postcode)out["Postcode"]=s.postcode;
- out["Loan term"]=s.term+" years";
+ out["Loan term"]=afhYrs(s.term);
  if(funnel==="car"){
    out[A('foundLbl')]=s.found==="yes"?"Yes, found it":"Still looking";
    out[A('condLbl')]=s.cond||"-";
@@ -3115,7 +3123,13 @@ function buildLeadDetails(){const s=st[funnel];const out={};
   for(const id in AM)if(!afhAsked(id))AM[id].forEach(k=>{if(k in out)out[k]=NA;});}
  return out;}
 // per-lender enquiry removed - every lead is called back by a broker automatically
-let afhEid="";function afhLeadEid(){if(!afhEid)afhEid="lead_"+Date.now()+"_"+Math.random().toString(36).slice(2,10);return afhEid;}
+/* v29: the random part comes from crypto.getRandomValues (8 characters of a-z0-9, bytes of 252 and over are thrown away so
+   every character is equally likely); without it, or if it fails, the v28 method. Same format either way:
+   /^lead_\d{13}_[a-z0-9]{1,12}$/ (the bank check record and the bc function check it). */
+function afhNewEid(){let r="";try{const c=window.crypto||window.msCrypto;if(c&&c.getRandomValues){const A="abcdefghijklmnopqrstuvwxyz0123456789",b=new Uint8Array(32);
+   for(let g=0;g<8&&r.length<8;g++){c.getRandomValues(b);for(let i=0;i<b.length&&r.length<8;i++)if(b[i]<252)r+=A.charAt(b[i]%36);}}}catch(e){r="";}
+ if(r.length!==8)r=Math.random().toString(36).slice(2,10);return "lead_"+Date.now()+"_"+r;}
+let afhEid="";function afhLeadEid(){if(!afhEid)afhEid=afhNewEid();return afhEid;}
 async function sendLead(action,extra,noPixel){
  const lead=buildLeadDetails();
  const data={
@@ -3152,11 +3166,9 @@ async function sendLead(action,extra,noPixel){
        content_category: lead["Loan type"],
        value: q.value,
        currency: 'AUD',
-       lead_grade: q.grade,
        funnel: funnel,
        loan_amount: +st[funnel].amount||0,
        loan_term: +st[funnel].term||0,
-       loan_purpose: funnel==="personal"?(st.personal.purpose||""):funnel==="car"?(st.car.found==="no"?"still looking":(st.car.cond||"")):(st.business.sub||""),
        asset: ASSET
      },{eventID: data.event_id});
      /* Only leads that can realistically settle. Use THIS as the optimisation
@@ -3165,8 +3177,7 @@ async function sendLead(action,extra,noPixel){
        fbq('trackCustom','QualifiedLead',{
          content_category: lead["Loan type"],
          value: q.value,
-         currency: 'AUD',
-         lead_grade: q.grade
+         currency: 'AUD'
        },{eventID: "q_"+data.event_id});
      }
      }
@@ -3227,18 +3238,34 @@ function afhTrack(name,params,std){try{if(typeof fbq!=="function")return;if(!afh
 function afhOnce(key,name,params,std){if(afhSeen[key])return;afhSeen[key]=1;afhTrack(name,params,std);}
 function afhStart(){if(afhStarted)return;afhStarted=true;afhTrack('CalculatorStart');}
 function afhCookie(n){const m=document.cookie.match(new RegExp('(?:^|; )'+n+'=([^;]*)'));return m?decodeURIComponent(m[1]):"";}
-function afhPost(o){try{if(window.parent&&window.parent!==window)window.parent.postMessage(o,"*");}catch(e){}}
 const AFH_HOME=["https://afhfinance.com.au","https://www.afhfinance.com.au"];
+/* v29: afhCalcReady and afhCalcView (view, question number, funnel: no personal data, no id) still go to any parent, as
+   the landing pages and the homepage embeds need them before the parent is known. Everything else (afhLead carries the
+   enquiry id) goes only to the AFH page that framed us: the origin of its checked afhParent, afhAnswer or afhNav
+   message, or the browser's own ancestorOrigins. Parent unknown or not AFH: not sent. */
+let afhPO="";
+function afhParentOrigin(){if(afhPO)return afhPO;try{const a=location.ancestorOrigins;if(a&&a.length&&AFH_HOME.indexOf(a[0])>-1)return a[0];}catch(e){}return "";}
+function afhPostOpen(o){try{const k=Object.keys(o);return k.length>0&&k.every(function(x){return x==="afhCalcReady"||x==="afhCalcView"||x==="v";});}catch(e){return false;}}
+function afhPost(o){try{if(!(window.parent&&window.parent!==window))return;const t=afhPostOpen(o)?"*":afhParentOrigin();if(!t)return;window.parent.postMessage(o,t);}catch(e){}}
+/* v29: the answer keys a landing page may set (the calculator's own question keys), and plain values only */
+const AFH_ANSWER_KEYS=["found","cond","ev","carType","use","purpose","amount","term","balloon","secured","credit","payday","paydayN","emp","wageFreq","res","resLen","visa","visaSub","visaExpiry","sub","bizSecured","structure","abn","gst","turn","property","doc"];
+function afhAnswerOK(a){try{if(!a||typeof a!=="object"||typeof a.k!=="string"||AFH_ANSWER_KEYS.indexOf(a.k)<0)return false;
+  if(a.k==="credit")return Number.isInteger(a.v)&&a.v>=0&&a.v<=4;if(a.k==="payday")return a.v==="yes"||a.v==="no";
+  if(typeof a.v==="number")return isFinite(a.v);return typeof a.v==="string"&&/^[A-Za-z0-9+_ -]{0,40}$/.test(a.v);}catch(e){return false;}}
 function afhCleanCtx(c){const o={};if(!c||typeof c!=="object")return o;Object.keys(c).slice(0,30).forEach(function(k){const v=c[k];
  if(/^[a-z_]{1,32}$/.test(k)&&(typeof v==="string"||typeof v==="number"))o[k]=String(v).slice(0,2000);});return o;}
 window.addEventListener("message",function(e){const d=e.data;if(!d||typeof d!=="object")return;
  if((d.afhParent||d.afhAnswer||d.afhNav)&&(AFH_HOME.indexOf(e.origin)<0||e.source!==window.parent))return;  /* v12: only AFH pages that framed us */
+ if(d.afhParent||d.afhAnswer||d.afhNav)afhPO=e.origin;   /* v29: the AFH page that framed us (origin and source checked just above) */
  if(d.afhNav==="back"){try{if(view==="form"){if(qi>0||payPh)prev();}else if(view==="analysing"||view==="ready"||view==="details"){goForm();}else if(view==="lmswitch"||view==="lmhand"||view==="lmclno"){lmBack();}else if(view==="alcmatch"||view==="alchand"){alcBack();}else if(view==="verify"){if(SMSV.chg)smsvChangeClose();else smsvChangeOpen();afhPost({afhCalcView:{view:"verify",qi:qi,funnel:funnel,pp:0}});}}catch(err){}return;}  /* v13: the AFH page's browser Back = back to the questions */
  if(d.afhParent){afhCtx=Object.assign(afhCtx,afhCleanCtx(d.ctx));if(window.__afhRelay)window.__afhRelay(e.origin);if(d.pre)preEst(d.pre);else if(d.est)homeEst(d.est);}
  if(d.afhAnswer&&!(window.AFH_BC&&AFH_BC.live&&AFH_BC.live())){const a=d.afhAnswer;try{
+   if(!afhAnswerOK(a))return;   /* v29: unknown key or a value that is not a plain answer: ignored, nothing starts */
    if(a.ctx)afhCtx=Object.assign(afhCtx,afhCleanCtx(a.ctx));
    afhStart();
    if(typeof funnel==="undefined"||!st[funnel])return;
+   if(a.k==="credit"){st[funnel]._cp=a.v;a.v=a.v===0?2:a.v;}   /* v29: as setCredit; a prefilled credit or payday answer counts as chosen */
+   if(a.k==="payday")st[funnel]._payday=1;
    st[funnel][a.k]=(typeof a.v==="number")?+a.v:a.v;
    if(a.k==="purpose"&&a.v==="debt")alcCheck();  /* v17: purpose picked on the landing page, not via setA */
    view="form";qi=0;
@@ -3608,7 +3635,7 @@ afhPost({afhCalcReady:true,v:16});
  var START=FNB+"start",STATUS=FNB+"status";
  var HOME=["https://afhfinance.com.au","https://www.afhfinance.com.au"];
  var VCF="https://afhfinance.com.au/bank-check/afh-finance.vcf";
- var LABEL="Agree";                                       /* v23 F1: the consent line sits right above it; recorded as button_label */
+ var LABEL="Agree and open bank login";                   /* v29 (v23 to v28: "Agree"). The consent line sits right above it; recorded as button_label, which bc/start stores and never checks */
  /* v21f B3 (council FIX-BRIEF-2, with the research playbook addendum, section 8.2): the bank check screen's reason and what
     to expect. Substantiation:
     - WHY: most panel lenders ask for bank statements for car and personal loans (Sep confirmed, 9 Nov 2026);
@@ -3811,18 +3838,24 @@ afhPost({afhCalcReady:true,v:16});
   <div class="r2book" id="book"><div class="chips" role="group" aria-label="Day">${days.map(function(d){return `<button type="button" class="chip ${bk.day===d.k?'on':''}" aria-pressed="${bk.day===d.k}" onclick="AFH_BC.pick();bkSet('day','${d.k}')">${d.full}</button>`;}).join("")}</div>
   ${bk.day?`<div class="chips" role="group" aria-label="Time">${bkSlots(bk.day).map(function(x){return `<button type="button" class="chip ${bk.time===x[1]?'on':''}" aria-pressed="${bk.time===x[1]}" onclick="bkSet('time','${x[1]}')">${x[1]}</button>`;}).join("")}</div>`:""}
   ${bk.day&&bk.time?`<button type="button" class="cta" id="bcBookGo" onclick="bookCall()">${ICON.calendar} Book my call</button>`:""}</div></section>`;}
- function trio(){return [C("read_only")?[I.doc,"Read only"]:null,[I.eyeoff,"We never see your login"],C("no_enquiry")?[I.shield,"No credit score impact"]:null]
-  .filter(Boolean).map(function(x){return '<li><i aria-hidden="true">'+lmIcon(x[0])+'</i>'+x[1]+'</li>';}).join("");}
+ /* v29: three short rows (was the trust trio). Row 2 says "Read only" only when read_only is confirmed
+    (bc_cs_confirmed, the v28 gate); unconfirmed, the row is just the login line v28 always showed. */
+ var OFFER_H="Share your bank statements online in a few minutes";
+ var LOGIN_ROW="Log in with your bank's website username and password, not your app PIN";
+ var LOGIN_HINT="Use your bank's website login, not your app PIN";
+ function trio(){return [[I.key,LOGIN_ROW,"login"],[I.eyeoff,(C("read_only")?"Read only. ":"")+"AFH never sees your login","readonly"],[I.lock,"Securely through Credit Sense","secure"],
+   C("no_enquiry")?[I.shield,"No credit score impact","noenq"]:null]
+  .filter(Boolean).map(function(x){return '<li data-row="'+x[2]+'"><i aria-hidden="true">'+lmIcon(x[0])+'</i><span>'+x[1]+'</span></li>';}).join("");}
  /* v23 F7: what they get (the count with "may"), how it flows (bank, lock, AFH), the trust trio, the hashed line quieter,
     one button, the legal line. The confirm gates stay: Read only and No credit score impact show only when confirmed. */
- function screen(){var f=flags(),n=count();
+ function screen(){var f=flags();
   if(!B.prep&&B.st==="idle")B.st="prep";
-  return `<div class="card anim lmc bcx" id="bcCard">${head(false)}
-  <h2 class="bch" id="bcH" tabindex="-1">${n?n+COUNT:"We compare 40+ lenders for you"}</h2>
+  return `<div class="card anim lmc bcx" id="bcCard" data-v29="offer">${head(false)}
+  <h2 class="bch bch29" id="bcH" tabindex="-1">${OFFER_H}</h2>
   <p class="bcsub bcwhy" id="bcWhy">${WHY}</p>   <!-- v21h (coordinator, decision 1): the why line Sep approved -->
   <div class="bcglass bcglass2">
    <div class="bcrow" aria-hidden="true"><span class="bcflow"><span class="bcnode">${lmIcon(I.bank)}</span><i></i><span class="bcnode bcsafe">${lmIcon(I.lock)}</span><i></i><span class="bcnode bcafh">${MARK}</span></span></div>
-   <ul class="bctrust bctrio">${trio()}</ul>
+   <ul class="bctrust bctrio bcrows29" id="bcRows">${trio()}</ul>
   </div>
   <p class="bccons" id="bcCons"><span id="bcLine">${consentLine(f)}</span> <button type="button" class="bcdet" id="bcDet" aria-expanded="${B.dOpen}" aria-controls="bcDetails" onclick="AFH_BC.det()">Details</button></p>
   <div class="bcdetails" id="bcDetails"${B.dOpen?"":" hidden"}><h3>How your bank check works</h3><ol>${consentDetails(f).map(function(t,i){return "<li"+(i===4?' id="bcEd5"':"")+">"+cgl(esc(t))+"</li>";}).join("")}</ol><p class="bclinks">${links()}</p></div>
@@ -3852,8 +3885,37 @@ afhPost({afhCalcReady:true,v:16});
  function sum(){try{var s=st[funnel];if(!s||!s.amount||!contact.name)return "";var k=kind();
   return '<ul class="bcsum" aria-label="Your enquiry"><li>'+k.charAt(0).toUpperCase()+k.slice(1)+'</li><li>'+fmt(s.amount)+'</li>'+(funnel==="business"||!s.term?"":'<li>'+yrs(s.term)+'</li>')+'</ul>';}catch(e){return "";}}
  function saveNo(){return booked?`<a class="bcsave" id="bcSave" href="${VCF}" target="_blank" rel="noopener" download="AFH Finance.vcf">${lmIcon(I.save)}Save our number</a>`:"";}
+ /* v28: the separate Lead Market consent (bc/status lm_consent, only while lm_mode is test or live). LMC is byte for byte
+    the v28 bc function's LM_CONSENT_COPY (version lm-consent-v1); the function compares the text this page showed with
+    its own copy and stores the sha256, so no word here may change without a new version there. No tick box: the two
+    buttons are the only way to answer, same size, and No keeps the enquiry with AFH (a broker calls). */
+ var LMC={"version":"lm-consent-v1","copy":{"headline":"Another lender may be able to help","line":"Our lenders aren't the right fit for this one. With your OK, we'll pass your enquiry to Lead Market, where another lender or broker may be able to help.","rows":[["Who gets it","Lead Market, operated by Credit Sense, and the lender or broker on its panel who takes your enquiry."],["What we share","Your contact details, your enquiry answers and your bank check report."],["What happens next","They may call, text or email you about a loan for this enquiry."]],"fine":"AFH Finance may receive a fee. It's your choice and there's no obligation. Say no and an AFH broker will call you instead. To withdraw later, call 03 7031 6881.","detailsTitle":"How this works","details":["If you tap Yes, share my enquiry, AFH Finance sends Lead Market your name, mobile, email and postcode, the answers you gave us, and your bank check: your Credit Sense report and the income, employer and regular repayments we read from it.","Lead Market shows your enquiry to lenders and brokers on its panel. The one who takes it may call, text or email you about a loan for this enquiry. It may be a different loan type, amount or lender to what you asked for, and you don't have to go ahead.","Lead Market may pay AFH Finance a fee for the referral.","This is optional. If you say no, nothing is sent to Lead Market, your enquiry stays with AFH Finance and a broker will call you.","You can withdraw at any time by calling 03 7031 6881. We'll share nothing further and pass your request on to Lead Market. We can't take back what has already been shared.","We handle your information under our Privacy Policy. Lead Market and the lender or broker handle it under theirs."],"agree":"Yes, share my enquiry","decline":"No thanks, keep me with AFH"}};
+ function lmcText(c){return [c.headline,c.line].concat(c.rows.map(function(r){return r[0]+": "+r[1];}),[c.fine,c.detailsTitle],c.details.map(function(t,i){return (i+1)+". "+t;})).join("\n");}
+ B.lmText=function(){return lmcText(LMC.copy);};B.lmVersion=LMC.version;
+ /* the words as they are on the page now (every [data-lmc] element in order), sent with Yes: the function refuses the
+    consent unless they are exactly its own text */
+ function lmShown(){try{var c=document.getElementById("bcCard"),out=[];if(!c)return "";
+   var t=function(el){return String(el?el.textContent:"").replace(/\s+/g," ").trim();};
+   [].forEach.call(c.querySelectorAll("[data-lmc]"),function(el){var k=el.getAttribute("data-lmc")||"";
+    out.push(k==="row"?t(el.querySelector("b"))+": "+t(el.querySelector("span")):k+t(el));});
+   return out.join("\n");}catch(e){return "";}}
+ function lmcHtml(){var P=B.P,c=LMC.copy,ic=[I.people,I.doc,I.phone],busy=!!P.lmBusy;
+  return `<h2 class="lmh bclmh" id="bcH" tabindex="-1" data-lmc="">${esc(c.headline)}</h2>
+  <p class="bcsub bclmsub" data-lmc="">${esc(c.line)}</p>
+  <ul class="bclmrows">${c.rows.map(function(r,i){return `<li data-lmc="row"><i aria-hidden="true">${lmIcon(ic[i])}</i><div><b>${esc(r[0])}</b><span>${esc(r[1])}</span></div></li>`;}).join("")}</ul>
+  <p class="bclmfine"><span data-lmc="">${esc(c.fine).replace("03 7031 6881",tel(PHONE,"03 7031 6881"))}</span> <button type="button" class="bcdet" id="bcLmDet" aria-expanded="${!!P.lmD}" aria-controls="bcLmDetails" onclick="AFH_BC.lmDet()">Details</button></p>
+  <div class="bcdetails bclmdet" id="bcLmDetails"${P.lmD?"":" hidden"}><h3 data-lmc="">${esc(c.detailsTitle)}</h3><ol>${c.details.map(function(t,i){return `<li data-lmc="${i+1}. ">${esc(t)}</li>`;}).join("")}</ol><p class="bclinks"><a id="bcLmPriv" href="${PRIVACY_URL}" target="_blank" rel="noopener">Privacy Policy</a></p></div>
+  ${P.lmErr?`<div class="bcerr" id="bcLmErr" role="alert"><b>We couldn't save your answer</b><span>Please try again, or call us on ${tel(PHONE,"03 7031 6881")}.</span></div>`:""}
+  <div class="bclmact" role="group" aria-label="Share my enquiry with Lead Market?">
+   <button type="button" class="cta bcgo" id="bcLmYes" onclick="AFH_BC.lmYes()"${busy?' disabled aria-busy="true"':''}>${busy?'<span class="spin" aria-hidden="true"></span>':''}${esc(c.agree)}${busy?"":" "+ARROW}</button>
+   <button type="button" class="cta bcgo bcalt" id="bcLmNo" onclick="AFH_BC.lmNo()"${busy?" disabled":""}>${esc(c.decline)}</button>
+  </div>`;}
  var NEXT="A broker will call you about your next step.";      /* audit M3: true for every outcome, every check goes to a broker */
  function outcome(){var P=B.P,n=P.state==="ready"&&!P.hold?P.next:"";
+  /* v28: bc/status asked for the Lead Market consent (P.lmc "ask"); after Yes (P.lmc "yes") the page polls until the
+     function has dealt with it. No (P.lmc "no") is the broker outcome just below. */
+  if(P.lmc==="ask"&&P.state==="ready"&&!P.hold)return ["lmconsent",lmcHtml(),""];
+  if(P.lmc==="yes"&&!P.done)return ["lmgo",`<div class="bcicon bcbusy" aria-hidden="true">${lmIcon(I.people)}</div><h2 class="lmh bcc" id="bcH" tabindex="-1">Thanks${nm(", ")}</h2><p class="bcsub bcc" id="bcStat">Saving your answer. This takes a few seconds.</p>`,""];
   if(n==="broker")return ["keep",tick()+`<h2 class="lmh bcc" id="bcH" tabindex="-1">Thanks${nm(", ")}</h2>${sum()}<p class="bclead bcc">A broker will call you.</p>`,saveNo(),PAY];
   if(n==="lead_market"&&P.lm)return ["lead_market",`<h2 class="lmh" id="bcH" tabindex="-1">Thanks${nm(", ")}</h2><div class="bcout">
    <p class="bclead">Our lenders aren't the right fit for this loan. As you agreed, Lead Market, operated by Credit Sense, can show your enquiry to lenders and brokers who may help.</p>
@@ -3867,7 +3929,8 @@ afhPost({afhCalcReady:true,v:16});
    <p>For essentials, a no interest loan from NILS may help.</p>
    <a class="cta bcgo bcalt" href="tel:136457">${lmIcon(I.phone)} Call NILS on 13 64 57</a>
    <p>Think we've got this wrong? Call us on ${tel(PHONE,"03 7031 6881")}.</p></div>`,""];
-  if(n)return ["later",tick()+`<h2 class="lmh bcc" id="bcH" tabindex="-1">Thanks${nm(", ")}</h2>${sum()}<p class="bclead bcc">A broker will call you.</p>`,saveNo(),PAY];
+  if(n)return ["later",tick()+`<h2 class="lmh bcc" id="bcH" tabindex="-1">Thanks${nm(", ")}</h2>${sum()}<p class="bclead bcc">A broker will call you.</p>`
+   +(P.lmc==="yes"||P.lmAg?`<p class="bcsub bcc" id="bcLmNote">As you agreed, a lender or broker from Lead Market's panel may also contact you.</p>`:""),saveNo(),PAY];
   /* v26: Credit Sense ended the attempt (wrong login, or the bank's site failed). "Try again" gets a fresh link to the same
      application (bc/start action retry); never the old link, which would reopen the error. */
   if(P.state==="retry")return ["retry",`<div class="bcicon" aria-hidden="true">${lmIcon(I.bank)}<span class="bcbdg">${lmIcon(I.lock)}</span></div>`
@@ -3877,7 +3940,9 @@ afhPost({afhCalcReady:true,v:16});
    +`<button type="button" class="cta bcgo" id="bcRedo" onclick="AFH_BC.redo()"${P.redo?' aria-busy="true"':''}>Try again ${ARROW}</button>${no()}`,fresh()];
   if(P.gone)return ["gone",`<div class="bcicon" aria-hidden="true">${lmIcon(I.bank)}<span class="bcbdg">${lmIcon(I.lock)}</span></div><h2 class="lmh bcc" id="bcH" tabindex="-1">Your enquiry is saved${nm(", ")}</h2><p class="bcsub bcc">Finished your bank check? ${NEXT}</p>`+(B.url?cont()+no():callCta()),fresh()];
   if(P.state==="in_progress")return ["waiting",`<div class="bcicon bcbusy" aria-hidden="true">${lmIcon(I.bank)}<span class="bcbdg">${lmIcon(I.lock)}</span></div><h2 class="lmh bcc bcwt" id="bcH" tabindex="-1">Finish your <span class="bcnb">bank check</span></h2>
-   <p class="bcstat bcc" id="bcStat">This page updates when it's done.</p>${cont()}${B.url?no():""}`,fresh()];
+   <p class="bcstat bcc" id="bcStat">This page updates when it's done.</p>
+   <p class="bcwhy29 bcc" id="bcWaitWhy">It shares your bank statements with your broker securely, so you don't have to find and send them yourself.</p>${cont()}${B.url?no():""}
+   <p class="bchint29" id="bcHint"><b>Having trouble?</b> ${LOGIN_HINT}.</p>`,fresh()];
   return ["progress",tick()+`<h2 class="lmh bcc" id="bcH" tabindex="-1">Thanks${nm(", ")}</h2><p class="bcsub bcc">Your bank check is in. We're reading it now.</p>${steps()}`,""];}
  var shown="";
  /* the booking card needs the customer's details: not after a resume in a fresh page, where only the reference is known */
@@ -3885,10 +3950,10 @@ afhPost({afhCalcReady:true,v:16});
  function cardHtml(v){return `<div class="card anim lmc bcx bcw" id="bcCard" data-screen="${v[0]}" data-state="${esc(B.P.state)}" aria-live="polite">${head(v[0]!=="waiting"&&v[0]!=="gone"&&v[0]!=="retry")}${v[1]}</div>`;}
  /* v22 P1-4: after the card and the booking card: the secondary action, "Start a new enquiry" (last control) and the licence */
  function endHtml(v){return `<div class="bcend" id="bcEnd">${v[2]||""}${legal(false,v[3])}</div>`;}
- function waitHtml(){var v=outcome();return cardHtml(v)+(v[0]==="keep"||v[0]==="later"?lendHtml("top"):"")+(bookable(v[0])?book(v[0]):"")+endHtml(v);}
+ function waitHtml(){var v=outcome();return cardHtml(v)+((v[0]==="keep"||v[0]==="later")&&!(B.P.lmc||B.P.lmAg)?lendHtml("top"):"")+(bookable(v[0])?book(v[0]):"")+endHtml(v);}
  function waitPaint(){if(view!=="bcwait")return;var v=outcome(),k=v[0]+"|"+B.P.state+"|"+B.P.first+"|"+B.P.carries;if(k===shown)return;var was=shown.split("|")[0],big=was!==v[0];shown=k;
   var bkEl=document.getElementById("bcBook"),c=document.getElementById("bcCard");
-  if(bkEl&&c&&bookable(v[0])&&bookable(was)&&!((v[0]==="keep"||v[0]==="later")&&!document.getElementById("bcLend")&&lendHtml())){c.outerHTML=cardHtml(v);var e=document.getElementById("bcEnd");if(e)e.outerHTML=endHtml(v);}else render();
+  if(bkEl&&c&&bookable(v[0])&&bookable(was)&&!((v[0]==="keep"||v[0]==="later")&&!(B.P.lmc||B.P.lmAg)&&!document.getElementById("bcLend")&&lendHtml())){c.outerHTML=cardHtml(v);var e=document.getElementById("bcEnd");if(e)e.outerHTML=endHtml(v);}else render();
   if(big)focusH();}
  /* the heading takes focus on a new screen (screen readers). v21c: that focus can fire the frame window's own focus event,
     which must not count as the customer coming back (it undid the 2 h "Your enquiry is saved" screen at once). */
@@ -3911,6 +3976,13 @@ afhPost({afhCalcReady:true,v:16});
     if(["in_progress","reading","ready","retry"].indexOf(j.state)>-1){if(j.state!==P.state)log("wait."+j.state);P.state=j.state;P.why=j.why==="login"?"login":"bank";}
     if(wait===3000)wait=Math.min(30000,Math.max(2000,+j.poll_ms||3000));
     if(j.state==="ready"){
+     /* v28: lm_consent {version} = ask the Lead Market consent now. Only this version (another one reads as before:
+        "later"), only with the key, and never again once this page has an answer. */
+     var ask=!!(j.lm_consent&&typeof j.lm_consent==="object"&&j.lm_consent.version===LMC.version&&B.key);
+     if(ask&&!P.lmc){P.lmc="ask";P.next="later";log("lm_consent.ask");P.hold=true;waitPaint();setTimeout(function(){P.hold=false;waitPaint();},700);return;}
+     if(ask&&P.lmc==="ask"){waitPaint();return;}
+     if(!ask&&P.lmc==="ask")P.lmc="";
+     if(j.lm_agreed===true)P.lmAg=true;
      P.next=["broker","lead_market","help","later"].indexOf(j.next)>-1?j.next:"later";
      if(P.next==="lead_market"){if(typeof j.lm_url==="string"&&/^https:\/\/(www\.)?afhfinance\.com\.au\/partner\/[A-Za-z0-9/_.?=&%-]*$/.test(j.lm_url))P.lm=j.lm_url;else P.next="later";}
      log("outcome."+P.next);P.done=true;clearRef();                       /* final: the stored reference is cleared */
@@ -4083,6 +4155,26 @@ afhPost({afhCalcReady:true,v:16});
    dropTab(w);log("redo_fail."+clean(j&&(j.reason||j.http)));
    if(!(j&&(j.reason==="attempt_limit"||j.reason==="not_error"))){P.rerr=true;say("We couldn't open the bank check again");}
    shown="";waitPaint();pollSoon(0);});};
+ /* v28: Yes posts the answer with the words on the page; only when the function has stored the consent does the page go
+    on (it then polls bc/status, where the usual sale runs). A refusal that means "nothing is being asked" hands back to
+    bc/status; anything else shows an error and both buttons again. */
+ B.lmYes=function(){var P=B.P;if(P.lmc!=="ask"||P.lmBusy||!B.key)return;P.lmBusy=true;P.lmErr=false;log("lm_consent.yes",P.lmDS?1:0);
+  var body={action:"lm_consent",event_id:afhLeadEid(),status_key:B.key,version:LMC.version,agree:true,text:lmShown(),details_opened:!!P.lmDS,consent_page:page()};
+  shown="";waitPaint();
+  post(START,body,TAP_MS).then(function(j){P.lmBusy=false;
+   if(P.lmc!=="ask")return;
+   if(j&&j.ok===true&&j.state==="agreed"){P.lmc="yes";P.state="reading";P.t0=Date.now();P.gone=false;log("lm_consent.saved");shown="";waitPaint();focusH();pollSoon(0);return;}
+   if(j&&(j.http===404||j.reason==="not_asked"||j.reason==="declined"||j.reason==="agreed")){P.lmc="";log("lm_consent.moved");shown="";pollSoon(0);return;}
+   P.lmErr=true;log("lm_consent.err."+clean(j&&(j.reason||j.http)));say("We couldn't save your answer");shown="";waitPaint();});};
+ /* No: the broker outcome at once, whatever the network does (never a dead end). The answer is posted in the background
+    (one more try after a network failure); without it the function still sells nothing, as no consent exists. Final for
+    this page: the reference is cleared, as for every finished check. */
+ function lmTell(body,n){post(START,body,8000).then(function(j){if(j&&!j.http&&j.reason==="network"&&n<1)setTimeout(function(){lmTell(body,n+1);},2500);});}
+ B.lmNo=function(){var P=B.P;if(P.lmc!=="ask"||P.lmBusy)return;P.lmc="no";log("lm_consent.no",P.lmDS?1:0);
+  if(B.key)lmTell({action:"lm_consent",event_id:afhLeadEid(),status_key:B.key,version:LMC.version,agree:false,details_opened:!!P.lmDS,consent_page:page()},0);
+  P.next="broker";P.state="ready";P.hold=false;P.done=true;clearTimeout(P.timer);clearRef();shown="";waitPaint();window.scrollTo(0,0);};
+ B.lmDet=function(){var P=B.P;P.lmD=!P.lmD;if(P.lmD&&!P.lmDS){P.lmDS=true;log("lm_consent.details");}
+  var b=document.getElementById("bcLmDet"),d=document.getElementById("bcLmDetails");if(b)b.setAttribute("aria-expanded",String(!!P.lmD));if(d)d.hidden=!P.lmD;};
  B.det=function(){B.dOpen=!B.dOpen;if(B.dOpen&&!B.detSeen){B.detSeen=true;log("details");}
   var b=document.getElementById("bcDet"),d=document.getElementById("bcDetails"),e=document.getElementById("bcEd");if(b)b.setAttribute("aria-expanded",String(B.dOpen));if(d)d.hidden=!B.dOpen;
   if(e)e.hidden=B.dOpen;};                                /* v21c m6: the electronic delivery sentence shows once (item 5 while Details is open) */
@@ -4638,6 +4730,47 @@ html[data-afhz="w"] #bcAgain{margin-top:calc(24px + var(--afh-sp,0px)*.45)}
 .bcnew:focus-visible{text-decoration:underline;text-underline-offset:3px}
 @media (hover:hover){.bcnew:hover{text-decoration:underline;text-underline-offset:3px}}
 @media (prefers-reduced-motion:reduce){.bcbusy::before,.bcgo .spin,.bcsteps li.now i{animation:none}}
+</style>
+<style id="afh-v28">
+/* v28: the Lead Market consent step (data-screen lmconsent). The calculator's own tokens: ink #1E2329, purple #4B2EDB and
+   #3A1FB8, hairlines rgba(30,35,41,.08), radius 12 to 18, the 56 px button. One headline, one sentence, three rows, one
+   fine line, two buttons of the same size. Nothing here applies to any other screen. */
+#bcCard[data-screen="lmconsent"]{text-align:left}
+#bcCard[data-screen="lmconsent"] h2.bclmh{text-align:center;text-wrap:balance;margin:0 0 8px}
+#bcCard[data-screen="lmconsent"] .bclmsub{text-align:center;font-size:15px;line-height:1.5;color:#434A55;margin:0 0 18px;text-wrap:pretty}
+.bclmrows{list-style:none;margin:0 0 14px;padding:2px 14px;border-radius:18px;background:linear-gradient(180deg,#FBFBFE,#F5F4FB);box-shadow:inset 0 0 0 1px rgba(30,35,41,.07)}
+.bclmrows li{display:flex;align-items:flex-start;gap:12px;padding:12px 0}
+.bclmrows li+li{border-top:1px solid rgba(30,35,41,.07)}
+.bclmrows li>i{flex:none;width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:#fff;color:#3A1FB8;box-shadow:inset 0 0 0 1px rgba(30,35,41,.08),0 8px 16px -12px rgba(45,27,140,.55)}
+.bclmrows li>i svg{width:18px;height:18px}
+.bclmrows li>div{min-width:0;flex:1}
+.bclmrows b{display:block;margin:0 0 2px;font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#5B6370}
+.bclmrows span{display:block;font-size:14.5px;line-height:1.45;font-weight:550;color:#1E2329;overflow-wrap:anywhere}
+.bclmfine{margin:0 0 14px;font-size:12.5px;line-height:1.6;color:#5B6370;text-align:left}
+.bclmfine .bcdet{font-size:12.5px}
+.bclmdet{margin:0 0 14px}
+#bcCard[data-screen="lmconsent"] .bcerr{margin:0 0 12px;text-align:left;align-items:flex-start}
+.bclmact{display:flex;flex-direction:column;gap:10px}
+.bclmact .cta{margin:0;min-height:56px}
+.bclmact .cta:focus-visible{outline:3px solid #6D54E8;outline-offset:3px}
+.bclmact .cta[disabled]{cursor:default}
+.bclmact .bcalt{font-weight:750;color:#3A1FB8}
+.bclmact .bcalt[disabled]{opacity:.6}
+#bcLmNote{margin:10px 0 0}
+</style>
+<style id="afh-v29">
+/* v29: the bank check offer rows (icon left, sentence right, in every stage layout), its longer heading, and the two
+   lines added to the waiting screen. The calculator's own tokens. Nothing here applies to any other screen. */
+#bcCard[data-v29="offer"] h2.bch29{font-size:clamp(21px,6vw,25px);line-height:1.16;letter-spacing:-.025em;text-wrap:balance}
+#bcCard ul.bcrows29{display:flex;flex-direction:column;gap:10px;text-align:left}
+#bcCard ul.bcrows29 li{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:12px;text-align:left;font-size:14px;line-height:1.35;font-weight:600;color:#1E2329}
+#bcCard ul.bcrows29 li i{flex:none;width:32px;height:32px;border-radius:10px}
+#bcCard ul.bcrows29 li i svg{width:16px;height:16px}
+#bcCard ul.bcrows29 li span{min-width:0;flex:1;text-wrap:pretty}
+#bcCard .bcwhy29{margin:10px 0 0;font-size:14px;line-height:1.45;color:#5B6370;text-align:center;text-wrap:balance}
+#bcCard .bchint29{margin:12px 0 0;padding:10px 12px;border-radius:12px;background:#F5F4FB;box-shadow:inset 0 0 0 1px rgba(30,35,41,.07);font-size:13px;line-height:1.45;color:#434A55;text-align:center;text-wrap:balance}
+#bcCard .bchint29 b{font-weight:700;color:#1E2329}
+.choosertile:focus-visible{outline:3px solid #6D54E8;outline-offset:3px}
 </style>
 <script>
 /* Embedded auto-height: tell the parent page how tall we are so the iframe never clips a step. */
