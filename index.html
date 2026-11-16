@@ -3837,7 +3837,7 @@ afhPost({afhCalcReady:true,v:16});
   return out.join("");}
  function act(){
   if(B.st==="choose")return `<div class="bcext" id="bcExt" style="display:grid;gap:12px;margin-top:8px" role="group" aria-label="Where to open your bank login">
-   <p class="bcsub bcc" id="bcExtWhy"><b>Your secure link is ready.</b> Opening it in Chrome can help if your bank asks you to approve the login in its app or enter a code.</p>
+   <p class="bcsub bcc" id="bcExtWhy"><b>Your secure link is ready.</b> Opening it in Chrome can help if your bank asks you to approve the login in its app or enter a code. When you're done, come back here for your result.</p>
    <a class="cta bcgo" id="bcExtGo" href="${esc(extUrl(B.url))}" target="_top" rel="noopener" onclick="AFH_BC.ext()">Open in Chrome ${ARROW}</a>
    ${B.extStuck?`<p class="bcsub bcc" id="bcExtStuck" role="status">Chrome didn't open? Continue here instead.</p>`:""}
    <button type="button" class="cta bcgo bcalt" id="bcHere" onclick="AFH_BC.here()">Continue here</button>${no()}</div>`;
@@ -4142,7 +4142,7 @@ afhPost({afhCalcReady:true,v:16});
   if(w&&w.closed){B.tab="tab";log("tab_closed");wait(false);return;}       /* QA minor 6: the customer closed the holding tab; never move the AFH page */
   if(w){var ok=false;try{w.location.replace(B.url);ok=true;}catch(e){try{w.location.href=B.url;ok=true;}catch(e2){ok=false;}}
    if(ok){B.win=w;B.tab="tab";log("tab");wait(false);return;}}
-  if(!w&&view==="bankcheck"&&androidInApp()&&extUrl(B.url)){B.st="choose";B.extStuck=false;B.extTapped=false;paint();log("ext.offer");return;}
+  if(!w&&view==="bankcheck"&&androidInApp()&&extUrl(B.url)){B.st="choose";B.extStuck=false;B.extTapped=false;paint();say("Your secure link is ready. Open in Chrome or continue here.");try{document.getElementById("bcExtGo").focus({preventScroll:true});}catch(e){}log("ext.offer");return;}
   B.tab="top";nav();}
  /* Top level navigation from the frame: window.open(url,"_top") or top.location.href, both ADD a history entry (a cross
     origin frame can't call top.location.assign; it never uses replace), so Back returns to the AFH page. */
@@ -4180,7 +4180,7 @@ afhPost({afhCalcReady:true,v:16});
  /* v30: the intent link itself navigates (a real tap, as Chrome requires). Gone to the background: Chrome opened (left);
     still here after 2.5 s: the hint shows, Continue here stays the way on. */
  B.ext=function(){if(B.st!=="choose")return;B.extTapped=true;B.left=false;log("ext.tap");clearTimeout(B.t.ext);
-  B.t.ext=setTimeout(function(){if(B.st!=="choose")return;if(B.left){log("ext.left");return;}B.extStuck=true;log("ext.stuck");paint();},2500);};
+  B.t.ext=setTimeout(function(){if(B.st!=="choose")return;if(B.left){log("ext.left");return;}B.extStuck=true;log("ext.stuck");paint();say("Chrome didn't open? Continue here instead.");try{document.getElementById("bcHere").focus({preventScroll:true});}catch(e){}},2500);};
  B.here=function(){if(B.st!=="choose")return;clearTimeout(B.t.ext);log("ext.here");B.tab="top";nav();};
  B.redo=function(){var P=B.P;if(P.redo||!B.key)return;P.redo=true;P.rerr=false;log("redo");shown="";waitPaint();
   var w=inApp()?null:openTab();
