@@ -3157,8 +3157,13 @@ async function sendLead(action,extra,noPixel){
        const pc=(st[funnel]&&st[funnel].postcode)||"";if(pc)ud.zp=pc;
        fbq('init','1029171376262400',ud);}catch(e){}
      /* v7: every car, caravan, business and non-debt personal enquiry that reaches AFH is a Lead,
-        Centrelink and Lead Market ones included (they carry a low value). QualifiedLead stays the quality signal. */
-     {
+        Centrelink and Lead Market ones included (they carry a low value). QualifiedLead stays the quality signal.
+        v28 (16 Nov 2026, Sep: no Centrelink car leads): car and caravan send Lead ONLY for a qualified enquiry
+        (not weak, not subpar: no Centrelink, no 3+ payday loans, no unserviceable amount). Both car ad sets
+        optimise on Lead, so Centrelink Leads were training Meta (and Google, which counts relayed Leads) to find
+        more of them. The enquiry still reaches the CRM; only the ad signal is withheld. Other funnels unchanged. */
+     const carSig = funnel==='car' ? (q.qualified && !subparCheck().sub) : true;
+     if(carSig){
      /* Send an expected value with every Lead so Meta can optimise for revenue
         rather than raw form fills. */
      fbq('track','Lead',{
