@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AFH Finance Loan Calculator</title>
-<!-- AFH-CALC-VERSION: 2026-11-11-v29b-bankcheck share 50 (base 2026-11-06-v16.9b) -->
+<!-- AFH-CALC-VERSION: 2026-11-16-v28b answers-after-gate (2026-11-11-v29b-bankcheck share 50, base 2026-11-06-v16.9b) -->
 <!-- Meta Pixel Code: standalone loads its own pixel; embedded relays every event to the host page's pixel (one pixel, no duplicate PageView) -->
 <script>
 (function(){
@@ -1548,6 +1548,15 @@ const CALC_STEP_LOG=true;   /* log each answered question and the results/detail
 const GATE_FORGIVING=true;  /* accept +61, 61 and 9-digit mobiles, store 04xxxxxxxx, and record why a details submit failed */
 const GUIDED_DETAILS=true; /* v11: details, Lead Market and ALC forms ask one thing at a time; pay asks amount then how often */
 let gatePassed=false;   /* set only by a consented details submit (submitGate) */
+/* v28b (16 Nov 2026, QA defect 1): answers changed after the details step reach the CRM. Same event id, so ingest_lead
+   updates the same lead (no duplicate, no re-enquiry) and writes the summary below as a "Calculator: ..." note; the
+   Formspree email carries every new answer. Never a pixel: no Lead, no QualifiedLead, no Google conversion. Max 3. */
+let afhGateSnap="",afhUpdN=0;
+function afhAnsSnap(){try{return funnel+"|"+ASSET+"|"+JSON.stringify(buildLeadDetails());}catch(e){return "";}}
+function afhAnsUpdate(){try{if(!gatePassed||!afhGateSnap||afhUpdN>=3)return;const n=afhAnsSnap();if(!n||n===afhGateSnap)return;
+ afhGateSnap=n;afhUpdN++;const L=buildLeadDetails(),q=leadQuality(),sp=subparCheck(),pay=L["Take-home pay (entered)"];
+ const sum=["answers updated:",L["Loan type"],L["Employment"]||L["Finance type"],pay&&pay!=="-"?pay:"",L["Amount requested"],"grade "+q.grade+(sp.sub?" subpar":"")].filter(Boolean).join(" ").slice(0,140);
+ sendLead(sum,{updated_after_gate:"yes",updated_n:String(afhUpdN)},true);}catch(e){}}
 const GATE_BACK=true;       /* "Change my answers" link on the details screen */  // v9: /small-debts/ page. ALC still takes the debt leads it can; every other debt lead goes to Lead Market (AFH keeps none)
 /* v9: on the sell page, debts under ALC's minimum skip the term and address questions. Lead Market's bank check covers them,
    and Oct referrals that skipped them (early switch) sold as well as the rest. Employment and pay stay: they decide Centrelink. */
@@ -2268,7 +2277,7 @@ function next(){clearTimeout(autoT);const miss=stepNeed(steps()[qi]);if(miss.len
  triedNext=false;const S=steps();afhStart();{const _t=typeof S[qi].t==="function"?S[qi].t():S[qi].t;afhOnce('step'+funnel+qi,'CalcStep'+(qi+1),{step:qi+1,of:S.length,step_name:_t});if(qi===S.length-1)afhOnce('done'+funnel,'CalcCompleted',{steps:S.length});if(CALC_STEP_LOG&&!afhSeen['qlog'+funnel+qi]){afhSeen['qlog'+funnel+qi]=1;lmLog('q.'+funnel+'.'+String(S[qi].id||('s'+(qi+1))).replace(/[^a-z0-9_]/gi,''),qi+1);if(qi===S.length-1)lmLog('q.'+funnel+'.done',S.length);}}if(qi<S.length-1){qi++;preClamp();while(qi<S.length-1&&estSkip(S[qi])){estEv(S,qi);qi++;}window.scrollTo({top:0,behavior:'smooth'});render();}else{afhDone[funnel]=1;
    if(alcRoute()){alcStart();return;}
    if((debtLow()||(SELL&&debtFunnel()))&&!afhKeepsDebt()&&LM.on&&!lm.declined){lmStart();return;}
-   if(contact.name&&gatePassed){view=smsvAfterUnlock();}else{view="analysing";setTimeout(function(){if(view==="analysing"){view="ready";render();}},2700);}  // always capture name/mobile/email before showing matches
+   if(contact.name&&gatePassed){afhAnsUpdate();view=smsvAfterUnlock();}else{view="analysing";setTimeout(function(){if(view==="analysing"){view="ready";render();}},2700);}  // always capture name/mobile/email before showing matches
    window.scrollTo({top:0,behavior:'smooth'});render();}}
 function prev(){clearTimeout(autoT);if(PRE_EDIT){preDone();return;}if(GUIDED_DETAILS&&payPh&&(steps()[qi]||{}).id==="pay"){clearTimeout(gdPT);payPh=0;triedNext=false;render();return;}if(qi>0){navDir=-1;qi--;if(HOME_EST&&HOME_EST.pre){const S2=steps();while(qi>0&&estSkip(S2[qi]))qi--;}else if(HOME_EST&&HOME_EST.skip&&HOME_EST.ids[(steps()[qi]||{}).id]===1)HOME_EST.skip=false;triedNext=false;window.scrollTo({top:0,behavior:'smooth'});render();}}
 
@@ -2669,7 +2678,7 @@ function submitGate(ev){ev.preventDefault();const f=ev.target;
  consentAgree();   /* v23 S3: no tick box; reaching here means the customer tapped Agree and continue on the consent step */
  if(!afhConsentOK()){if(GATE_FORGIVING)afhTrack('CalcGateError',{field:'consent'});if(CALC_STEP_LOG)lmLog('g.err.consent',0);return false;}   // no consent, no lead
  const gv=k=>{const el=(f.elements&&f.elements[k])||f[k];return(el&&el.value!=null)?el.value:"";};
- contact.name=afhClean(gv('name')).trim();contact.mobile=(GATE_FORGIVING&&afhMob(gv('mobile')))||gv('mobile');contact.email=gv('email');if(CALC_STEP_LOG)lmLog('g.submit',0);gatePassed=true;
+ contact.name=afhClean(gv('name')).trim();contact.mobile=(GATE_FORGIVING&&afhMob(gv('mobile')))||gv('mobile');contact.email=gv('email');if(CALC_STEP_LOG)lmLog('g.submit',0);gatePassed=true;afhGateSnap=afhAnsSnap();
  view=smsvSubmitView();if(view==="unlocking")setTimeout(function(){if(view==="unlocking"){view=smsvAfterUnlock();render();window.scrollTo(0,0);}},1400);
  try{render();}catch(err){console.error("render error",err);}
  window.scrollTo({top:0,behavior:'smooth'});
