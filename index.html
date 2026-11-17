@@ -3792,7 +3792,7 @@ afhPost({afhCalcReady:true,v:16});
  /* v30 (completion seat, 17 Nov): live data 9 to 17 Nov, Facebook and Instagram on Android finished 6 of 12 checks, iOS 9
     of 11; 4 of the 5 logins left unfinished were Android. On Android the choice of Chrome is offered after Agree. */
  var EXT_ANDROID=true;
- function androidInApp(){try{return EXT_ANDROID&&inApp()&&/Android/i.test(navigator.userAgent||"");}catch(e){return false;}}
+ function androidInApp(){try{var ua=navigator.userAgent||"";return EXT_ANDROID&&inApp()&&/Android/i.test(ua)&&!/Orca|MESSENGER/i.test(ua);}catch(e){return false;}}   /* 17 Nov: Messenger (Orca) excluded until a phone test shows it opens intent links */
  /* intent: link to Chrome for the same https URL; browser_fallback_url is that URL, so without Chrome it opens as before */
  function extUrl(u){var m=/^https:\/\/(creditsense\.com\.au\/[A-Za-z0-9_\/?=&.-]+)$/.exec(String(u||""));if(!m)return "";
   return "intent://"+m[1]+"#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url="+encodeURIComponent(u)+";end";}
