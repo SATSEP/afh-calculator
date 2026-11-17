@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AFH Finance Loan Calculator</title>
-<!-- AFH-CALC-VERSION: 2026-11-17-v30 completion + v28b answers-after-gate (2026-11-11-v29b-bankcheck share 50, base 2026-11-06-v16.9b) -->
+<!-- AFH-CALC-VERSION: 2026-11-17-v30c contact-step CRO + v30 completion + v28b answers-after-gate (2026-11-11-v29b-bankcheck share 50, base 2026-11-06-v16.9b) -->
 <!-- Meta Pixel Code: standalone loads its own pixel; embedded relays every event to the host page's pixel (one pixel, no duplicate PageView) -->
 <script>
 (function(){
@@ -2331,7 +2331,7 @@ function readyScreen(){const{list}=match();const n=list.length;
   <h2 class="rdtitle">${n?`<span id="cnt" data-n="${n}">0</span> lender${n!==1?'s':''} to compare`:'Your options are ready'}</h2>
   <p class="rdsub">Personalised to your loan, credit and income.</p>
   <div class="rdpills"><span>${ICON.dollar} ${fmt(st[funnel].amount)}</span><span>${ICON.calendar} ${afhYrs(st[funnel].term)}</span><span>${ICON.shield} No credit score impact</span></div>
-  <button type="button" class="cta rdcta" onclick="afhTrack('CalcUnlockClick',{});view='details';render();">See my personalised options <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+  <button type="button" class="cta rdcta" onclick="afhTrack('CalcUnlockClick',{});view='details';render();gdFocusNow();">See my personalised options <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
   <div class="rdnote">No cost to check · No obligation</div><div class="rdsms">${ICON.phone}<span>We'll text a code to confirm your mobile</span></div>
  </div>`;}
 function countUp(){const el=document.getElementById('cnt');if(!el)return;const n=+el.dataset.n;const t0=performance.now();
@@ -2492,6 +2492,10 @@ function gdLev(a,b){const r=[];for(let i=0;i<=b.length;i++)r[i]=i;for(let i=1;i<
 function gdMailFix(v){const t=String(v||"").trim(),i=t.lastIndexOf("@");if(i<1)return "";const dom=t.slice(i+1).toLowerCase();
  if(dom.length<5||GD_DOMAINS.indexOf(dom)>-1)return "";let best="",bd=3;GD_DOMAINS.forEach(function(x){const d=gdLev(dom,x);if(d<bd){bd=d;best=x;}});
  return best?t.slice(0,i+1)+best:"";}
+/* v30c (17 Nov 2026): 26 of 56 car visitors who reached the details screen from 11 to 16 Nov left on the name step without typing. The step now says what
+   is waiting (the same lender count the ready screen showed), and its field takes focus in the tap that opened it. */
+function gdNameHint(){try{if(funnel!=="car")return "";const n=match().list.length;return n?`Your ${n} lender option${n===1?" is":"s are"} ready.`:"";}catch(e){return "";}}
+function gdFocusNow(){try{const i=document.querySelector("#gateForm .gds.on input:not([type=checkbox])");if(i&&!i.value){i.focus({preventScroll:true});}}catch(e){}}
 function gdQ(k,f){const n=gdFirst();
  if(f==="name")return k==="gate"?"First, what's your name?":"What's your first and last name?";
  if(f==="mobile")return n?"Thanks "+n+", what's the best mobile?":"What's the best mobile?";
@@ -2534,7 +2538,7 @@ function gdStep(k,f,j){const G=GD[k],on=j===GS[k]?" on":"";
   email:`name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="${gate?'Email':'you@example.com'}"`,
   dob:`name="dob" type="text" inputmode="numeric" autocomplete="bday" placeholder="DD/MM/YYYY"`}[f];
  const ic={name:ICON.user,mobile:ICON.phone,email:ICON.mail,dob:ICON.calendar}[f]||"";
- const hint=f==="dob"?"Lenders use this to confirm it's you":f==="mobile"?(k==="gate"?"We'll text you a code now. You'll need it to see your options.":"Starts with 04. +61 works too."):"";
+ const hint=(k==="gate"&&f==="name")?gdNameHint():f==="dob"?"Lenders use this to confirm it's you":f==="mobile"?(k==="gate"?"We'll text you a code now. You'll need it to see your options.":"Starts with 04. +61 works too."):"";
  return `<div class="gds${on}${ok}" id="${G.pre}${f}" data-f="${f}"><label class="gdq" id="gdq-${k}-${f}" for="${iid}" tabindex="-1">${gdEsc(gdQ(k,f))}</label>
   <span class="gdbox"><span class="gdi" aria-hidden="true">${ic}</span><input id="${iid}" ${A} enterkeyhint="next" value="${gdEsc(v)}" oninput="gdIn('${k}',this)" aria-describedby="gde-${k}-${f}${hint?' gdh-'+k+'-'+f:''}"><span class="gdok" aria-hidden="true">${TICK}</span></span>
   <em class="gderr" id="gde-${k}-${f}" aria-live="polite">${gdEsc(gdMsg(k,f,""))}</em>${hint?`<small class="gdhint" id="gdh-${k}-${f}">${hint}</small>`:""}
@@ -3820,7 +3824,7 @@ afhPost({afhCalcReady:true,v:16});
   ${r?`<p class="bclbl">Your indicative repayment</p><p class="bcamt">${r[0]===r[1]?"About "+r[0]:r[0]+" to "+r[1]}<small> a week</small></p>`:""}
   <p class="bcfor">${fmt(s.amount)} ${kind()}${funnel==="business"||!s.term?"":" over "+yrs(s.term)}</p>
   <div class="bcglass"><span class="bcflow" aria-hidden="true"><span class="bcnode">${lmIcon(I.bank)}</span></span><b>${n?n+COUNT:"We compare 40+ lenders for you"}</b></div>
-  <button type="button" class="cta rdcta" onclick="afhTrack('CalcUnlockClick',{});view='details';render();">Continue ${ARROW}</button>
+  <button type="button" class="cta rdcta" onclick="afhTrack('CalcUnlockClick',{});view='details';render();gdFocusNow();">Continue ${ARROW}</button>
   <p class="bcsafe2">${C("no_enquiry")?lmIcon(I.shield)+"No credit score impact":lmIcon(I.lock)+"No obligation"}</p>
  </div>`;}
 
