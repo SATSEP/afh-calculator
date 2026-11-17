@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AFH Finance Loan Calculator</title>
-<!-- AFH-CALC-VERSION: 2026-11-16-v28b answers-after-gate (2026-11-11-v29b-bankcheck share 50, base 2026-11-06-v16.9b) -->
+<!-- AFH-CALC-VERSION: 2026-11-17-v30 completion + v28b answers-after-gate (2026-11-11-v29b-bankcheck share 50, base 2026-11-06-v16.9b) -->
 <!-- Meta Pixel Code: standalone loads its own pixel; embedded relays every event to the host page's pixel (one pixel, no duplicate PageView) -->
 <script>
 (function(){
@@ -3789,6 +3789,13 @@ afhPost({afhCalcReady:true,v:16});
  I.eyeoff='<path d="M3 3l18 18"/><path d="M10.6 5.1A9.7 9.7 0 0 1 12 5c6 0 9.5 7 9.5 7a17 17 0 0 1-3.2 4.1M6.5 6.6C3.9 8.3 2.5 12 2.5 12S6 19 12 19c1.6 0 3-.4 4.3-1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>';
  var PAY="We're paid by lenders, a broker fee may be added to your loan.";
  function inApp(){try{return /FBAN|FBAV|FB_IAB|Instagram/.test(navigator.userAgent||"");}catch(e){return false;}}
+ /* v30 (completion seat, 17 Nov): live data 9 to 17 Nov, Facebook and Instagram on Android finished 6 of 12 checks, iOS 9
+    of 11; 4 of the 5 logins left unfinished were Android. On Android the choice of Chrome is offered after Agree. */
+ var EXT_ANDROID=true;
+ function androidInApp(){try{var ua=navigator.userAgent||"";return EXT_ANDROID&&inApp()&&/Android/i.test(ua)&&!/Orca|MESSENGER/i.test(ua);}catch(e){return false;}}   /* 17 Nov: Messenger (Orca) excluded until a phone test shows it opens intent links */
+ /* intent: link to Chrome for the same https URL; browser_fallback_url is that URL, so without Chrome it opens as before */
+ function extUrl(u){var m=/^https:\/\/(creditsense\.com\.au\/[A-Za-z0-9_\/?=&.-]+)$/.exec(String(u||""));if(!m)return "";
+  return "intent://"+m[1]+"#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url="+encodeURIComponent(u)+";end";}
  var TK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
  /* v21c QM1: no storage in this frame and no bridge on the AFH page: nothing can bring the customer back to the check after
     a reload, so say it once, before the tap. */
@@ -3829,6 +3836,11 @@ afhPost({afhCalcReady:true,v:16});
   out.push(`<a href="${esc(cgUrl())}" target="_blank" rel="noopener">Credit Guide</a>`);
   return out.join("");}
  function act(){
+  if(B.st==="choose")return `<div class="bcext" id="bcExt" style="display:grid;gap:12px;margin-top:8px" role="group" aria-label="Where to open your bank login">
+   <p class="bcsub bcc" id="bcExtWhy"><b>Your secure link is ready.</b> Opening it in Chrome can help if your bank asks you to approve the login in its app or enter a code. When you're done, come back here for your result.</p>
+   <a class="cta bcgo" id="bcExtGo" href="${esc(extUrl(B.url))}" target="_top" rel="noopener" onclick="AFH_BC.ext()">Open in Chrome ${ARROW}</a>
+   ${B.extStuck?`<p class="bcsub bcc" id="bcExtStuck" role="status">Chrome didn't open? Continue here instead.</p>`:""}
+   <button type="button" class="cta bcgo bcalt" id="bcHere" onclick="AFH_BC.here()">Continue here</button>${no()}</div>`;
   if(B.st==="prep")return `<button type="button" class="cta bcgo" id="bcGo" disabled aria-busy="true"><span class="spin" aria-hidden="true"></span> Getting your secure link</button>${no()}`;
   if(B.st==="stop")return `<div class="bcerr" role="alert"><b>We couldn't start your bank check</b><span>Call us on ${tel(PHONE,"03 7031 6881")} and a broker will help you with your next step.</span></div>
    <a class="cta bcgo" id="bcCall" href="tel:${PHONE}">${lmIcon(I.phone)} Call AFH Finance</a>`;
@@ -3948,7 +3960,8 @@ afhPost({afhCalcReady:true,v:16});
   /* v26: Credit Sense ended the attempt (wrong login, or the bank's site failed). "Try again" gets a fresh link to the same
      application (bc/start action retry); never the old link, which would reopen the error. */
   if(P.state==="retry")return ["retry",`<div class="bcicon" aria-hidden="true">${lmIcon(I.bank)}<span class="bcbdg">${lmIcon(I.lock)}</span></div>`
-   +(P.why==="login"?`<h2 class="lmh bcc" id="bcH" tabindex="-1">Your bank didn't accept that login</h2><p class="bcsub bcc">Use the username and password for your bank's website, not your app PIN.</p>`
+   +(P.why==="stalled"?`<h2 class="lmh bcc" id="bcH" tabindex="-1">Your bank login didn't finish</h2><p class="bcsub bcc">It may have timed out while your bank asked for a code or an app approval. Try again and keep your banking app handy.</p>`
+    :P.why==="login"?`<h2 class="lmh bcc" id="bcH" tabindex="-1">Your bank didn't accept that login</h2><p class="bcsub bcc">Use the username and password for your bank's website, not your app PIN.</p>`
     :`<h2 class="lmh bcc" id="bcH" tabindex="-1">Your bank's site had a hiccup</h2><p class="bcsub bcc">It's not you. Please try again.</p>`)
    +(P.rerr?`<p class="bcsub bcc" role="alert">We couldn't open it just now. Try again, or call us on ${tel(PHONE,"03 7031 6881")}.</p>`:"")
    +`<button type="button" class="cta bcgo" id="bcRedo" onclick="AFH_BC.redo()"${P.redo?' aria-busy="true"':''}>Try again ${ARROW}</button>${no()}`,fresh()];
@@ -3987,7 +4000,7 @@ afhPost({afhCalcReady:true,v:16});
    else if(j.ok){P.n404=0;P.nerr=0;
     if(typeof j.first==="string")P.first=j.first.slice(0,20);
     if(typeof j.carries_over==="boolean")P.carries=j.carries_over;
-    if(["in_progress","reading","ready","retry"].indexOf(j.state)>-1){if(j.state!==P.state)log("wait."+j.state);P.state=j.state;P.why=j.why==="login"?"login":"bank";}
+    if(["in_progress","reading","ready","retry"].indexOf(j.state)>-1){if(j.state!==P.state)log("wait."+j.state);P.state=j.state;P.why=j.why==="login"||j.why==="stalled"?j.why:"bank";}
     if(wait===3000)wait=Math.min(30000,Math.max(2000,+j.poll_ms||3000));
     if(j.state==="ready"){
      /* v28: lm_consent {version} = ask the Lead Market consent now. Only this version (another one reads as before:
@@ -4012,7 +4025,8 @@ afhPost({afhCalcReady:true,v:16});
 
  /* ── page life cycle (QA B1, Q6k and minors 5 and 6) ── */
  function away(){B.left=true;clearTimeout(B.t.nav);}
- function here(){B.left=false;
+ function here(){var wasAway=B.left;B.left=false;
+  if(B.st==="choose"&&B.extTapped&&wasAway){B.tab="top";log("ext.back");wait(true);return;}   /* v30: back from Chrome */
   if(B.st==="going"&&B.url){clearTimeout(B.t.nav);B.tab=B.tab||"top";log("back_from_nav");wait(true);return;}   /* top level navigation left and came back, or never left */
   wake();}
  /* a page shown again from the back/forward cache: nothing in flight survives; resume the stored check if there is one */
@@ -4128,6 +4142,7 @@ afhPost({afhCalcReady:true,v:16});
   if(w&&w.closed){B.tab="tab";log("tab_closed");wait(false);return;}       /* QA minor 6: the customer closed the holding tab; never move the AFH page */
   if(w){var ok=false;try{w.location.replace(B.url);ok=true;}catch(e){try{w.location.href=B.url;ok=true;}catch(e2){ok=false;}}
    if(ok){B.win=w;B.tab="tab";log("tab");wait(false);return;}}
+  if(!w&&view==="bankcheck"&&androidInApp()&&extUrl(B.url)){B.st="choose";B.extStuck=false;B.extTapped=false;paint();say("Your secure link is ready. Open in Chrome or continue here.");try{document.getElementById("bcExtGo").focus({preventScroll:true});}catch(e){}log("ext.offer");return;}
   B.tab="top";nav();}
  /* Top level navigation from the frame: window.open(url,"_top") or top.location.href, both ADD a history entry (a cross
     origin frame can't call top.location.assign; it never uses replace), so Back returns to the AFH page. */
@@ -4162,6 +4177,11 @@ afhPost({afhCalcReady:true,v:16});
    fail(j.reason==="network"?"no_link":(j.reason||"server"));});};
  B.retry=function(){B.st="going";B.left=false;paint();log("retry");clearTimeout(B.t.nav);B.t.nav=setTimeout(function(){if(!B.left&&B.st==="going")fail("nav");},6000);};
  B.again=function(){log("again");setTimeout(wake,0);};
+ /* v30: the intent link itself navigates (a real tap, as Chrome requires). Gone to the background: Chrome opened (left);
+    still here after 2.5 s: the hint shows, Continue here stays the way on. */
+ B.ext=function(){if(B.st!=="choose")return;B.extTapped=true;B.left=false;log("ext.tap");clearTimeout(B.t.ext);
+  B.t.ext=setTimeout(function(){if(B.st!=="choose")return;if(B.left){log("ext.left");return;}B.extStuck=true;log("ext.stuck");paint();say("Chrome didn't open? Continue here instead.");try{document.getElementById("bcHere").focus({preventScroll:true});}catch(e){}},2500);};
+ B.here=function(){if(B.st!=="choose")return;clearTimeout(B.t.ext);log("ext.here");B.tab="top";nav();};
  B.redo=function(){var P=B.P;if(P.redo||!B.key)return;P.redo=true;P.rerr=false;log("redo");shown="";waitPaint();
   var w=inApp()?null:openTab();
   post(START,{action:"retry",event_id:afhLeadEid(),status_key:B.key},TAP_MS).then(function(j){P.redo=false;
