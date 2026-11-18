@@ -132,6 +132,20 @@ footer{border-top:1px solid var(--line);padding-block:22px 36px;color:var(--mute
 .split li{display:flex;gap:10px;align-items:flex-start}
 .split .go{display:inline-flex;align-items:center;justify-content:center;width:auto;padding:0 34px;text-decoration:none}
 @media (max-width:940px){.split{grid-template-columns:1fr;gap:22px}}
+.flow{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.flow li{background:var(--glass);border:1px solid var(--glass-b);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:20px;padding:16px;box-shadow:0 10px 30px rgba(58,32,194,.06)}
+.flow i{font-style:normal;display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--wash);color:var(--brand-ink);font-weight:800;font-size:13px}
+.flow b{display:block;margin-top:10px;font-size:15px}.flow span{display:block;color:var(--mute);font-size:13.5px;margin-top:3px;line-height:1.4}
+@media (max-width:940px){.flow{grid-template-columns:1fr 1fr}.flow li:last-child{grid-column:1/-1}}
+@media (max-width:480px){.flow{grid-template-columns:1fr}}
+.calc{scroll-margin-top:12px}
+.flow{margin-bottom:18px}
+.back{min-height:44px}
+.fine a{display:inline-flex;align-items:center;min-height:44px}
+input[type=range]:focus-visible{outline:3px solid var(--brand);outline-offset:4px}
+h1 em{background:none;-webkit-background-clip:border-box;background-clip:border-box;-webkit-text-fill-color:currentColor;color:var(--brand)}
+.go::after{display:none}
+.mesh i:nth-child(2),.mesh i:nth-child(3){animation:none}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -139,7 +153,7 @@ footer{border-top:1px solid var(--line);padding-block:22px 36px;color:var(--mute
 <div class="mesh" aria-hidden="true"><i></i><i></i><i></i></div>
 <header class="wrap">
  <a href="https://afhfinance.com.au/" aria-label="AFH Finance home"><svg class="logo" role="img" aria-label="AFH Finance" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1237 455"><path fill-rule="evenodd" fill="#1E2329" d="M564 9 L673.5 9 L676 21.5 L753 270 L668 270.5 L667 262.5 L655 213 L577.5 213 L578 216.5 L565 270 L480.5 270 L563 15.5ZM616 65 L589 161 L590 162 L643 162 L640 147 L618 67 L619 64Z"></path><path fill-rule="evenodd" fill="#1E2329" d="M775 9 L963 9.5 L963 65 L858 65 L858 118 L939.5 118 L940.5 117 L941.5 119 L945 118 L945 166.5 L942.5 169 L941.5 167 L858 167 L858 270 L775 270Z"></path><path fill-rule="evenodd" fill="#1E2329" d="M991 9 L1074 9 L1074 103.5 L1075.5 105 L1144.5 105 L1146 103.5 L1146 9 L1229 9.5 L1229 270 L1146 270 L1146 158.5 L1144.5 157 L1075.5 157 L1074 158.5 L1074 270 L991 269.5Z"></path><path fill-rule="evenodd" fill="#1E2329" d="M217.5 78 L223 85.5 L430 446 L239.5 446 L237 443.5 L122 243.5Z"></path><path fill-rule="evenodd" fill="#1E2329" d="M1081.5 292 L1109.5 292 L1124.5 295 L1126 296.5 L1127 300.5 L1125 301.5 L1125 310.5 L1123 320 L1084.5 320 L1083.5 322.5 L1078.5 321 L1075 324.5 L1071 339.5 L1071 363.5 L1076 377.5 L1083.5 384 L1090.5 386 L1126 385 L1128 401.5 L1128 408.5 L1126.5 410 L1104.5 415 L1078.5 415 L1068.5 413 L1054.5 407 L1042 396.5 L1032 376.5 L1030 365.5 L1030 344.5 L1032 332.5 L1036 321.5 L1041 313.5 L1050.5 304 L1062.5 297Z"></path><path fill-rule="evenodd" fill="#1E2329" d="M480 293 L565.5 293 L567 294.5 L566 295.5 L566 316.5 L568.5 318 L565.5 319 L518 319 L518 343 L558 343 L558 366 L518 366 L518 413 L480 413Z"></path><path fill-rule="evenodd" fill="#1E2329" d="M580 293 L617.5 293 L618 294.5 L616 295.5 L618 296.5 L618 409.5 L617 410.5 L618 413 L580 412.5Z"></path><path fill-rule="evenodd" fill="#1E2329" d="M639 293 L674.5 293 L717.5 359 L718 293 L753 293.5 L753 413 L717.5 413 L674.5 348 L674 413 L639 412.5Z"></path><path fill-rule="evenodd" fill="#1E2329" d="M802.5 293 L852.5 293 L852 295.5 L887 406.5 L888 413 L848.5 413 L849 408.5 L844 391.5 L844 387 L808 387 L802 413 L763 412.5 L799 303.5 L799 300.5ZM825 319 L823 330 L813 363 L838 363 L827 323 L828 318Z"></path><path fill-rule="evenodd" fill="#1E2329" d="M899 293 L934.5 293 L977.5 359 L978 293 L1013 293.5 L1013 413 L977.5 413 L969.5 399 L961 388.5 L935.5 349 L934 350.5 L934 413 L899 412.5Z"></path><path fill-rule="evenodd" fill="#1E2329" d="M1141 293 L1229 293.5 L1229 318 L1179 318 L1179 340 L1221 340 L1221 363 L1179 363 L1179 387 L1228 387 L1228 413 L1141 413Z"></path><path fill-rule="evenodd" fill="#29ABE2" d="M85.5 311 L88 312.5 L105 341.5 L161 438.5 L164 446 L8.5 446 L8 444.5Z"></path></svg></a>
- <span class="pill"><i class="pulse"></i>Taking new brokers</span>
+ <span class="pill">$79 + GST per lead</span>
 </header>
 
 <main class="wrap">
@@ -147,66 +161,23 @@ footer{border-top:1px solid var(--line);padding-block:22px 36px;color:var(--mute
   <div class="copy">
    <div class="eyebrow">For car &amp; asset finance brokers</div>
    <h1>What could our car leads <em>make you?</em></h1>
-   <p class="lede">We get more car loan enquiries than our brokers can call. The overflow goes to one broker each, at $79 a lead. Run your numbers, then we'll call you for a chat.</p>
+   <p class="lede">We get more car loan enquiries than our brokers can call. The overflow goes to one broker each, at $79 + GST a lead ($86.90 inc GST). Run your numbers, then we phone you for a chat.</p>
    <ul class="ticks">
-    <li><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#E3F4EC"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#0B7552" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>SMS verified</li><li><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#E3F4EC"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#0B7552" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>One broker per lead</li><li><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#E3F4EC"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#0B7552" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>10+ answers</li><li><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#E3F4EC"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#0B7552" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>No lock-in</li>
+    <li><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#E3F4EC"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#0B7552" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>SMS verified</li><li><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#E3F4EC"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#0B7552" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>One broker per lead</li><li><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#E3F4EC"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#0B7552" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>10+ answers</li><li><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#E3F4EC"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#0B7552" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>No contract</li>
    </ul>
   </div>
 
-  <div class="calc" id="calc" aria-live="polite">
-   <div class="top"><button class="back" id="back" type="button">&larr; Back</button><small id="cnt">1 of 9</small></div>
+  <div class="calc" id="calc">
+   <div class="top"><button class="back" id="back" type="button">&larr; Back</button><small id="cnt">1 of 7</small></div>
    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
 
-   <div class="step on" data-k="contact_name">
-    <h2 class="q">Profit calculator. First, your name?</h2>
-    <p class="hint">60 seconds. An estimate, nothing to sign.</p>
-    <input class="field" id="contact_name" type="text" autocomplete="name" placeholder="Full name" enterkeyhint="next">
-    <div class="spacer"></div><button class="go" type="button" data-next>See how much I could make &rarr;</button>
-   </div>
-
-   <div class="step" data-k="business_name">
-    <h2 class="q">And your business name?</h2>
-    <p class="hint">As it appears on your credit licence or authorisation.</p>
-    <input class="field" id="business_name" type="text" autocomplete="organization" placeholder="Business name" enterkeyhint="next">
-    <div class="spacer"></div><button class="go" type="button" data-next>Continue &rarr;</button>
-   </div>
-
-   <div class="step" data-k="business_type" data-chips>
-    <h2 class="q">What do you mostly write?</h2>
-    <p class="hint">Tap one.</p>
-    <div class="chips">
-     <button class="chip" data-v="car">Car loans<small>Consumer</small></button>
-     <button class="chip" data-v="car_asset">Car + asset<small>Consumer and ABN</small></button>
-     <button class="chip" data-v="asset">Asset / equipment<small>Mostly ABN</small></button>
-     <button class="chip" data-v="mortgage_car">Mortgage + car<small>Diversifying</small></button>
-    </div>
-   </div>
-
-   <div class="step" data-k="settlements_month" data-chips>
-    <h2 class="q">How many deals do you settle a month now?</h2>
-    <p class="hint">A rough number is fine.</p>
-    <div class="chips">
-     <button class="chip" data-v="0-5">0 to 5</button><button class="chip" data-v="6-10">6 to 10</button>
-     <button class="chip" data-v="11-20">11 to 20</button><button class="chip" data-v="20+">20+</button>
-    </div>
-   </div>
-
-   <div class="step" data-k="revenue_month" data-chips>
-    <h2 class="q">Roughly what's your monthly revenue?</h2>
-    <p class="hint">Commission and fees, before costs.</p>
-    <div class="chips">
-     <button class="chip" data-v="under20k">Under $20k</button><button class="chip" data-v="20-50k">$20k to $50k</button>
-     <button class="chip" data-v="50-100k">$50k to $100k</button><button class="chip" data-v="100k+">$100k+</button>
-    </div>
-   </div>
-
-   <div class="step" data-k="avg_deal_income">
+   <div class="step on" data-k="avg_deal_income">
     <h2 class="q">What do you earn on an average car deal?</h2>
-    <p class="hint">Commission plus any brokerage fee.</p>
+    <p class="hint">Commission plus any fee. Takes 60 seconds, then one of our brokers phones you.</p>
     <div class="range"><div class="rv"><b id="adiV">$1,500</b><span>per settled deal</span></div>
      <input type="range" id="adi" min="500" max="4000" step="100" value="1500" aria-label="Average income per settled deal">
      <div class="scale"><span>$500</span><span>$4,000</span></div></div>
-    <div class="spacer"></div><button class="go" type="button" data-next>Continue &rarr;</button>
+    <div class="spacer"></div><button class="go" type="button" data-next>See how much I could make &rarr;</button>
    </div>
 
    <div class="step" data-k="leads_month">
@@ -215,30 +186,56 @@ footer{border-top:1px solid var(--line);padding-block:22px 36px;color:var(--mute
     <div class="range"><div class="rv"><b id="lmV">30</b><span>leads a month</span></div>
      <input type="range" id="lm" min="5" max="150" step="5" value="30" aria-label="Leads a month">
      <div class="scale"><span>5</span><span>150</span></div></div>
-    <div class="roi" id="roi">
-     <div><b id="rCost">$2,370</b><span>lead cost a month + GST</span></div>
-     <div><b id="rDeals">2</b><span>est. settlements at 1 in 15</span></div>
-     <div class="good"><b id="rRev">$3,000</b><span>est. revenue a month</span></div>
+    <div class="roi" id="roi" aria-live="polite">
+     <div><b id="rCost">$2,370</b><span>lead cost a month, ex GST</span></div>
+     <div><b id="rDeals">1.9</b><span>est. settlements at 1 in 15</span></div>
+     <div class="good"><b id="rRev">$552</b><span>est. margin after lead cost</span></div>
     </div>
-    <p class="note" id="be">You break even at about 1 settlement in 19 leads. Our own brokers settle about 1 in 15.</p>
+    <p class="note" id="be"></p>
     <div class="spacer"></div><button class="go" type="button" data-next>Have a chat about it &rarr;</button>
+   </div>
+
+   <div class="step" data-k="settlements_month" data-chips>
+    <h2 class="q">How many deals do you settle a month now?</h2>
+    <p class="hint">A rough number is fine.</p>
+    <div class="chips">
+     <button class="chip" type="button" data-v="0-5">0 to 5</button><button class="chip" type="button" data-v="6-10">6 to 10</button>
+     <button class="chip" type="button" data-v="11-20">11 to 20</button><button class="chip" type="button" data-v="20+">20+</button>
+    </div>
+   </div>
+
+   <div class="step" data-k="revenue_month" data-chips>
+    <h2 class="q">Roughly what's your monthly revenue?</h2>
+    <p class="hint">Helps us suggest a sensible starting volume.</p>
+    <div class="chips">
+     <button class="chip" type="button" data-v="under20k">Under $20k</button><button class="chip" type="button" data-v="20-50k">$20k to $50k</button>
+     <button class="chip" type="button" data-v="50-100k">$50k to $100k</button><button class="chip" type="button" data-v="100k+">$100k+</button>
+    </div>
+   </div>
+
+   <div class="step" data-k="who">
+    <h2 class="q">Who should we ask for?</h2>
+    <p class="hint">One of our brokers phones you for a chat. Nothing to sign.</p>
+    <input class="field" id="contact_name" type="text" autocomplete="name" placeholder="Your name" aria-label="Your name" enterkeyhint="next">
+    <input class="field" id="business_name" type="text" autocomplete="organization" placeholder="Business name" aria-label="Business name" enterkeyhint="next" style="margin-top:10px">
+    <div class="spacer"></div><button class="go" type="button" data-next>Continue &rarr;</button>
    </div>
 
    <div class="step" data-k="contact">
     <h2 class="q">Where should we call you?</h2>
     <p class="hint">One of our brokers calls you next business morning. No pressure, just a chat.</p>
-    <input class="field" id="mobile" type="tel" inputmode="tel" autocomplete="tel" placeholder="Mobile 04xx xxx xxx">
-    <input class="field" id="email" type="email" inputmode="email" autocomplete="email" placeholder="Work email">
+    <input class="field" id="mobile" type="tel" inputmode="tel" autocomplete="tel" placeholder="Mobile 04xx xxx xxx" aria-label="Mobile">
+    <input class="field" id="email" type="email" inputmode="email" autocomplete="email" placeholder="Work email" aria-label="Work email">
     <div style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)"><input type="text" id="hp" tabindex="-1" autocomplete="off" aria-hidden="true"></div>
     <div class="err" id="err" role="alert" hidden></div>
     <div class="spacer"></div><button class="go" type="button" id="submit">Text me a code &rarr;</button>
-    <p class="fine">We text a 6-digit code to confirm it's you, the same check every lead passes. <a href="https://afhfinance.com.au/privacy-policy/">Privacy</a></p>
+    <p class="fine">We text a 6-digit code to confirm your number. <a href="https://afhfinance.com.au/privacy-policy/">Privacy</a></p>
    </div>
 
    <div class="step" data-k="code">
     <h2 class="q">Enter the code we texted you.</h2>
     <p class="hint">Sent to <b id="mshow"></b>. It can take a few seconds.</p>
-    <input class="field" id="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code" style="letter-spacing:.3em;font-size:22px;text-align:center">
+    <input class="field" id="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code" aria-label="6-digit code" style="letter-spacing:.3em;font-size:22px;text-align:center">
     <div class="err" id="err2" role="alert" hidden></div>
     <div class="spacer"></div><button class="go" type="button" id="verify">Confirm and book my call &rarr;</button>
     <p class="fine"><a href="#" id="resend">Send it again</a> &nbsp;·&nbsp; <a href="#" id="skip">No code? Just call me</a></p>
@@ -267,20 +264,21 @@ footer{border-top:1px solid var(--line);padding-block:22px 36px;color:var(--mute
    <ul>
     <li><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style="flex:none;margin-top:2px"><circle cx="12" cy="12" r="11" fill="#E3F4EC"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#0B7552" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Same source and checks as the leads we work ourselves</li>
     <li><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style="flex:none;margin-top:2px"><circle cx="12" cy="12" r="11" fill="#E3F4EC"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#0B7552" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>One broker per lead. The customer ticks a box naming you</li>
-    <li><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style="flex:none;margin-top:2px"><circle cx="12" cy="12" r="11" fill="#E3F4EC"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#0B7552" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>A fixed $79, so you know your cost before you spend</li>
+    <li><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style="flex:none;margin-top:2px"><circle cx="12" cy="12" r="11" fill="#E3F4EC"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#0B7552" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>A fixed $79 + GST, so you know your cost before you spend</li>
    </ul>
    <a class="go" href="#calc">See how much I could make &rarr;</a>
   </div>
  </section>
  <section class="ben rv-in">
-  <h2>Start small. Judge us on the first ten.</h2>
-  <div class="grid">
-   <div class="card rv-in"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4B2EDB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg></div><b>Yours alone</b><span>One broker per lead. Never resold, never shared.</span></div>
-   <div class="card rv-in"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4B2EDB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18h2"/></svg></div><b>Real phones</b><span>Every mobile verified by SMS code before it reaches you.</span></div>
-   <div class="card rv-in"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4B2EDB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16M4 10h16M4 15h10M4 20h7"/></svg></div><b>Ready to quote</b><span>Amount, vehicle, job, income, pay cycle, credit and residency answered.</span></div>
-   <div class="card rv-in"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4B2EDB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 0114-5.3L20 9M20 4v5h-5"/><path d="M20 12a8 8 0 01-14 5.3L4 15M4 20v-5h5"/></svg></div><b>Fair and flexible</b><span>Wrong numbers credited. Pause or leave anytime. No lock-in.</span></div>
-  </div>
-  <p class="fn note">*AFH Finance car leads, 2 Jul to 18 Oct 2026: 10 of 154 settled, 32 reached application. Estimates use that rate and your inputs; your results depend on speed to call and your lender panel. $79 + GST a lead.</p>
+  <h2>How a lead reaches you</h2>
+  <ol class="flow">
+   <li class="rv-in"><i>1</i><b>They see our ad</b><span>Meta and Google ads for car loans, paid for by us.</span></li>
+   <li class="rv-in"><i>2</i><b>They answer 10+ questions</b><span>Amount, vehicle, job, income, credit history, residency.</span></li>
+   <li class="rv-in"><i>3</i><b>They verify by SMS</b><span>A 6-digit code proves the mobile is theirs.</span></li>
+   <li class="rv-in"><i>4</i><b>They consent to you</b><span>They agree to be contacted by your business, by name.</span></li>
+   <li class="rv-in"><i>5</i><b>You get it, alone</b><span>In your portal with an alert. One broker per lead. Wrong numbers credited.</span></li>
+  </ol>
+  <p class="fn note">*AFH Finance car leads, 2 Jul to 18 Oct 2026: 10 of 154 settled, 32 reached application. Estimates use that rate and your inputs; your results depend on speed to call and your lender panel. $79 + GST a lead ($86.90 inc GST).</p>
  </section>
 </main>
 
@@ -294,43 +292,45 @@ footer{border-top:1px solid var(--line);padding-block:22px 36px;color:var(--mute
  var bar=document.getElementById('bar'), cnt=document.getElementById('cnt'), back=document.getElementById('back');
  var fmt=function(n){return '$'+Math.round(n).toLocaleString('en-AU')};
  function px(ev,data){try{if(window.fbq&&window.B2B_PIXEL_ID)fbq('trackSingleCustom',window.B2B_PIXEL_ID,ev,data||{})}catch(e){}}
+ var lock=false;
  function show(n){steps[i].classList.remove('on');i=n;steps[i].classList.add('on');
   var total=steps.length-1, k=steps[i].dataset.k;
   bar.style.width=Math.min(100,Math.round((i+1)/total*100))+'%';cnt.textContent=k==='done'?'Done':(i+1)+' of '+total;
   back.style.visibility=(i>0&&k!=='done')?'visible':'hidden';
   var f=steps[i].querySelector('.field');if(f&&window.matchMedia('(min-width:941px)').matches)setTimeout(function(){f.focus()},60);
+  if(n>0&&window.innerWidth<941)document.getElementById('calc').scrollIntoView({block:'start',behavior:'smooth'});
   px('PartnerStep',{step:k,index:i+1});}
  function save(extra){ // partial save after we have a name; never blocks the flow
   if(!D.contact_name)return Promise.resolve();
   var body=Object.assign({path:'talk',enquiry_id:eid||undefined,callback_window:'nbd_am',answers:A,contact_name:D.contact_name,business_name:D.business_name||'',hp:document.getElementById('hp').value},extra||{});
   return fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j}})}).then(function(x){if(x.j&&x.j.enquiry_id)eid=x.j.enquiry_id;return x}).catch(function(){return {ok:false,j:{error:'network'}}});}
- function valid(k){var v;
-  if(k==='contact_name'){v=document.getElementById('contact_name').value.trim();if(v.length<2)return bad('contact_name');D.contact_name=v;}
-  if(k==='business_name'){v=document.getElementById('business_name').value.trim();if(v.length<2)return bad('business_name');D.business_name=v;}
+ function valid(k){var v,w;
+  if(k==='who'){v=document.getElementById('contact_name').value.trim();if(v.length<2)return bad('contact_name');
+   w=document.getElementById('business_name').value.trim();if(w.length<2)return bad('business_name');D.contact_name=v;D.business_name=w;}
   return true;}
  function bad(id){var el=document.getElementById(id);el.setAttribute('aria-invalid','true');el.focus();setTimeout(function(){el.removeAttribute('aria-invalid')},1600);return false;}
  function next(){var k=steps[i].dataset.k;if(!valid(k))return;
   if(k==='avg_deal_income')A.avg_deal_income=String(adi.value);
   if(k==='leads_month'){A.leads_month=String(lm.value);px('PartnerProjection',{leads:+lm.value});}
-  if(k==='business_name'||k==='leads_month')save();show(i+1);}
+  if(k==='who')save();show(i+1);}
  steps.forEach(function(s){var b=s.querySelector('[data-next]');if(b)b.addEventListener('click',next);
-  s.querySelectorAll('.field').forEach(function(f){f.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();var g=s.querySelector('[data-next]')||document.getElementById('submit');g.click()}})});
-  if(s.hasAttribute('data-chips'))s.querySelectorAll('.chip').forEach(function(c){c.addEventListener('click',function(){
+  s.querySelectorAll('.field').forEach(function(f){f.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();var all=[].slice.call(s.querySelectorAll('.field')),ix=all.indexOf(f);if(ix<all.length-1){all[ix+1].focus()}else{s.querySelector('button.go').click()}}})});
+  if(s.hasAttribute('data-chips'))s.querySelectorAll('.chip').forEach(function(c){c.addEventListener('click',function(){if(lock||!s.classList.contains('on'))return;lock=true;
    s.querySelectorAll('.chip').forEach(function(x){x.setAttribute('aria-pressed','false')});c.setAttribute('aria-pressed','true');
    A[s.dataset.k]=c.dataset.v;if(s.dataset.k==='business_type'&&/asset/.test(c.dataset.v))A.products='car,asset';
-   setTimeout(function(){show(i+1)},180);})});});
+   setTimeout(function(){lock=false;show(i+1)},180);})});});
  back.addEventListener('click',function(){if(i>0)show(i-1)});
  // sliders + live ROI
  var adi=document.getElementById('adi'), lm=document.getElementById('lm');
  function fill(r){r.style.setProperty('--p',((r.value-r.min)/(r.max-r.min)*100)+'%')}
- function roi(){fill(adi);fill(lm);var L=+lm.value, inc=+adi.value, cost=L*PRICE, deals=L*RATE, rev=deals*inc;
+ function roi(){fill(adi);fill(lm);var L=+lm.value, inc=+adi.value, cost=L*PRICE, deals=L*RATE, rev=deals*inc, margin=rev-cost;
   document.getElementById('adiV').textContent=fmt(inc);document.getElementById('lmV').textContent=L;
   document.getElementById('rCost').textContent=fmt(cost);
-  document.getElementById('rDeals').textContent=deals<1?deals.toFixed(1):(Math.round(deals*10)/10).toString().replace(/\.0$/,'');
-  document.getElementById('rRev').textContent=fmt(rev);
-  var be=Math.max(1,Math.round(inc/PRICE));
-  document.getElementById('be').textContent='You break even at about 1 settlement in '+be+' leads. Our own brokers settle about 1 in 15.';
-  return {L:L,cost:cost,deals:deals,rev:rev};}
+  document.getElementById('rDeals').textContent=(Math.round(deals*10)/10).toString();
+  var m=document.getElementById('rRev');m.textContent=(margin<0?'-':'')+fmt(Math.abs(margin));m.parentNode.className=margin>=0?'good':'';
+  var be=Math.max(1,Math.floor(inc/PRICE));
+  document.getElementById('be').textContent='Estimated revenue '+fmt(rev)+' a month. One settlement in every '+be+' leads covers the lead cost. Our own brokers settle about 1 in 15.';
+  return {L:L,cost:cost,deals:deals,rev:rev,margin:margin};}
 
  // motion: reveal on scroll + count-up
  try{var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('seen');io.unobserve(e.target)}})},{threshold:.15});
@@ -347,7 +347,7 @@ footer{border-top:1px solid var(--line);padding-block:22px 36px;color:var(--mute
    var r=roi();
    try{if(window.fbq&&window.B2B_PIXEL_ID)fbq('trackSingle',window.B2B_PIXEL_ID,'Lead',{content_name:'partner_car_leads',value:r.cost,currency:'AUD',num_items:r.L,verified:verified?1:0},{eventID:eid||undefined})}catch(_){}
    document.getElementById('fname').textContent=D.contact_name.split(' ')[0];document.getElementById('mdone').textContent=M.replace(/(\d{4})(\d{3})(\d{3})/,'$1 $2 $3');
-   document.getElementById('sum').innerHTML='<div><b>'+r.L+'</b><span>leads a month</span></div><div><b>'+fmt(r.cost)+'</b><span>a month + GST</span></div><div class="good"><b>'+fmt(r.rev)+'</b><span>est. revenue</span></div>';
+   document.getElementById('sum').innerHTML='<div><b>'+r.L+'</b><span>leads a month</span></div><div><b>'+fmt(r.cost)+'</b><span>a month, ex GST</span></div><div class="good"><b>'+fmt(r.rev)+'</b><span>est. revenue a month</span></div>';
    show(steps.length-1);return null;});}
  function sendCode(){return post('/sms/start',{phone:M,purpose:'buyer',device_id:dev,hp:document.getElementById('hp').value})}
  document.getElementById('submit').addEventListener('click',function(){
