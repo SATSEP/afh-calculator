@@ -7,7 +7,7 @@
      1. LM_BEFORE_BC: in the bank check arm, a non-debt car or personal enquiry that v16.9b's own rules send to Lead Market
         gets the Lead Market hand-off at v16.9b's switch point again (the step uninstalls, as its fallback does). Debt is unchanged.
      2. CAR_CL_TO_LM: Centrelink car and caravan enquiries go to Lead Market (Sep, 16 Nov: no Centrelink car leads at all).
-     3. Personal (non-debt) Meta Lead only for a qualified, not subpar enquiry, the same gate as car; lead_grade added.
+     3. Personal (non-debt) Meta Lead only for a qualified, not subpar enquiry, the same gate as car.
      Rollback: set LM_BEFORE_BC and CAR_CL_TO_LM to false, or redeploy ef0270b (v30c). -->
 <!-- Meta Pixel Code: standalone loads its own pixel; embedded relays every event to the host page's pixel (one pixel, no duplicate PageView) -->
 <script>
@@ -3190,7 +3190,7 @@ async function sendLead(action,extra,noPixel){
         more of them. The enquiry still reaches the CRM; only the ad signal is withheld. Other funnels unchanged. */
      /* v31 (18 Nov 2026): non-debt personal gets the same gate as car (Centrelink, 3+ payday, Rebuilding under $60k and
         the other subpar answers send no Lead). Debt never reaches here (noPixel at the details step: debtPixelLead/Other).
-        Business unchanged. lead_grade rides along; the AFH landing pages' afhSafePx keeps only its allowed keys. */
+        Business unchanged. No lead_grade on the pixel (review 18 Nov: the standalone page has no afhSafePx filter). */
      const carSig = (funnel==='car'||funnel==='personal') ? (q.qualified && !subparCheck().sub) : true;
      if(carSig){
      /* Send an expected value with every Lead so Meta can optimise for revenue
@@ -3203,8 +3203,7 @@ async function sendLead(action,extra,noPixel){
        funnel: funnel,
        loan_amount: +st[funnel].amount||0,
        loan_term: +st[funnel].term||0,
-       asset: ASSET,
-       lead_grade: q.grade
+       asset: ASSET
      },{eventID: data.event_id});
      /* Only leads that can realistically settle. Use THIS as the optimisation
         event once an ad set is producing enough of them. */
@@ -4274,7 +4273,7 @@ afhPost({afhCalcReady:true,v:16});
   B.book=!!el.open;B.bookTouched=true;if(B.book)log("book_open");};
 
  /* ── resume a stored check (QA B1): straight to the waiting or outcome screen, polling at once ── */
- function resume(r,src){if(B.key||B.resumed||gatePassed)return;
+ function resume(r,src){if(B.key||B.resumed||gatePassed)return;if(B.fallback||lm.sent||/^lm/.test(view))return;   /* v31 review: never pull an LM screen back into the bank check */
   B.resumed=src;afhEid=r.event_id;B.key=r.status_key;B.url=r.url||"";B.t0=r.started_at;B.tapped=true;B.tab="";B.ok=true;B.rel=true;
   if(src!=="local")save(r);
   if(!B.on&&!B.off){B.cfg=B.cfg||{confirm:{},links:{}};install();B.on=true;}
