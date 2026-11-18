@@ -6,7 +6,7 @@
 <!-- v31 (18 Nov 2026, Sep: "make sure lead market works on the calculator system"):
      1. LM_BEFORE_BC: in the bank check arm, a non-debt car or personal enquiry that v16.9b's own rules send to Lead Market
         gets the Lead Market hand-off at v16.9b's switch point again (the step uninstalls, as its fallback does). Debt is unchanged.
-     2. CAR_CL_TO_LM: Centrelink car and caravan enquiries go to Lead Market (Sep, 16 Nov: no Centrelink car leads at all).
+     2. CAR_CL_TO_LM: Centrelink car and caravan enquiries go to Lead Market only with 2+ payday loans or Rebuilding credit (Sep, 18 Nov); the rest stay with AFH.
      3. Personal (non-debt) Meta Lead only for a qualified, not subpar enquiry, the same gate as car.
      Rollback: set LM_BEFORE_BC and CAR_CL_TO_LM to false, or redeploy ef0270b (v30c). -->
 <!-- Meta Pixel Code: standalone loads its own pixel; embedded relays every event to the host page's pixel (one pixel, no duplicate PageView) -->
@@ -2752,12 +2752,17 @@ function lmBar(done,part){const seg=i=>i<done?'<i class="lmseg on"></i>':i===don
      Centrelink car leads at all). It also gives them the Centrelink decline screen (clOnly), so they never reach AFH. */
 const LM_BEFORE_BC=true;
 const CAR_CL_TO_LM=true;
-function clOnly(){return funnel!=='business'&&(funnel!=='car'||CAR_CL_TO_LM)&&st[funnel]&&st[funnel].emp==='centrelink';}
+function clOnly(){return funnel!=='business'&&st[funnel]&&st[funnel].emp==='centrelink'&&(funnel!=='car'||(CAR_CL_TO_LM&&carClToLm(st[funnel])));}
 /* v18 (3 Nov 2026): car AND non-debt personal sell only Centrelink, 3+ payday loans, or Rebuilding credit with income under $60k.
    v16.9b (Sep, 5 Nov): EVERY Centrelink CAR lead (caravan included) stays with AFH, 3+ payday and Rebuilding included
    (Lead Market has never sold a Centrelink lead). Non-Centrelink car keeps the 3+ payday and Rebuilding under $60k rules.
    Centrelink non-debt personal still goes to Lead Market; Centrelink debt goes there through debtToLeadMarket(). */
-function lmCarOut(){try{const s=st[funnel];if(funnel==='car'&&s.emp==='centrelink'&&!CAR_CL_TO_LM)return false;const bad=(+s.credit||0)<=1;const gross=s.wage?(+s.income||0):0;return s.emp==='centrelink'||(s.payday==='yes'&&(s.paydayN==='3'||s.paydayN==='3+'))||(bad&&gross>0&&gross<60000);}catch(e){return false;}}
+/* v31c (Sep, 18 Nov 2026 12:20): a Centrelink CAR or caravan lead goes to Lead Market only when it also has 2 or more payday
+   loans or Rebuilding credit (CAR_CL_LM_MIN_PAYDAY / the credit answer). Any other Centrelink car lead stays with AFH, as in v30c.
+   Non-car Centrelink (non-debt personal) still always goes to Lead Market. */
+const CAR_CL_LM_MIN_PAYDAY=2;
+function carClToLm(s){const pd=s.payday==='yes'?({'1':1,'2':2,'3':3,'3+':4}[s.paydayN]||0):0;return pd>=CAR_CL_LM_MIN_PAYDAY||(+s.credit||0)<=1;}
+function lmCarOut(){try{const s=st[funnel];if(funnel==='car'&&s.emp==='centrelink')return CAR_CL_TO_LM&&carClToLm(s);const bad=(+s.credit||0)<=1;const gross=s.wage?(+s.income||0):0;return s.emp==='centrelink'||(s.payday==='yes'&&(s.paydayN==='3'||s.paydayN==='3+'))||(bad&&gross>0&&gross<60000);}catch(e){return false;}}
 /* v16.8 (Sep, 6 Nov 2026 12:24): a debt consolidation enquiry that meets ANY rule below goes to Lead Market
    automatically, at any amount and whether ALC is open or not (it is never offered to ALC). It switches the moment the
    answer that triggers a rule is given, the same way car does. Clean debt keeps the v18 routing: ALC at or over ALC's
