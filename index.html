@@ -8,6 +8,7 @@
         gets the Lead Market hand-off at v16.9b's switch point again (the step uninstalls, as its fallback does). Debt is unchanged.
      2. CAR_CL_TO_LM: Centrelink car and caravan enquiries go to Lead Market only with 2+ payday loans or Rebuilding credit (Sep, 18 Nov); the rest stay with AFH.
      3. Personal (non-debt) Meta Lead only for a qualified, not subpar enquiry, the same gate as car.
+     v31d (18 Nov): "No credit score impact" copy is now "No credit check" (Sep: checking options involves no credit check; a credit check only happens after application).
      Rollback: set LM_BEFORE_BC and CAR_CL_TO_LM to false, or redeploy ef0270b (v30c). -->
 <!-- Meta Pixel Code: standalone loads its own pixel; embedded relays every event to the host page's pixel (one pixel, no duplicate PageView) -->
 <script>
@@ -2042,7 +2043,7 @@ function loanSteps(){const s=st[funnel];const L=[];const debt=funnel==="personal
  }else{s.secured="unsecured";}
  return L;}
 function balChoice(c){afhStart();const s=st[funnel];s._bal=c;if(c==='no'){s.balloon=0;s._balNo=1;render();maybeAuto("_balNo");}else{s.balloon=s.balloon||balloonMaxDollar();render();}}
-function creditStep(){const s=st[funnel];return {id:"credit",icon:"gauge",secs:4,t:"How would you rate your credit?",sub:"Best guess. Checking your options has no credit score impact.",auto:"_cp",need:()=>s._cp!==undefined?[]:["your credit rating"],
+function creditStep(){const s=st[funnel];return {id:"credit",icon:"gauge",secs:4,t:"How would you rate your credit?",sub:"Best guess. Seeing your options involves no credit check. A credit check only happens if you apply.",auto:"_cp",need:()=>s._cp!==undefined?[]:["your credit rating"],
  render:()=>{const sel=(v)=>(s._cp!==undefined&&String(s._cp)===String(v));
   const o=[[4,'star','Excellent',''],[3,'thumb','Good',''],[2,'minus','Average',''],[1,'thumbdown','Rebuilding','Past defaults or issues'],[0,'help',"Not sure",'']];
   return `<div class="rows">${o.map(([v,i,t,sb])=>`<button type="button" class="ro ${sel(v)?'on':''}" onclick="setCredit(${v})"><span class="ri">${ICON[i]}</span><span class="rt"><b>${t}</b><small>${sb}</small></span><span class="rc">${TICK}</span></button>`).join('')}</div>`;}};}
@@ -2238,7 +2239,7 @@ function chooser(){return `<div class="card anim chooser">
      ${chooserTile('personal','card','Personal','Debt, travel, medical & more')}
      ${chooserTile('business','briefcase','Business','Equipment & working capital')}
    </div>
-   <div class="trust" style="justify-content:center;margin-top:14px">${ICON.shield} No credit score impact \u00b7 No obligation</div>
+   <div class="trust" style="justify-content:center;margin-top:14px">${ICON.shield} No credit check \u00b7 No obligation</div>
  </div>`;}
 function chooserTile(f,ic,title,sub){return `<div class="tile choosertile" role="button" tabindex="0" onclick="setFunnel('${f}')" onkeydown="if(event.key==='Enter'||event.key===' '||event.key==='Spacebar'){event.preventDefault();setFunnel('${f}');}"><div class="ti">${ICON[ic]}</div><div class="tt">${title}</div><div class="ts">${sub}</div></div>`;}
 function setFunnel(f){if(f==="caravan"){ASSET="caravan";f="car";}else if(f==="car"){ASSET="car";}funnel=f;view="form";qi=0;triedNext=false;signalParent("form");render();}
@@ -2258,7 +2259,7 @@ function form(){const S=steps();if(qi>S.length-1)qi=S.length-1;const step=S[qi];
  else if(gdp&&!st[funnel]._wf)h+=`<div class="tapnote">Tap an option to continue</div>`;
  else if(!step.auto||answered)h+=`<button type="button" class="cta" onclick="next()">${qi===S.length-1?'See my options':'Continue'} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>`;
  else h+=`<div class="tapnote">Tap an option to continue</div>`;
- h+=`<div class="trust">${ICON.shield} No credit score impact · No obligation</div></div>`;
+ h+=`<div class="trust">${ICON.shield} No credit check · No obligation</div></div>`;
  navDir=1;return h;}
 
 function missingFields(){const s=st[funnel];const m=[];
@@ -2336,7 +2337,7 @@ function readyScreen(){const{list}=match();const n=list.length;
   <div class="rdeb">Your results are ready</div>
   <h2 class="rdtitle">${n?`<span id="cnt" data-n="${n}">0</span> lender${n!==1?'s':''} to compare`:'Your options are ready'}</h2>
   <p class="rdsub">Personalised to your loan, credit and income.</p>
-  <div class="rdpills"><span>${ICON.dollar} ${fmt(st[funnel].amount)}</span><span>${ICON.calendar} ${afhYrs(st[funnel].term)}</span><span>${ICON.shield} No credit score impact</span></div>
+  <div class="rdpills"><span>${ICON.dollar} ${fmt(st[funnel].amount)}</span><span>${ICON.calendar} ${afhYrs(st[funnel].term)}</span><span>${ICON.shield} No credit check</span></div>
   <button type="button" class="cta rdcta" onclick="afhTrack('CalcUnlockClick',{});view='details';render();gdFocusNow();">See my personalised options <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
   <div class="rdnote">No cost to check · No obligation</div><div class="rdsms">${ICON.phone}<span>We'll text a code to confirm your mobile</span></div>
  </div>`;}
@@ -2440,7 +2441,7 @@ function detailsGate(){if(GUIDED_DETAILS)return gdGate();const{list}=match();con
    ${consentBlock()}
    <button class="cta" type="submit">Unlock my options <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
   </form>
-  <div class="gtrust"><span>${ICON.lock} Secure · No credit score impact · No obligation</span></div>
+  <div class="gtrust"><span>${ICON.lock} Secure · No credit check · No obligation</span></div>
   ${GATE_BACK?`<button type="button" class="g2back" onclick="if(CALC_STEP_LOG)lmLog('g.back',0);goForm()">Change my answers</button>`:''}
  </div>`;}
 
@@ -2615,7 +2616,7 @@ function gdGate(){const{list}=match();const n=list.length;const k="gate";
   ${gdHead(k)}
   <h2 class="smsvsr">Your details</h2>
   ${gdForm(k)}
-  <div class="gtrust"><span>${ICON.lock} Secure · No credit score impact · No obligation</span></div>
+  <div class="gtrust"><span>${ICON.lock} Secure · No credit check · No obligation</span></div>
   ${GATE_BACK?`<button type="button" class="g2back" onclick="if(CALC_STEP_LOG)lmLog('g.back',0);goForm()">Change my answers</button>`:''}
  </div>`;}
 function gdLm(){const k="lm",cl=st[funnel].emp==='centrelink';
@@ -3258,7 +3259,7 @@ function quickCalc(){const s=st[funnel];const amax={car:250000,personal:100000,b
 
    ${q?`<div class="qcready"><span class="qcdot"></span><span id="qcReady">${q.n} lenders ready to compare your rate</span></div>`:''}
    <button class="qccta pulse-cta" onclick="goFullFunnel()">See my ${q?q.n+' ':''}lender options <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-   <div class="qctrust">${ICON.shield} No credit score impact · 2 minutes · No upfront cost</div>
+   <div class="qctrust">${ICON.shield} No credit check · 2 minutes · No upfront cost</div>
  </div>`;}
 function refreshQuick(){const p=document.getElementById('qcPreview');if(!p)return;const q=quickRepay();const fw={weekly:"week",fortnightly:"fortnight",monthly:"month"}[repayFreq];p.innerHTML=q?`<div class="qcpl">Estimated repayment</div><div class="qcpv">${fmt(q.per)}<span>/${fw}</span></div>`:`<div class="qcpl">Set your amount to see an estimate</div>`;const rd=document.getElementById('qcReady');if(rd&&q)rd.textContent=q.n+" lenders ready to compare your rate";const ct=document.querySelector('.qccta');if(ct&&q)ct.firstChild.textContent="See my "+q.n+" lender options ";}
 function quickTerm(v){st[funnel].term=+v;render();}
@@ -3846,7 +3847,7 @@ afhPost({afhCalcReady:true,v:16});
   <p class="bcfor">${fmt(s.amount)} ${kind()}${funnel==="business"||!s.term?"":" over "+yrs(s.term)}</p>
   <div class="bcglass"><span class="bcflow" aria-hidden="true"><span class="bcnode">${lmIcon(I.bank)}</span></span><b>${n?n+COUNT:"We compare 40+ lenders for you"}</b></div>
   <button type="button" class="cta rdcta" onclick="afhTrack('CalcUnlockClick',{});view='details';render();gdFocusNow();">Continue ${ARROW}</button>
-  <p class="bcsafe2">${C("no_enquiry")?lmIcon(I.shield)+"No credit score impact":lmIcon(I.lock)+"No obligation"}</p>
+  <p class="bcsafe2">${C("no_enquiry")?lmIcon(I.shield)+"No credit check":lmIcon(I.lock)+"No obligation"}</p>
  </div>`;}
 
  /* ── bank check screen ── */
@@ -3895,10 +3896,10 @@ afhPost({afhCalcReady:true,v:16});
  var LOGIN_ROW="Log in with your bank's website username and password, not your app PIN";
  var LOGIN_HINT="Use your bank's website login, not your app PIN";
  function trio(){return [[I.key,LOGIN_ROW,"login"],[I.eyeoff,(C("read_only")?"Read only. ":"")+"AFH never sees your login","readonly"],[I.lock,"Securely through Credit Sense","secure"],
-   C("no_enquiry")?[I.shield,"No credit score impact","noenq"]:null]
+   C("no_enquiry")?[I.shield,"No credit check","noenq"]:null]
   .filter(Boolean).map(function(x){return '<li data-row="'+x[2]+'"><i aria-hidden="true">'+lmIcon(x[0])+'</i><span>'+x[1]+'</span></li>';}).join("");}
  /* v23 F7: what they get (the count with "may"), how it flows (bank, lock, AFH), the trust trio, the hashed line quieter,
-    one button, the legal line. The confirm gates stay: Read only and No credit score impact show only when confirmed. */
+    one button, the legal line. The confirm gates stay: Read only and No credit check show only when confirmed. */
  function screen(){var f=flags();
   if(!B.prep&&B.st==="idle")B.st="prep";
   return `<div class="card anim lmc bcx" id="bcCard" data-v29="offer">${head(false)}
@@ -4316,16 +4317,16 @@ afhPost({afhCalcReady:true,v:16});
      details are sent, Back leaves the page). The landing page's history knows only v16.9b's view names. */
   wrap("afhPost",function(o){try{var a=o&&o.afhCalcView;if(a&&(a.view==="bankcheck"||a.view==="bcwait"||a.view==="bcno"))o={afhCalcView:Object.assign({},a,{view:"results",qi:a.view==="bankcheck"?a.qi:-1,bc:a.view})};}catch(e){}return O.afhPost(o);});
   wrap("chooser",function(){return O.chooser().replace("Pick one to see your indicative repayments and lenders to compare.","Pick one to get started.")
-   .replace("No credit score impact · No obligation",cs("No credit score impact · No obligation","No obligation"));});
-  wrap("quickCalc",function(){return O.quickCalc().replace("No credit score impact · 2 minutes · No upfront cost",cs("No credit score impact · 2 minutes · No upfront cost","2 minutes · No upfront cost"));});   /* QA minor 8 */
-  wrap("form",function(){return O.form().replace("No credit score impact · No obligation",cs("No credit score impact · No obligation","No obligation"))   /* v21h: the base line is now "No credit score impact · No obligation" (Sep's banned phrase replaced in the shared base) */
+   .replace("No credit check · No obligation",cs("No credit check · No obligation","No obligation"));});
+  wrap("quickCalc",function(){return O.quickCalc().replace("No credit check · 2 minutes · No upfront cost",cs("No credit check · 2 minutes · No upfront cost","2 minutes · No upfront cost"));});   /* QA minor 8 */
+  wrap("form",function(){return O.form().replace("No credit check · No obligation",cs("No credit check · No obligation","No obligation"))   /* v21h: the base line is now "No credit check · No obligation" (Sep's banned phrase replaced in the shared base) */
   .replace('onclick="next()">See my options ','onclick="next()">Continue ');});
-  wrap("creditStep",function(){var s=O.creditStep();s.sub=cs("Best guess is fine. Checking your options has no credit score impact.","Best guess is fine.");return s;});
+  wrap("creditStep",function(){var s=O.creditStep();s.sub=cs("Best guess is fine. Seeing your options involves no credit check. A credit check only happens if you apply.","Best guess is fine.");return s;});
   wrap("analysing",function(){return O.analysing().replace("Working out your repayments","Getting your next step ready");});
   wrap("readyScreen",teaser);
-  wrap("detailsGate",function(){return O.detailsGate().replace("Secure · No credit score impact · No obligation",cs("Secure · No credit score impact · No obligation","Secure · No obligation"));});   /* QA minor 8 (non guided gate) */
+  wrap("detailsGate",function(){return O.detailsGate().replace("Secure · No credit check · No obligation",cs("Secure · No credit check · No obligation","Secure · No obligation"));});   /* QA minor 8 (non guided gate) */
   wrap("gdGate",function(){return O.gdGate().replace(/<h2>Where should we send your [^<]*<\/h2>/,"<h2>Where can your broker reach you?</h2>")
-   .replace("Secure · No credit score impact · No obligation",cs("Secure · No credit score impact · No obligation","Secure · No obligation"));});
+   .replace("Secure · No credit check · No obligation",cs("Secure · No credit check · No obligation","Secure · No obligation"));});
   wrap("gdStep",function(k,f,j){return O.gdStep(k,f,j).replace("We'll text you a code now. You'll need it to see your options.","We'll text you a code now to confirm it's you.");});
   GD0={bar:GD.gate.bar,go:GD.gate.go};GD.gate.bar=["Your answers","Your details","Bank check"];   /* v23: the shared label (Agree and continue) stays */   /* v21f F5: the final details step only (gdGoLbl: earlier steps say Continue) */
   wrap("smsvHead",function(ok){return O.smsvHead(ok).replace("Your options</span>","Bank check</span>");});
