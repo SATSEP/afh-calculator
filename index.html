@@ -1787,7 +1787,25 @@ function leadQuality(){
     if(funnel === 'business' && (+s.turn || 0) > 0) servAmt = (+s.turn) * 0.75;
     else if(funnel !== 'business' && s.wage && (+s.income || 0) > 0) servAmt = (+s.income) * 1.0;
     const valAmt = Math.min(+s.amount || 0, capAmt, servAmt);
-    const value  = Math.min(Math.round(valAmt * pct * rate), VALUE_HARD_CAP);
+    let value  = Math.min(Math.round(valAmt * pct * rate), VALUE_HARD_CAP);
+    /* Car value, 18 Nov 2026: fitted to 120 days of CRM outcomes (209 leads, 48 applications,
+       10 settled, average commission $1,839) instead of the grade table. Renters, full-time,
+       average or good credit and $10-50k settle; home owners, excellent credit, $50k+ and
+       Centrelink did not. Multipliers are shrunk because the sample is small. Grade is unchanged. */
+    if(key === 'car' && afhAsked('employment') && afhAsked('credit')){
+      const M = (t,k,d)=> (t[k] === undefined ? d : t[k]);
+      let p = 0.048;
+      p *= M({renter:1.5, owner:0.5, boarding:0.6}, s.res, 1);
+      p *= M({fulltime:1.2, self:1.0, parttime:0.9, casual:0.7, centrelink:0.35}, s.emp, 0.9);
+      p *= M({4:0.5, 3:1.0, 2:1.4, 1:0.7, 0:0.8}, String(s.credit), 0.8);
+      p *= M({pr:1.4, citizen:0.8, temp:1.0, bridging:0.6}, s.visa, 1);
+      const a = +s.amount || 0;
+      p *= a < 10000 ? 0.8 : a <= 50000 ? 1.1 : 0.5;
+      if(cap.level === 'unrealistic') p *= 0.4;
+      if(matches === 0) p *= 0.5;
+      p = Math.max(0.012, Math.min(0.20, p));
+      value = Math.min(Math.round(1839 * p), VALUE_HARD_CAP);
+    }
 
     return {
       grade: grade,
