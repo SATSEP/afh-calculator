@@ -2,7 +2,13 @@
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AFH Finance Loan Calculator</title>
-<!-- AFH-CALC-VERSION: 2026-11-17-v30c contact-step CRO + v30 completion + v28b answers-after-gate (2026-11-11-v29b-bankcheck share 50, base 2026-11-06-v16.9b) -->
+<!-- AFH-CALC-VERSION: 2026-11-18-v31 lm-restore (v30c contact-step CRO + v30 completion + v28b answers-after-gate, 2026-11-11-v29b-bankcheck share 50, base 2026-11-06-v16.9b) -->
+<!-- v31 (18 Nov 2026, Sep: "make sure lead market works on the calculator system"):
+     1. LM_BEFORE_BC: in the bank check arm, a non-debt car or personal enquiry that v16.9b's own rules send to Lead Market
+        gets the Lead Market hand-off at v16.9b's switch point again (the step uninstalls, as its fallback does). Debt is unchanged.
+     2. CAR_CL_TO_LM: Centrelink car and caravan enquiries go to Lead Market (Sep, 16 Nov: no Centrelink car leads at all).
+     3. Personal (non-debt) Meta Lead only for a qualified, not subpar enquiry, the same gate as car; lead_grade added.
+     Rollback: set LM_BEFORE_BC and CAR_CL_TO_LM to false, or redeploy ef0270b (v30c). -->
 <!-- Meta Pixel Code: standalone loads its own pixel; embedded relays every event to the host page's pixel (one pixel, no duplicate PageView) -->
 <script>
 (function(){
@@ -2739,12 +2745,19 @@ function lmBar(done,part){const seg=i=>i<done?'<i class="lmseg on"></i>':i===don
 /* Called from next(): switch the moment the answer that disqualifies them is confirmed. */
 /* Owner, 1 Nov 2026: every Centrelink lead goes to Lead Market for now. v16.9b: not car (Centrelink car stays with AFH,
    so a car decliner always gets "Not now, show my results" and reaches the AFH options). */
-function clOnly(){return funnel!=='business'&&funnel!=='car'&&st[funnel]&&st[funnel].emp==='centrelink';}
+/* v31 (18 Nov 2026): the two Lead Market switches. Each is one line; false puts back v30c's behaviour for that rule.
+   LM_BEFORE_BC: in the bank check arm, a lead v16.9b's rules send to Lead Market (car, caravan and non-debt personal)
+     gets the Lead Market hand-off at v16.9b's switch point instead of AFH's bank check (see install() in the bank check block).
+   CAR_CL_TO_LM: Centrelink car and caravan leads go to Lead Market like every other Centrelink lead (Sep, 16 Nov 2026: no
+     Centrelink car leads at all). It also gives them the Centrelink decline screen (clOnly), so they never reach AFH. */
+const LM_BEFORE_BC=true;
+const CAR_CL_TO_LM=true;
+function clOnly(){return funnel!=='business'&&(funnel!=='car'||CAR_CL_TO_LM)&&st[funnel]&&st[funnel].emp==='centrelink';}
 /* v18 (3 Nov 2026): car AND non-debt personal sell only Centrelink, 3+ payday loans, or Rebuilding credit with income under $60k.
    v16.9b (Sep, 5 Nov): EVERY Centrelink CAR lead (caravan included) stays with AFH, 3+ payday and Rebuilding included
    (Lead Market has never sold a Centrelink lead). Non-Centrelink car keeps the 3+ payday and Rebuilding under $60k rules.
    Centrelink non-debt personal still goes to Lead Market; Centrelink debt goes there through debtToLeadMarket(). */
-function lmCarOut(){try{const s=st[funnel];if(funnel==='car'&&s.emp==='centrelink')return false;const bad=(+s.credit||0)<=1;const gross=s.wage?(+s.income||0):0;return s.emp==='centrelink'||(s.payday==='yes'&&(s.paydayN==='3'||s.paydayN==='3+'))||(bad&&gross>0&&gross<60000);}catch(e){return false;}}
+function lmCarOut(){try{const s=st[funnel];if(funnel==='car'&&s.emp==='centrelink'&&!CAR_CL_TO_LM)return false;const bad=(+s.credit||0)<=1;const gross=s.wage?(+s.income||0):0;return s.emp==='centrelink'||(s.payday==='yes'&&(s.paydayN==='3'||s.paydayN==='3+'))||(bad&&gross>0&&gross<60000);}catch(e){return false;}}
 /* v16.8 (Sep, 6 Nov 2026 12:24): a debt consolidation enquiry that meets ANY rule below goes to Lead Market
    automatically, at any amount and whether ALC is open or not (it is never offered to ALC). It switches the moment the
    answer that triggers a rule is given, the same way car does. Clean debt keeps the v18 routing: ALC at or over ALC's
@@ -3175,7 +3188,10 @@ async function sendLead(action,extra,noPixel){
         (not weak, not subpar: no Centrelink, no 3+ payday loans, no unserviceable amount). Both car ad sets
         optimise on Lead, so Centrelink Leads were training Meta (and Google, which counts relayed Leads) to find
         more of them. The enquiry still reaches the CRM; only the ad signal is withheld. Other funnels unchanged. */
-     const carSig = funnel==='car' ? (q.qualified && !subparCheck().sub) : true;
+     /* v31 (18 Nov 2026): non-debt personal gets the same gate as car (Centrelink, 3+ payday, Rebuilding under $60k and
+        the other subpar answers send no Lead). Debt never reaches here (noPixel at the details step: debtPixelLead/Other).
+        Business unchanged. lead_grade rides along; the AFH landing pages' afhSafePx keeps only its allowed keys. */
+     const carSig = (funnel==='car'||funnel==='personal') ? (q.qualified && !subparCheck().sub) : true;
      if(carSig){
      /* Send an expected value with every Lead so Meta can optimise for revenue
         rather than raw form fills. */
@@ -3187,7 +3203,8 @@ async function sendLead(action,extra,noPixel){
        funnel: funnel,
        loan_amount: +st[funnel].amount||0,
        loan_term: +st[funnel].term||0,
-       asset: ASSET
+       asset: ASSET,
+       lead_grade: q.grade
      },{eventID: data.event_id});
      /* Only leads that can realistically settle. Use THIS as the optimisation
         event once an ad set is producing enough of them. */
@@ -4267,12 +4284,21 @@ afhPost({afhCalcReady:true,v:16});
  function wrap(n,f){O[n]=window[n];window[n]=f;}
  /* Credit score lines: only while Credit Sense has confirmed in writing that the check puts no enquiry on the file. */
  function cs(t,plain){return C("no_enquiry")?t:plain;}
+ /* v31: Lead Market before the bank check. Only before anything of the bank check happened (no details sent, nothing
+    tapped, no stored check) and never for debt consolidation, which keeps v30c's routing exactly. */
+ function lmFirst(){try{return typeof LM_BEFORE_BC!=="undefined"&&LM_BEFORE_BC===true&&!debtFunnel()&&!gatePassed&&!B.rel&&!B.tapped&&!B.key&&!B.resumed&&!B.fallback&&!!O.lmShouldSwitch();}catch(e){return false;}}
  function install(){
-  /* no Lead Market switch during the questions; v21c m1: v16.9b's own switch point is kept (SNAP) for a fallback */
+  /* no Lead Market switch during the questions (v31: except LM_BEFORE_BC, lmFirst()); v21c m1: v16.9b's own switch point is kept (SNAP) for a fallback */
   wrap("lmShouldSwitch",function(){if(view==="form"){var y=false;try{y=!!O.lmShouldSwitch();}catch(e){y=false;}
     if(SNAP&&SNAP.f!==funnel)SNAP=null;
-    if(y&&!SNAP)SNAP=snap();else if(!y&&SNAP&&qi<=SNAP.qi)SNAP=null;}
+    if(y&&!SNAP)SNAP=snap();else if(!y&&SNAP&&qi<=SNAP.qi)SNAP=null;
+    if(y&&lmFirst())return true;}   /* v31: LM_BEFORE_BC, the caller then calls lmStart (wrapped just below) */
    return false;});
+  /* v31 (18 Nov 2026, LM_BEFORE_BC): the Lead Market hand-off starts. The step is uninstalled first, exactly as its own
+     fallback does, so the customer is on v16.9b's path from here (its Lead Market screens, its relay, no AFH Lead), and a
+     decliner gets v16.9b's AFH results. Logged as bc.lm_before_bc. */
+  wrap("lmStart",function(){if(view==="form"&&lmFirst()){var f=O.lmStart;B.fallback="lm_before_bc";log("lm_before_bc",qi+1);uninstall();return f.apply(null,arguments);}
+   return O.lmStart.apply(null,arguments);});
   /* debt leads stay with AFH: no ALC, no Lead Market. At the details step v16.9b's own answer, so its pixel is v16.9b's. */
   wrap("afhKeepsDebt",function(){return B.gate?O.afhKeepsDebt():true;});
   wrap("submitGate",function(ev){B.gate=true;try{return O.submitGate(ev);}finally{B.gate=false;}});
