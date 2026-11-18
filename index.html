@@ -2350,7 +2350,11 @@ function analysing(){const{list}=match();const n=list.length||'our';
   <h2 class="antitle">Finding your options</h2>
   <div class="anlist">${lines.map((t,i)=>`<div class="anrow" style="animation-delay:${.25+i*.75}s"><span class="anck">${TICK}</span>${t}</div>`).join('')}</div>
  </div>`;}
-function readyScreen(){const{list}=match();const n=list.length;
+/* 18 Nov 2026: the arm that sees an indicative weekly figure before the details form submitted at 64% against 43%.
+   Same maths as the calculator's own live preview. No rate is shown. */
+function afhRepRange(){try{const s=st[funnel],L=match().list;if(!L.length||!s.amount||!s.term)return null;const d=disp(L[0].lo,L[0].hi);
+ const a=fmt(weekly(s.amount,d[0],s.term,s.balloon||0)),b=fmt(weekly(s.amount,d[1],s.term,s.balloon||0));return a===b?"About "+a:a+" to "+b;}catch(e){return null;}}
+function readyScreen(){const{list}=match();const n=list.length;const rr=afhRepRange();
  const colors=['#4B2EDB','#29ABE2','#16B57F','#F5A623','#EC4E81','#6D54E8'];
  let conf='';for(let i=0;i<34;i++){const l=Math.round(Math.random()*100),d=(Math.random()*.5).toFixed(2),r=Math.round(Math.random()*360),c=colors[i%colors.length],w=6+Math.round(Math.random()*5),dur=(1.6+Math.random()*1.2).toFixed(2);
   conf+=`<i style="left:${l}%;background:${c};width:${w}px;height:${w*1.6}px;animation-delay:${d}s;animation-duration:${dur}s;transform:rotate(${r}deg)"></i>`;}
@@ -2359,9 +2363,10 @@ function readyScreen(){const{list}=match();const n=list.length;
   <div class="rdeb">Your results are ready</div>
   <h2 class="rdtitle">${n?`<span id="cnt" data-n="${n}">0</span> lender${n!==1?'s':''} to compare`:'Your options are ready'}</h2>
   <p class="rdsub">Personalised to your loan, credit and income.</p>
+  ${rr?`<p class="rdsub" style="margin-top:-8px"><span style="display:block;font-size:12.5px;letter-spacing:.04em;text-transform:uppercase">Your indicative repayment</span><b style="font-size:21px;color:var(--ink)">${rr}</b> a week</p>`:""}
   <div class="rdpills"><span>${ICON.dollar} ${fmt(st[funnel].amount)}</span><span>${ICON.calendar} ${afhYrs(st[funnel].term)}</span><span>${ICON.shield} No credit check to see options</span></div>
-  <button type="button" class="cta rdcta" onclick="afhTrack('CalcUnlockClick',{});view='details';render();gdFocusNow();">See my personalised options <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-  <div class="rdnote">A credit check only happens if you apply · No obligation</div><div class="rdsms">${ICON.phone}<span>We'll text a code to confirm your mobile</span></div>
+  <button type="button" class="cta rdcta" onclick="afhTrack('CalcUnlockClick',{});view='details';render();gdFocusNow();">Show my options <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+  <div class="rdnote">A credit check only happens if you apply · No obligation</div><div class="rdsms">${ICON.phone}<span>3 quick details, then a code by text</span></div>
  </div>`;}
 function countUp(){const el=document.getElementById('cnt');if(!el)return;const n=+el.dataset.n;const t0=performance.now();
  (function f(t){const p=Math.min(1,(t-t0)/900);el.textContent=Math.round(n*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f);})(t0);}
@@ -2523,11 +2528,11 @@ function gdMailFix(v){const t=String(v||"").trim(),i=t.lastIndexOf("@");if(i<1)r
  return best?t.slice(0,i+1)+best:"";}
 /* v30c (17 Nov 2026): 26 of 56 car visitors who reached the details screen from 11 to 16 Nov left on the name step without typing. The step now says what
    is waiting (the same lender count the ready screen showed), and its field takes focus in the tap that opened it. */
-function gdNameHint(){try{if(funnel!=="car")return "";const n=match().list.length;return n?`Your ${n} lender option${n===1?" is":"s are"} ready.`:"";}catch(e){return "";}}
+function gdNameHint(){try{const n=match().list.length;return n?`Step 1 of 3. Your ${n} lender option${n===1?" is":"s are"} saved.`:"Step 1 of 3.";}catch(e){return "";}}
 function gdFocusNow(){try{const i=document.querySelector("#gateForm .gds.on input:not([type=checkbox])");if(i&&!i.value){i.focus({preventScroll:true});}}catch(e){}}
 function gdQ(k,f){const n=gdFirst();
- if(f==="name")return k==="gate"?"First, what's your name?":"What's your first and last name?";
- if(f==="mobile")return n?"Thanks "+n+", what's the best mobile?":"What's the best mobile?";
+ if(f==="name")return k==="gate"?"What's your first name?":"What's your first and last name?";
+ if(f==="mobile")return n?"Thanks "+n+", what mobile should we text your code to?":"What mobile should we text your code to?";
  if(f==="email")return n?"And your email, "+n+"?":"And your email?";
  if(f==="dob")return "What's your date of birth?";
  if(f==="ben")return "Which Centrelink payment is your main one?";
@@ -2562,12 +2567,12 @@ function gdStep(k,f,j){const G=GD[k],on=j===GS[k]?" on":"";
   <div class="lmchips gdchips" role="group" aria-labelledby="gdq-${k}-ben">${LM_BENEFITS.map(([b,t])=>`<button type="button" class="lmchip ${lm.benefit===b?'on':''}" onclick="gdBen('${k}','${b}')">${t}</button>`).join('')}</div>
   <em class="gderr" aria-live="polite">${gdMsg(k,f,"")}</em></div>`;
  const v=f==="mobile"?gdMobFmt(gdVal(f)):gdVal(f),ok=gdRule(k,f,v)?" ok":"",gate=k==="gate",iid="gdin-"+k+"-"+f;
- const A={name:`name="name" autocomplete="name" autocapitalize="words" autocorrect="off" spellcheck="false" placeholder="${gate?'Full name':'First and last name'}"`,
+ const A={name:`name="name" autocomplete="name" autocapitalize="words" autocorrect="off" spellcheck="false" placeholder="${gate?'First name':'First and last name'}"`,
   mobile:`name="mobile" type="tel" inputmode="tel" autocomplete="tel" placeholder="${gate?'Mobile (04xx xxx xxx)':'04xx xxx xxx'}"`,
   email:`name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="${gate?'Email':'you@example.com'}"`,
   dob:`name="dob" type="text" inputmode="numeric" autocomplete="bday" placeholder="DD/MM/YYYY"`}[f];
  const ic={name:ICON.user,mobile:ICON.phone,email:ICON.mail,dob:ICON.calendar}[f]||"";
- const hint=(k==="gate"&&f==="name")?gdNameHint():f==="dob"?"Lenders use this to confirm it's you":f==="mobile"?(k==="gate"?"We'll text a 6 digit code to confirm it's you. Your phone may fill it in for you.":"Starts with 04. +61 works too."):"";
+ const hint=(k==="gate"&&f==="name")?gdNameHint():f==="dob"?"Lenders use this to confirm it's you":f==="mobile"?(k==="gate"?"For your code, and so your AFH broker can reach you about this enquiry.":"Starts with 04. +61 works too."):"";
  return `<div class="gds${on}${ok}" id="${G.pre}${f}" data-f="${f}"><label class="gdq" id="gdq-${k}-${f}" for="${iid}" tabindex="-1">${gdEsc(gdQ(k,f))}</label>
   <span class="gdbox"><span class="gdi" aria-hidden="true">${ic}</span><input id="${iid}" ${A} enterkeyhint="next" value="${gdEsc(v)}" oninput="gdIn('${k}',this)" aria-describedby="gde-${k}-${f}${hint?' gdh-'+k+'-'+f:''}"><span class="gdok" aria-hidden="true">${TICK}</span></span>
   <em class="gderr" id="gde-${k}-${f}" aria-live="polite">${gdEsc(gdMsg(k,f,""))}</em>${hint?`<small class="gdhint" id="gdh-${k}-${f}">${hint}</small>`:""}
