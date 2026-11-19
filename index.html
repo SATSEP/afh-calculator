@@ -1931,7 +1931,7 @@ function match(){const s=st[funnel];let pool=[];
  else pool=s.sub==="cashflow"?DATA.bizC:s.sub==="asset"?DATA.bizA:DATA.bizA.concat(DATA.bizC); // null/any => both
  const sc=pool.map(l=>{let f=0,hard=false;
   if(s.amount<l.min||s.amount>l.max){f++;hard=true;}if(s.term>l.term){f++;hard=true;}
-  if(funnel==="car"){if(s.credit<l.credit)f++;if(s.cond==="used"&&l.age<8)f++;f+=Math.min(visaPenalty(l,s),3);if(s.payday==="yes"&&l.payday!=="recent_ok")f++;}
+  if(funnel==="car"){if(s.credit<l.credit)f++;if(s.emp==="centrelink"&&l.credit>1)f++;/* 19 Nov: Centrelink income only counts the specialist lenders that take it */if(s.cond==="used"&&l.age<8)f++;f+=Math.min(visaPenalty(l,s),3);if(s.payday==="yes"&&l.payday!=="recent_ok")f++;}
   if(funnel==="personal"){if(s.credit<l.credit)f++;if(s.income<l.income)f++;f+=Math.min(visaPenalty(l,s),3);if(s.purpose==="debt"&&l.name==="UME Loans")f++;}
   if(funnel==="business"){if(l.abn&&s.abn<l.abn)f++;if(l.gst&&s.gst<l.gst)f++;if(l.turn&&s.turn<l.turn)f++;}
   return{l,f,hard};});
